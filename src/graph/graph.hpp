@@ -197,7 +197,7 @@ public:
     std::vector<size_t> order;
     order.reserve(this->get_vertex_number());
     std::vector<size_t> to_delete_vertices;
-    auto indegrees=this->get_indegrees();
+    auto indegrees = this->get_indegrees();
     for (size_t i = 0; i < indegrees.size(); i++) {
       if (indegrees[i] == 0) {
         to_delete_vertices.push_back(i);

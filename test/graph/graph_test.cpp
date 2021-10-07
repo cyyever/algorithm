@@ -21,12 +21,12 @@ TEST_CASE("graph") {
   SUBCASE("transpose") { g.get_transpose(); }
   SUBCASE("breadth first search") {
     g.add_edge({"1", "2"});
-    auto tree = breadth_first_search(g, 0zu);
+    auto tree = get_breadth_first_search_tree(g, 0zu);
     REQUIRE(tree.get_vertex_number() == 2);
   }
   SUBCASE("depth first search") {
     g.add_edge({"1", "2"});
-    auto tree = depth_first_search(g, 0zu);
+    auto tree = get_depth_first_search_tree(g, 0zu);
     REQUIRE(tree.get_vertex_number() == 2);
   }
   SUBCASE("topological ordering") {
