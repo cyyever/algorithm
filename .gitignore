@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+
+# Vim backups
+*~
+*.swp
+
+# build dir
+build
+
+# pvs
+*PVS*
