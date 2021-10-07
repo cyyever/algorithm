@@ -10,6 +10,7 @@
 #include <doctest/doctest.h>
 
 #include "graph/algorithm.hpp"
+#include "graph/dag.hpp"
 #include "graph/graph.hpp"
 
 TEST_CASE("graph") {
