@@ -78,7 +78,7 @@ tree<vertex_type> breadth_first_search(const graph<vertex_type> &g, size_t s) {
 template <typename vertex_type>
 tree<vertex_type> depth_first_search(const graph<vertex_type> &g, size_t s) {
   std::vector<bool> explored(g.get_next_vertex_index(), false);
-  std::vector<std::pair<size_t, float>> stack{{s,0}};
+  std::vector<std::pair<size_t, float>> stack{{s, 0}};
   std::vector<size_t> parent(g.get_next_vertex_index(), 0);
   tree<vertex_type> t;
 
@@ -93,11 +93,11 @@ tree<vertex_type> depth_first_search(const graph<vertex_type> &g, size_t s) {
       t.add_edge({g.get_vertex(parent[u]), g.get_vertex(u), weight});
     }
     for (auto const &neighbor : g.get_adjacent_list(u)) {
-      auto const &[v, weight] = neighbor;
-      parent[v] = u;
-      stack.emplace_back(v, weight);
+      parent[neighbor.first] = u;
+      stack.emplace_back(neighbor);
     }
   }
   return t;
 }
+
 } // namespace cyy::algorithm
