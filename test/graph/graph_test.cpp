@@ -19,14 +19,20 @@ TEST_CASE("graph") {
     g.remove_edge({"1", "2"});
   }
   SUBCASE("transpose") { g.get_transpose(); }
-  SUBCASE("breadth_first_search") {
+  SUBCASE("breadth first search") {
     g.add_edge({"1", "2"});
     auto tree = breadth_first_search(g, 0zu);
     REQUIRE(tree.get_vertex_number() == 2);
   }
-  SUBCASE("depth_first_search") {
+  SUBCASE("depth first search") {
     g.add_edge({"1", "2"});
     auto tree = depth_first_search(g, 0zu);
     REQUIRE(tree.get_vertex_number() == 2);
+  }
+  SUBCASE("topological ordering") {
+    g.add_edge({"1", "2"});
+    cyy::algorithm::DAG<std::string> dag(g);
+    auto order = dag.get_topological_ordering();
+    REQUIRE(order);
   }
 }
