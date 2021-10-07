@@ -49,6 +49,7 @@ public:
   auto get_next_vertex_index() const { return next_vertex_index; }
 
   virtual void add_edge(const edge_type &edge) {
+    edge_num++;
     add_directed_edge(edge);
     auto reversed_edge = edge;
     std::swap(reversed_edge.first, reversed_edge.second);
@@ -66,6 +67,7 @@ public:
   }
 
   virtual void remove_edge(const edge_type &edge) {
+    edge_num--;
     remove_directed_edge(edge);
     auto reversed_edge = edge;
     std::swap(reversed_edge.first, reversed_edge.second);
@@ -94,8 +96,11 @@ public:
     return adjacent_matrix;
   }
 
-  auto get_verteice() const { return vertex_indices.right | std::views::keys; }
+  auto get_vertices() const {
+    return weighted_adjacent_list | std::views::keys;
+  }
   size_t get_vertex_number() const { return vertex_indices.size(); }
+  size_t get_edge_number() const { return edge_num; }
   const vertex_type &get_vertex(size_t index) const {
     return vertex_indices.right.at(index);
   }
@@ -133,6 +138,7 @@ protected:
   }
 
 protected:
+  size_t edge_num = 0;
   std::unordered_map<size_t, std::list<std::pair<size_t, float>>>
       weighted_adjacent_list;
   boost::bimap<vertex_type, size_t> vertex_indices;
@@ -147,9 +153,11 @@ public:
   using graph<vertex_type>::graph;
   using edge_type = graph<vertex_type>::edge_type;
   void add_edge(const edge_type &edge) override {
+    this->edge_num++;
     this->add_directed_edge(edge);
   }
   void remove_edge(const edge_type &edge) override {
+    this->edge_num--;
     this->remove_directed_edge(edge);
   }
   directed_graph get_transpose() const {

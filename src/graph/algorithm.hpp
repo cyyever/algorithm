@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "graph.hpp"
-#include "tree.hpp"
 
 namespace cyy::algorithm {
 
@@ -46,7 +45,7 @@ void breadth_first_search(const graph<vertex_type> &g, size_t s,
 template <typename vertex_type>
 auto get_breadth_first_search_tree(const graph<vertex_type> &g, size_t s) {
 
-  tree<vertex_type> t;
+  graph<vertex_type> t;
   breadth_first_search<vertex_type>(g, s,
                                     [&t](auto edge) { t.add_edge(edge); });
   return t;
@@ -79,16 +78,23 @@ void depth_first_search(const graph<vertex_type> &g, size_t s,
 
 template <typename vertex_type>
 auto get_depth_first_search_tree(const graph<vertex_type> &g, size_t s) {
-  tree<vertex_type> t;
+  graph<vertex_type> t;
 
   depth_first_search<vertex_type>(g, s, [&t](auto edge) { t.add_edge(edge); });
   return t;
 }
 template <typename vertex_type> bool is_connected(const graph<vertex_type> &g) {
-  size_t tree_vertex_num = 0;
-  depth_first_search<vertex_type>(
-      g, g.get_vertices()[0],
-      [&tree_vertex_num](auto edge) { tree_vertex_num++; });
-  return tree_vertex_num + 1 == g.get_vertex_number();
+  size_t edge_num = 0;
+  depth_first_search<vertex_type>(g, g.get_vertices()[0],
+                                  [&edge_num](auto edge) { edge_num++; });
+  return edge_num + 1 == g.get_vertex_number();
+}
+
+template <typename vertex_type> bool is_tree(const graph<vertex_type> &g) {
+  size_t edge_num = 0;
+  depth_first_search<vertex_type>(g, *g.get_vertices().begin(),
+                                  [&edge_num](auto edge) { edge_num++; });
+  return edge_num + 1 == g.get_vertex_number() &&
+         edge_num == g.get_edge_number();
 }
 } // namespace cyy::algorithm

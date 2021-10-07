@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "algorithm.hpp"
 #include "graph.hpp"
 
 namespace cyy::algorithm {
@@ -25,10 +26,12 @@ public:
 
   template <std::ranges::input_range U>
   requires std::same_as<edge_type, std::ranges::range_value_t<U>>
-  explicit tree(U edges, std::optional<vertex_type> root_)
-      : graph<vertex_type>(edges), root(std::move(root_)) {
-    // TODO check connectivity
+  explicit tree(U edges) : graph<vertex_type>(edges) {
+    if (!is_tree(*this)) {
+      throw std::logic_error("not a tree");
+    }
   }
+  void set_root(vertex_type root_) { root = root_; }
 
 private:
   std::optional<vertex_type> root;
