@@ -160,6 +160,16 @@ public:
     }
     return transpose;
   }
+  std::vector<size_t> get_indegrees() const {
+    std::vector<size_t> indegrees(this->get_next_vertex_index(), 0);
+    for (auto const &[from_index, adjacent_vertices] :
+         this->weighted_adjacent_list) {
+      for (auto const &[to_index, weight] : adjacent_vertices) {
+        indegrees[to_index]++;
+      }
+    }
+    return indegrees;
+  }
 };
 
 template <typename vertex_type> class DAG : public directed_graph<vertex_type> {
@@ -184,16 +194,10 @@ public:
 
   std::optional<std::vector<size_t>> get_topological_ordering() const {
     // Time Complexity is O(m+n)
-    std::vector<size_t> indegrees(this->get_next_vertex_index(), 0);
-    std::vector<size_t> to_delete_vertices;
     std::vector<size_t> order;
     order.reserve(this->get_vertex_number());
-    for (auto const &[from_index, adjacent_vertices] :
-         this->weighted_adjacent_list) {
-      for (auto const &[to_index, weight] : adjacent_vertices) {
-        indegrees[to_index]++;
-      }
-    }
+    std::vector<size_t> to_delete_vertices;
+    auto indegrees=this->get_indegrees();
     for (size_t i = 0; i < indegrees.size(); i++) {
       if (indegrees[i] == 0) {
         to_delete_vertices.push_back(i);
