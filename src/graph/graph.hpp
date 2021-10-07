@@ -46,6 +46,10 @@ namespace cyy::algorithm{
         add_edge(edge);
       }
     }
+    auto get_next_vertex_index() const {
+      return next_vertex_index;
+    }
+
     virtual void add_edge(const edge_type &edge) {
       add_directed_edge(edge);
       auto reversed_edge = edge;
@@ -92,6 +96,15 @@ namespace cyy::algorithm{
       }
       return adjacent_matrix;
     }
+    size_t get_vertex_number() const {
+      return vertex_indices.size();
+    }
+    const vertex_type &get_vertex(size_t index) const {
+      return vertex_indices.right.at(index);
+    }
+    size_t get_vertex_index(const vertex_type &vertex) const {
+      return vertex_indices.left.at(vertex);
+    }
 
   protected:
     void add_directed_edge(const edge_type &edge) {
@@ -113,12 +126,6 @@ namespace cyy::algorithm{
             return a.first == second_index;
           });
       vertices.erase(first, last);
-    }
-    const vertex_type &get_vertex(size_t index) const {
-      return vertex_indices.right.at(index);
-    }
-    size_t get_vertex_index(const vertex_type &vertex) const {
-      return vertex_indices.left.at(vertex);
     }
     size_t add_vertex(vertex_type vertex) {
       auto it = vertex_indices.left.find(vertex);

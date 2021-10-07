@@ -21,7 +21,7 @@ TEST_CASE("graph") {
   SUBCASE("transpose") { g.get_transpose(); }
   SUBCASE("breadth_first_search") {
     g.add_edge({"1", "2"});
-    auto paths = breadth_first_search(g, 0zu);
-    REQUIRE(paths.contains(1));
+    auto tree = breadth_first_search(g, 0zu);
+    REQUIRE(tree.get_vertex_number() == 2);
   }
 }
