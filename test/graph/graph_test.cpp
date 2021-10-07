@@ -24,4 +24,9 @@ TEST_CASE("graph") {
     auto tree = breadth_first_search(g, 0zu);
     REQUIRE(tree.get_vertex_number() == 2);
   }
+  SUBCASE("depth_first_search") {
+    g.add_edge({"1", "2"});
+    auto tree = depth_first_search(g, 0zu);
+    REQUIRE(tree.get_vertex_number() == 2);
+  }
 }
