@@ -119,4 +119,12 @@ template <typename vertex_type> bool is_tree(const graph<vertex_type> &g) {
   return edge_num + 1 == g.get_vertex_number() &&
          edge_num == g.get_edge_number();
 }
-} // namespace cyy::algorithm
+
+template <typename vertex_type> void shortest_path_dijkstra(const graph<vertex_type> &g,size_t s) {
+
+ 
+  
+
+}
+}
+// namespace cyy::algorithm
