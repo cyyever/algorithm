@@ -46,6 +46,7 @@ TEST_CASE("graph") {
   }
   SUBCASE("Dijkstra search") {
     g.add_edge({"1", "2"});
-    shortest_path_dijkstra(g, 0);
+    auto edges = shortest_path_dijkstra(g, 0);
+    REQUIRE(edges[1] == 0);
   }
 }
