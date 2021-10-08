@@ -26,12 +26,32 @@ public:
     if (items.empty()) {
       return;
     }
+    if (items.size() == 1) {
+      items.clear();
+      position.clear();
+      return;
+    }
     position.erase(items[0].data);
     std::swap(items[0], items.back());
     items.pop_back();
     auto it = position.find(items[0].data);
+    assert(it != position.end());
     it->second = heapify_down(0);
     return;
+  }
+  void change_key(const data_type &data, key_type key) {
+    auto it = position.find(data);
+    if (it == position.end()) {
+      return;
+    }
+    auto idx = it->second;
+    items[idx].key = std::move(key);
+    auto new_idx = heapify_up(idx);
+    if (idx != new_idx) {
+      it->second = new_idx;
+      return;
+    }
+    it->second = heapify_down(idx);
   }
   bool empty() const { return items.empty(); }
 
@@ -47,7 +67,7 @@ public:
 private:
   size_t heapify_up(size_t i) {
     if (i > 0) {
-      auto parent_idx = (i+1) / 2-1;
+      auto parent_idx = (i + 1) / 2 - 1;
       if (compare{}(items[i].key, items[parent_idx].key)) {
         std::swap(items[i], items[parent_idx]);
         return heapify_up(parent_idx);
@@ -56,7 +76,7 @@ private:
     return i;
   }
   size_t heapify_down(size_t i) {
-    auto left_child_index = 2 * (i+1)-1;
+    auto left_child_index = 2 * (i + 1) - 1;
     auto n = items.size();
     if (left_child_index >= n) {
       return i;

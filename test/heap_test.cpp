@@ -33,4 +33,11 @@ TEST_CASE("heap") {
     h.pop();
     REQUIRE(h.empty());
   }
+  SUBCASE("change key") {
+    h.insert(5, 5);
+    h.insert(1, 1);
+    REQUIRE_EQ(h.top(), 1);
+    h.change_key(1, 100);
+    REQUIRE_EQ(h.top(), 5);
+  }
 }
