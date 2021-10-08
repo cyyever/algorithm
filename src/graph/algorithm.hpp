@@ -53,7 +53,7 @@ auto get_breadth_first_search_tree(const graph<vertex_type> &g, size_t s) {
 template <typename vertex_type>
 void recursive_depth_first_search(
     const graph<vertex_type> &g, size_t s,
-    std::function<void(size_t, size_t)> backtrack_fun) {
+    std::function<void(size_t, size_t)> after_edge_fun) {
 
   std::vector<bool> explored(g.get_next_vertex_index(), false);
   auto search_fun = [&](auto &&self, size_t u) {
@@ -63,7 +63,7 @@ void recursive_depth_first_search(
     explored[u] = true;
     for (auto const &neighbor : g.get_adjacent_list(u)) {
       self(self, neighbor.first);
-      backtrack_fun(u, neighbor.first);
+      after_edge_fun(u, neighbor.first);
     }
   };
   search_fun(search_fun, s);
