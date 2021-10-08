@@ -22,7 +22,7 @@ namespace cyy::algorithm {
 // breadth first search in g from s
 template <typename vertex_type>
 void breadth_first_search(const graph<vertex_type> &g, size_t s,
-                          std::function<void(edge<vertex_type>)> edge_fun) {
+                          std::function<void(size_t,size_t,float)> edge_fun) {
   std::vector<bool> discovered(g.get_next_vertex_index(), false);
   discovered[s] = true;
   std::list<size_t> queue{s};
@@ -35,7 +35,7 @@ void breadth_first_search(const graph<vertex_type> &g, size_t s,
       if (!discovered[v]) {
         discovered[v] = true;
         queue.push_back(v);
-        edge_fun({g.get_vertex(u), g.get_vertex(v), weight});
+        edge_fun(u,v,weight);
         continue;
       }
     }
@@ -46,15 +46,14 @@ template <typename vertex_type>
 auto get_breadth_first_search_tree(const graph<vertex_type> &g, size_t s) {
 
   graph<vertex_type> t;
-  breadth_first_search<vertex_type>(g, s,
-                                    [&t](auto edge) { t.add_edge(edge); });
+  breadth_first_search<vertex_type>(g, s, [&](auto u,auto v, float weight) { t.add_edge({g.get_vertex(u),g.get_vertex(v),weight}); });
   return t;
 }
 
 // depth first search in g from s
 template <typename vertex_type>
 void depth_first_search(const graph<vertex_type> &g, size_t s,
-                        std::function<void(edge<vertex_type>)> edge_fun) {
+                        std::function<void(size_t,size_t,float)> edge_fun) {
   std::vector<bool> explored(g.get_next_vertex_index(), false);
   std::vector<std::pair<size_t, float>> stack{{s, 0}};
   std::vector<size_t> parent(g.get_next_vertex_index(), 0);
@@ -67,7 +66,7 @@ void depth_first_search(const graph<vertex_type> &g, size_t s,
     }
     explored[u] = true;
     if (u != s) {
-      edge_fun({g.get_vertex(parent[u]), g.get_vertex(u), weight});
+      edge_fun(parent[u],u,weight);
     }
     for (auto const &neighbor : g.get_adjacent_list(u)) {
       parent[neighbor.first] = u;
@@ -80,20 +79,20 @@ template <typename vertex_type>
 auto get_depth_first_search_tree(const graph<vertex_type> &g, size_t s) {
   graph<vertex_type> t;
 
-  depth_first_search<vertex_type>(g, s, [&t](auto edge) { t.add_edge(edge); });
+  depth_first_search<vertex_type>(g, s, [&](auto u,auto v, float weight) { t.add_edge({g.get_vertex(u),g.get_vertex(v),weight}); });
   return t;
 }
 template <typename vertex_type> bool is_connected(const graph<vertex_type> &g) {
   size_t edge_num = 0;
   depth_first_search<vertex_type>(g, g.get_vertices()[0],
-                                  [&edge_num](auto edge) { edge_num++; });
+                                  [&edge_num](auto u,auto v,float weight) { edge_num++; });
   return edge_num + 1 == g.get_vertex_number();
 }
 
 template <typename vertex_type> bool is_tree(const graph<vertex_type> &g) {
   size_t edge_num = 0;
   depth_first_search<vertex_type>(g, *g.get_vertices().begin(),
-                                  [&edge_num](auto edge) { edge_num++; });
+                                  [&edge_num](auto u,auto v,float weight) { edge_num++; });
   return edge_num + 1 == g.get_vertex_number() &&
          edge_num == g.get_edge_number();
 }
