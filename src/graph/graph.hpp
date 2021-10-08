@@ -113,12 +113,14 @@ protected:
     auto first_index = add_vertex(e.first);
     auto second_index = add_vertex(e.second);
     auto &neighbors = weighted_adjacent_list[first_index];
+#ifndef NDEBUG
     auto it = std::ranges::find_if(neighbors, [second_index](auto const &a) {
       return a.first == second_index;
     });
     if (it != neighbors.end()) {
       return false;
     }
+#endif
     neighbors.emplace_back(second_index, e.weight);
     return true;
   }

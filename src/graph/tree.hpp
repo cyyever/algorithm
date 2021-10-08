@@ -37,7 +37,8 @@ public:
 
   template <std::ranges::input_range U>
   requires std::same_as<edge_type, std::ranges::range_value_t<U>>
-  explicit directed_tree(U edges, vertex_type root_) : tree<vertex_type>(edges) {
+  explicit directed_tree(U edges, vertex_type root_)
+      : tree<vertex_type>(edges) {
     set_root(root_);
   }
 };
