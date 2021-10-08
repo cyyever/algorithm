@@ -32,16 +32,7 @@ TEST_CASE("graph") {
     REQUIRE(tree.get_vertex_number() == 2);
   }
   SUBCASE("depth first recursive search") {
-    struct vertex_with_weight {
-      size_t vertex;
-      float weight;
-      auto operator<=>(const vertex_with_weight &) const = default;
-    };
-    vertex_with_weight a{0, 1.0};
-    vertex_with_weight b{0, 2.0};
-    edge<vertex_with_weight> e{a, b};
-
-    cyy::algorithm::directed_graph<vertex_with_weight> h({e});
+    cyy::algorithm::directed_graph<const char *> h({"a", "b"});
     recursive_depth_first_search(h, 0, [](auto u, auto v) {
       REQUIRE_EQ(u, 0);
       REQUIRE_EQ(v, 1);
@@ -52,5 +43,9 @@ TEST_CASE("graph") {
     cyy::algorithm::DAG<std::string> dag(g);
     auto order = dag.get_topological_ordering();
     REQUIRE(order);
+  }
+  SUBCASE("Dijkstra search") {
+    g.add_edge({"1", "2"});
+    shortest_path_dijkstra(g, 0);
   }
 }

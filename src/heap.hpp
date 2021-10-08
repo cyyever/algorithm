@@ -54,6 +54,7 @@ public:
     it->second = heapify_down(idx);
   }
   bool empty() const { return items.empty(); }
+  bool contains(const data_type &data) const { return position.contains(data); }
 
   void insert(data_type data, key_type key) {
     auto [it, has_insertion] = position.try_emplace(data, SIZE_MAX);
