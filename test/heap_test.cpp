@@ -23,7 +23,14 @@ TEST_CASE("heap") {
   SUBCASE("top") {
     h.insert(5, 5);
     h.insert(1, 1);
-
     REQUIRE_EQ(h.top(), 1);
+  }
+  SUBCASE("pop") {
+    h.insert(5, 5);
+    h.insert(1, 1);
+    h.pop();
+    REQUIRE_EQ(h.top(), 5);
+    h.pop();
+    REQUIRE(h.empty());
   }
 }
