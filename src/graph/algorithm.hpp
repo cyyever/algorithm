@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "graph.hpp"
+#include "tree.hpp"
 #include "heap.hpp"
 
 namespace cyy::algorithm {
@@ -152,7 +153,8 @@ auto shortest_path_dijkstra(const graph<vertex_type> &g, size_t s) {
 template <typename vertex_type>
 auto MST_prime(const graph<vertex_type> &g, size_t s) {
 
-  std::vector<float> weights(g.get_next_vertex_index(), std::numeric_limits<float>::max());
+  std::vector<float> weights(g.get_next_vertex_index(),
+                             std::numeric_limits<float>::max());
   std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
   graph<vertex_type> MST;
   heap<size_t, float> h;
@@ -161,24 +163,24 @@ auto MST_prime(const graph<vertex_type> &g, size_t s) {
     auto u = h.top();
     h.pop();
     for (auto [v, weight] : g.get_adjacent_list(u)) {
-      if (weight>= weights[v]){
+      if (weight >= weights[v]) {
         continue;
       }
       edge[v] = u;
       weights[v] = weight;
       if (h.contains(v)) {
-        h.change_key(v,weights[v]);
+        h.change_key(v, weights[v]);
       } else {
-        h.insert(v,weights[v]);
+        h.insert(v, weights[v]);
       }
     }
   }
-  for(size_t v=0;v<edge.size();v++) {
-    auto u=edge[v];
-    if(u==SIZE_MAX){
+  for (size_t v = 0; v < edge.size(); v++) {
+    auto u = edge[v];
+    if (u == SIZE_MAX) {
       continue;
     }
-    MST.add_edge({g.get_vertex(u),g.get_vertex(v),weights[v]});
+    MST.add_edge({g.get_vertex(u), g.get_vertex(v), weights[v]});
   }
   return tree<vertex_type>(MST);
 }
