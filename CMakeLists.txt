@@ -18,11 +18,10 @@ endif()
 
 target_link_libraries(MyAlgorithmLib PUBLIC Boost::headers)
 target_link_libraries(MyAlgorithmLib PUBLIC range-v3::range-v3)
-target_link_libraries(MyAlgorithmLib PRIVATE fmt::fmt)
 
 target_include_directories(
   MyAlgorithmLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-                          $<INSTALL_INTERFACE:include/cyy/algorithm>)
+                        $<INSTALL_INTERFACE:include/cyy/algorithm>)
 
 # test
 add_subdirectory(test)
