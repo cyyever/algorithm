@@ -21,15 +21,22 @@ template <typename vertex_type> struct edge {
   vertex_type first;
   vertex_type second;
   float weight = 1;
+  auto operator<=>(const auto &rhs) const { return weight <=> rhs.weight; }
+  auto operator==(const auto &rhs) const {
+    return first == rhs.first && second == rhs.second;
+  }
   edge reverse() const { return {second, first, weight}; }
 };
-class path_node;
 
-using path_node_ptr = std::shared_ptr<path_node>;
-struct path_node {
-  size_t vertex_index{};
-  path_node_ptr prev{};
-  path_node_ptr next{};
+struct indexed_edge {
+  size_t first;
+  size_t second;
+  float weight = 1;
+  auto operator<=>(const auto &rhs) const { return weight <=> rhs.weight; }
+  auto operator==(const auto &rhs) const {
+    return first == rhs.first && second == rhs.second;
+  }
+  indexed_edge reverse() const { return {second, first, weight}; }
 };
 
 template <typename vertex_type> class graph {
@@ -38,7 +45,7 @@ public:
   using vertex_index_map_type = std::unordered_map<vertex_type, size_t>;
   using adjacent_matrix_type = std::vector<std::vector<float>>;
   graph() = default;
-  ~graph() = default;
+  virtual ~graph() = default;
   template <std::ranges::input_range U>
   requires std::same_as<edge_type, std::ranges::range_value_t<U>>
   explicit graph(U edges) {
@@ -48,7 +55,18 @@ public:
   }
   auto get_next_vertex_index() const { return next_vertex_index; }
 
-  void add_edge(const edge<vertex_type> &e) {
+  virtual void
+  foreach_edge(std::function<void(indexed_edge)> edge_callback) const {
+    for (auto const &[from_index, adjacent_vertices] : weighted_adjacent_list) {
+      for (auto const &[to_index, weight] : adjacent_vertices) {
+        if (from_index <= to_index) {
+          edge_callback({from_index, to_index, weight});
+        }
+      }
+    }
+  }
+
+  virtual void add_edge(const edge<vertex_type> &e) {
     if (!add_directed_edge(e)) {
       return;
     }
@@ -65,8 +83,7 @@ public:
       to_vertices.erase(first, last);
     }
   }
-
-  void remove_edge(const edge_type &e) {
+  virtual void remove_edge(const edge_type &e) {
     if (!remove_directed_edge(e)) {
       return;
     }
@@ -97,7 +114,8 @@ public:
   }
 
   auto get_vertices() const {
-    return weighted_adjacent_list | std::views::keys;
+    return std::views::all(vertex_indices.right) |
+           std::views::transform([](auto const &it) { return it.first; });
   }
   size_t get_vertex_number() const { return vertex_indices.size(); }
   size_t get_edge_number() const { return edge_num; }
@@ -160,7 +178,7 @@ class directed_graph : public graph<vertex_type> {
 public:
   using edge_type = graph<vertex_type>::edge_type;
   directed_graph() = default;
-  ~directed_graph() = default;
+  ~directed_graph() override = default;
   template <std::ranges::input_range U>
   requires std::same_as<edge_type, std::ranges::range_value_t<U>>
   explicit directed_graph(U edges) {
@@ -170,16 +188,27 @@ public:
   }
   directed_graph(edge_type e) { add_edge(e); }
 
-  void add_edge(const edge_type &edge) {
+  void add_edge(const edge_type &edge) override {
     if (this->add_directed_edge(edge)) {
       this->edge_num++;
     }
   }
-  void remove_edge(const edge_type &edge) {
+  void remove_edge(const edge_type &edge) override {
     if (this->remove_directed_edge(edge)) {
       this->edge_num--;
     }
   }
+
+  void
+  foreach_edge(std::function<void(indexed_edge)> edge_callback) const override {
+    for (auto const &[from_index, adjacent_vertices] :
+         this->weighted_adjacent_list) {
+      for (auto const &[to_index, weight] : adjacent_vertices) {
+        edge_callback({from_index, to_index, weight});
+      }
+    }
+  }
+
   directed_graph get_transpose() const {
     directed_graph transpose;
     for (auto &[from_vertex, to_vertices] : this->weighted_adjacent_list) {

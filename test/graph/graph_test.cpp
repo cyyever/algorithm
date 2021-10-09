@@ -51,6 +51,10 @@ TEST_CASE("graph") {
   }
   SUBCASE("Prim MST") {
     g.add_edge({"1", "2"});
-    auto mst = MST_prime(g, 0);
+    auto mst = MST_prime(g);
+  }
+  SUBCASE("Kruskal MST") {
+    g.add_edge({"1", "2"});
+    auto mst = MST_kruskal(g);
   }
 }
