@@ -24,6 +24,12 @@ public:
       throw std::logic_error("not a tree");
     }
   }
+  tree(graph<vertex_type> g) : graph<vertex_type>(std::move(g)) {
+    if (!is_tree(*this)) {
+      throw std::logic_error("not a tree");
+    }
+  }
+
   void set_root(vertex_type root_) { root = this->get_vertex_index(root_); }
 
 protected:
