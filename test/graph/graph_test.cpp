@@ -49,4 +49,8 @@ TEST_CASE("graph") {
     auto edges = shortest_path_dijkstra(g, 0);
     REQUIRE(edges[1] == 0);
   }
+  SUBCASE("Prim MST") {
+    g.add_edge({"1", "2"});
+    auto mst = MST_prime(g, 0);
+  }
 }
