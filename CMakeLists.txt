@@ -7,7 +7,6 @@ include(cmake/all.cmake)
 file(GLOB_RECURSE SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
 
 find_package(Boost REQUIRED)
-find_package(fmt REQUIRED)
 find_package(range-v3 REQUIRED)
 
 add_library(MyAlgorithmLib ${SOURCE})
