@@ -127,7 +127,7 @@ auto shortest_path_dijkstra(const graph<vertex_type> &g, size_t s) {
   std::vector<float> distance(g.get_next_vertex_index(),
                               std::numeric_limits<float>::max());
   distance[s] = 0;
-  std::vector<size_t> edges(g.get_next_vertex_index(), SIZE_MAX);
+  std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
   heap<size_t, float> h;
   h.insert(s, 0);
   while (!h.empty()) {
@@ -138,7 +138,7 @@ auto shortest_path_dijkstra(const graph<vertex_type> &g, size_t s) {
       if (distance[v] <= distance[u] + weight) {
         continue;
       }
-      edges[v] = u;
+      edge[v] = u;
       distance[v] = distance[u] + weight;
       if (h.contains(v)) {
         h.change_key(v, distance[v]);
@@ -147,7 +147,40 @@ auto shortest_path_dijkstra(const graph<vertex_type> &g, size_t s) {
       }
     }
   }
-  return edges;
+  return edge;
+}
+template <typename vertex_type>
+auto MST_prime(const graph<vertex_type> &g, size_t s) {
+
+  std::vector<float> weights(g.get_next_vertex_index(), std::numeric_limits<float>::max());
+  std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
+  graph<vertex_type> MST;
+  heap<size_t, float> h;
+  h.insert(s, 0);
+  while (!h.empty()) {
+    auto u = h.top();
+    h.pop();
+    for (auto [v, weight] : g.get_adjacent_list(u)) {
+      if (weight>= weights[v]){
+        continue;
+      }
+      edge[v] = u;
+      weights[v] = weight;
+      if (h.contains(v)) {
+        h.change_key(v,weights[v]);
+      } else {
+        h.insert(v,weights[v]);
+      }
+    }
+  }
+  for(size_t v=0;v<edge.size();v++) {
+    auto u=edge[v];
+    if(u==SIZE_MAX){
+      continue;
+    }
+    MST.add_edge({g.get_vertex(u),g.get_vertex(v),weights[v]});
+  }
+  return tree<vertex_type>(MST);
 }
 } // namespace cyy::algorithm
 // namespace cyy::algorithm
