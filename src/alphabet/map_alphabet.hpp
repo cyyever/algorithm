@@ -11,26 +11,24 @@
 
 #include "alphabet.hpp"
 #include "exception.hpp"
+#include <boost/bimap.hpp>
 
 namespace cyy::algorithm {
   class map_alphabet final : public ALPHABET {
   public:
     map_alphabet(std::map<symbol_type, std::string> symbol_map_,
                  std::string_view name_)
-        : ALPHABET(name_), symbol_map(std::move(symbol_map_)) {
-      if (symbol_map.empty()) {
+        : ALPHABET(name_)
+    {
+      if (symbol_map_.empty()) {
         throw exception::empty_alphabet("symbol map is empty");
       }
-      for (auto const &[symbol, data] : symbol_map) {
-        auto has_inserted = reverse_symbol_map.try_emplace(data, symbol).second;
-        if (!has_inserted) {
-          throw exception::invalid_alphabet(std::string("same data ") + data +
-                                            " in several symbols");
-        }
+      for (auto const &[symbol, data] : symbol_map_) {
+        symbol_map.insert({symbol,data});
       }
     }
     bool contain(symbol_type s) const noexcept override {
-      return symbol_map.contains(s);
+      return symbol_map.left.find(s)!=symbol_map.left.end();
     }
     size_t size() const noexcept override { return symbol_map.size(); }
 
@@ -45,10 +43,10 @@ namespace cyy::algorithm {
     }
 
     std::string get_data(symbol_type symbol) const {
-      return symbol_map.at(symbol);
+      return symbol_map.left.at(symbol);
     }
     symbol_type get_symbol(const std::string &data) const {
-      return reverse_symbol_map.at(data);
+      return symbol_map.right.at(data);
     }
 
   private:
@@ -56,14 +54,13 @@ namespace cyy::algorithm {
       return get_data(symbol);
     }
     symbol_type get_symbol(size_t index) const noexcept override {
-      auto it = symbol_map.begin();
+      auto it = symbol_map.left.begin();
       std::advance(it, index);
       return it->first;
     }
 
   private:
-    std::map<symbol_type, std::string> symbol_map;
-    std::map<std::string, symbol_type> reverse_symbol_map;
+    boost::bimap<symbol_type, std::string> symbol_map;
   };
 
 } // namespace cyy::algorithm
