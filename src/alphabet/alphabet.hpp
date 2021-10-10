@@ -77,12 +77,7 @@ public:
       std::numeric_limits<symbol_type>::max() - 2;
 
 protected:
-  void set_name(std::string_view name_) {
-    if (name_.empty()) {
-      throw exception::empty_alphabet_name("");
-    }
-    name = std::move(name_);
-  }
+  void set_name(std::string_view name_);
 
 private:
   virtual std::string __to_string(symbol_type symbol) const {

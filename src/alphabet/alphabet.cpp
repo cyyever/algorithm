@@ -18,6 +18,14 @@
 #include "set_alphabet.hpp"
 
 namespace cyy::algorithm {
+
+void ALPHABET::set_name(std::string_view name_) {
+  if (name_.empty()) {
+    throw exception::empty_alphabet_name("");
+  }
+  name = std::move(name_);
+}
+
 symbol_type ALPHABET::get_max_symbol() const {
   if (contain(endmarker)) {
     return get_symbol(size() - 2);
