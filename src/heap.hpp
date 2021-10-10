@@ -6,6 +6,7 @@
 
 #pragma once
 #include <cassert>
+#include <iostream>
 #include <unordered_map>
 #include <vector>
 namespace cyy::algorithm {
@@ -18,10 +19,15 @@ public:
     items.reserve(n);
     items.reserve(n);
   }
+  const key_type &top_key() const {
+    assert(!empty());
+    return items[0].key;
+  }
   const data_type &top() const {
     assert(!empty());
     return items[0].data;
   }
+  size_t size() const { return items.size(); }
   void pop() {
     if (items.empty()) {
       return;
@@ -31,12 +37,13 @@ public:
       position.clear();
       return;
     }
+    assert(position[items[0].data] == 0);
     position.erase(items[0].data);
+    position[items.back().data] = 0;
     std::swap(items[0], items.back());
+
     items.pop_back();
-    auto it = position.find(items[0].data);
-    assert(it != position.end());
-    it->second = heapify_down(0);
+    heapify_down(0);
     return;
   }
   void change_key(const data_type &data, key_type key) {
@@ -45,13 +52,14 @@ public:
       return;
     }
     auto idx = it->second;
+    assert(data == items[idx].data);
     items[idx].key = std::move(key);
     auto new_idx = heapify_up(idx);
     if (idx != new_idx) {
       it->second = new_idx;
       return;
     }
-    it->second = heapify_down(idx);
+    heapify_down(idx);
   }
   bool empty() const { return items.empty(); }
   bool contains(const data_type &data) const { return position.contains(data); }
@@ -62,7 +70,8 @@ public:
       return;
     }
     items.emplace_back(std::move(data), std::move(key));
-    it->second = heapify_up(items.size() - 1);
+    it->second = items.size() - 1;
+    heapify_up(items.size() - 1);
   }
 
 private:
@@ -70,6 +79,7 @@ private:
     if (i > 0) {
       auto parent_idx = (i + 1) / 2 - 1;
       if (compare{}(items[i].key, items[parent_idx].key)) {
+        std::swap(position[items[i].data], position[items[parent_idx].data]);
         std::swap(items[i], items[parent_idx]);
         return heapify_up(parent_idx);
       }
@@ -91,6 +101,7 @@ private:
       }
     }
     if (!compare{}(items[i].key, items[min_child_index].key)) {
+      std::swap(position[items[i].data], position[items[min_child_index].data]);
       std::swap(items[i], items[min_child_index]);
       return heapify_down(min_child_index);
     }
