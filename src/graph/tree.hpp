@@ -31,6 +31,7 @@ public:
   }
 
   void set_root(vertex_type root_) { root = this->get_vertex_index(root_); }
+  void set_root_by_index(size_t root_) { root = root_;}
 
 protected:
   std::optional<size_t> root;

@@ -221,7 +221,7 @@ public:
   }
   std::vector<size_t> get_indegrees() const {
     std::vector<size_t> indegrees(this->get_next_vertex_index(), 0);
-    for (auto const &[from_index, adjacent_vertices] :
+    for (auto const &[_, adjacent_vertices] :
          this->weighted_adjacent_list) {
       for (auto const &[to_index, weight] : adjacent_vertices) {
         indegrees[to_index]++;

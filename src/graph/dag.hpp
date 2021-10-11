@@ -17,15 +17,15 @@ public:
 
   template <std::ranges::input_range U>
   requires std::same_as<edge_type, std::ranges::range_value_t<U>>
-  explicit DAG(U edges) : directed_graph<vertex_type>(edges) {
-    if (!get_topological_ordering()) {
+  explicit DAG(U edges,bool check=true) : directed_graph<vertex_type>(edges) {
+    if (check &&!get_topological_ordering()) {
       throw std::logic_error("not a DAG");
     }
   }
 
-  explicit DAG(directed_graph<vertex_type> g)
+  explicit DAG(directed_graph<vertex_type> g,bool check=true)
       : directed_graph<vertex_type>(std::move(g)) {
-    if (!get_topological_ordering()) {
+    if (check &&!get_topological_ordering()) {
       throw std::logic_error("not a DAG");
     }
   }
