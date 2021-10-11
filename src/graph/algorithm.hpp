@@ -183,7 +183,7 @@ template <typename vertex_type> auto MST_prime(const graph<vertex_type> &g) {
     }
     MST.add_edge({g.get_vertex(u), g.get_vertex(v), weights[v]});
   }
-  return tree(MST);
+  return MST;
 }
 
 template <typename vertex_type> auto MST_kruskal(const graph<vertex_type> &g) {
@@ -202,6 +202,6 @@ template <typename vertex_type> auto MST_kruskal(const graph<vertex_type> &g) {
       connected_components.UNION(u_component, v_component);
     }
   }
-  return tree(MST);
+  return MST;
 }
 } // namespace cyy::algorithm
