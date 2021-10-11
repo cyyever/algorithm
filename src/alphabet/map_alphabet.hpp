@@ -9,27 +9,27 @@
 
 #include <string>
 
-#include "alphabet.hpp"
-#include "exception.hpp"
 #include <boost/bimap.hpp>
 
+#include "alphabet.hpp"
+#include "exception.hpp"
+
 namespace cyy::algorithm {
-template  <typename data_type=std::string>
+  template <typename data_type = std::string>
   class map_alphabet final : public ALPHABET {
   public:
     map_alphabet(std::map<symbol_type, data_type> symbol_map_,
                  std::string_view name_)
-        : ALPHABET(name_)
-    {
+        : ALPHABET(name_) {
       if (symbol_map_.empty()) {
         throw exception::empty_alphabet("symbol map is empty");
       }
       for (auto const &[symbol, data] : symbol_map_) {
-        symbol_map.insert({symbol,data});
+        symbol_map.insert({symbol, data});
       }
     }
     bool contain(symbol_type s) const noexcept override {
-      return symbol_map.left.find(s)!=symbol_map.left.end();
+      return symbol_map.left.find(s) != symbol_map.left.end();
     }
     size_t size() const noexcept override { return symbol_map.size(); }
 
@@ -52,9 +52,8 @@ template  <typename data_type=std::string>
 
   private:
     std::string __to_string(symbol_type symbol) const override {
-      if constexpr(std::is_same_v<data_type,std::string>) {
-      return get_data(symbol);
-
+      if constexpr (std::is_same_v<data_type, std::string>) {
+        return get_data(symbol);
       }
       throw std::runtime_error("can't convert to string");
     }

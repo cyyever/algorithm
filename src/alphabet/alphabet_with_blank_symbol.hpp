@@ -47,7 +47,7 @@ namespace cyy::algorithm {
     }
 
     symbol_type get_symbol(size_t index) const noexcept override {
-      if(has_blank_symbol) {
+      if (has_blank_symbol) {
         return alphabet->get_symbol(index);
       }
       if (index + 1 == size()) {
