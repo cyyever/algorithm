@@ -56,7 +56,6 @@ namespace cyy::algorithm {
       items[idx].key = std::move(key);
       auto new_idx = heapify_up(idx);
       if (idx != new_idx) {
-        it->second = new_idx;
         return;
       }
       heapify_down(idx);
@@ -88,11 +87,11 @@ namespace cyy::algorithm {
       }
       return i;
     }
-    size_t heapify_down(size_t i) {
+    void heapify_down(size_t i) {
       auto left_child_index = 2 * (i + 1) - 1;
       auto n = items.size();
       if (left_child_index >= n) {
-        return i;
+        return;
       }
       auto min_child_index = left_child_index;
       auto right_child_index = left_child_index + 1;
@@ -106,9 +105,9 @@ namespace cyy::algorithm {
         std::swap(position[items[i].data],
                   position[items[min_child_index].data]);
         std::swap(items[i], items[min_child_index]);
-        return heapify_down(min_child_index);
+          heapify_down(min_child_index);
       }
-      return i;
+      return;
     }
 
   private:
