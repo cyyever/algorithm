@@ -60,6 +60,14 @@ namespace cyy::algorithm {
       }
       return true;
     }
+    std::vector<size_t> get_s_t_path() const {
+      std::vector<size_t> path(graph.get_next_vertex_index(), 0);
+      graph.recursive_depth_first_search(source, [&path, this](auto u, auto v) {
+        path[v] = u;
+        return v == sink;
+      });
+      return path;
+    }
 
     flow_network<vertex_type> get_residual_graph() const {
       if (!backward_capacities.empty()) {
@@ -69,26 +77,24 @@ namespace cyy::algorithm {
       auto residual_graph = *this;
       residual_graph.graph.clear_edges();
       residual_graph.capacities.clear();
-      graph.foreach_edge([this,&residual_graph](auto const &edge) {
+      graph.foreach_edge([this, &residual_graph](auto const &edge) {
         auto weight = graph.get_weight(edge);
         auto leftover_capacity = capacities.at(edge) - weight;
         if (leftover_capacity > 0 || weight > 0) {
           auto first_vertex = graph.get_vertex(edge.first);
           auto second_vertex = graph.get_vertex(edge.second);
-          auto new_edge = cyy::algorithm::edge<vertex_type>{first_vertex, second_vertex, 0};
+          auto new_edge =
+              cyy::algorithm::edge<vertex_type>{first_vertex, second_vertex, 0};
           if (leftover_capacity > 0) {
             residual_graph.graph.add_edge(new_edge);
-            residual_graph.capacities[edge] =
-                leftover_capacity;
+            residual_graph.capacities[edge] = leftover_capacity;
           }
           if (weight > 0) {
             residual_graph.graph.add_edge(new_edge.reverse());
-            residual_graph.backward_capacities[edge.reverse()] =
-                weight;
+            residual_graph.backward_capacities[edge.reverse()] = weight;
           }
         }
-      }
-      );
+      });
 
       return residual_graph;
     }
