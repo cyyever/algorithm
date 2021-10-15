@@ -29,5 +29,9 @@ TEST_CASE("graph") {
   capacities[{"v", "t"}] = 20;
 
   cyy::algorithm::flow_network<std::string> network(g, "s", "t", capacities);
-  SUBCASE("max flow") { network.max_flow_by_ford_fulkerson(); }
+  SUBCASE("max flow") {
+    network.max_flow_by_ford_fulkerson();
+
+    REQUIRE_EQ(network.get_flow_value(), 30);
+  }
 }
