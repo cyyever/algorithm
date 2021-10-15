@@ -7,12 +7,11 @@
 #pragma once
 
 #include <algorithm>
-#include <memory>
-#include <vector>
 #include <map>
+#include <memory>
 #include <numeric>
 #include <utility>
-
+#include <vector>
 
 #include "graph/graph.hpp"
 #include "hash.hpp"
@@ -22,14 +21,16 @@ namespace cyy::algorithm {
   public:
     flow_network(directed_graph<vertex_type> graph_, vertex_type source_,
                  vertex_type sink_,
-                 const std::unordered_map<std::pair<vertex_type,vertex_type>, float>& capacity_)
+                 const std::unordered_map<std::pair<vertex_type, vertex_type>,
+                                          float> &capacity_)
         : graph(std::move(graph_)) {
       source = graph.get_vertex_index(source_);
       sink = graph.get_vertex_index(sink_);
 
-      for (auto &[edge, capacity] :capacity_) {
+      for (auto &[edge, capacity] : capacity_) {
         assert(capacity >= 0);
-        capacities[{graph.get_vertex_index(edge.first),graph.get_vertex_index(edge.second)}] = capacity;
+        capacities[{graph.get_vertex_index(edge.first),
+                    graph.get_vertex_index(edge.second)}] = capacity;
       }
 
       // init flow to zero
@@ -44,18 +45,26 @@ namespace cyy::algorithm {
             return false;
         }
       }
-      //conservation condition
-      auto matrix=graph.get_adjacent_matrix();
-      for(size_t i=0;i<matrix.size();i++) {
-        float sum=std::accumulate(matrix[i].begin(),matrix[i].end(),0);
+      // conservation condition
+      auto matrix = graph.get_adjacent_matrix();
+      for (size_t i = 0; i < matrix.size(); i++) {
+        float sum = std::accumulate(matrix[i].begin(), matrix[i].end(), 0);
+        float sum2 = 0;
+        for (size_t j = 0; j < matrix.size(); j++) {
+          sum2 += matrix[j][i];
+        }
+        if (sum != sum2) {
+          return false;
+        }
       }
+      return true;
     }
 
   private:
     directed_graph<vertex_type> graph;
     size_t source;
     size_t sink;
-    std::unordered_map<std::pair<size_t,size_t>, float> capacities;
+    std::unordered_map<std::pair<size_t, size_t>, float> capacities;
   };
 
 } // namespace cyy::algorithm
