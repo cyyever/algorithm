@@ -31,7 +31,9 @@ TEST_CASE("graph") {
   cyy::algorithm::flow_network<std::string> network(g, "s", "t", capacities);
   SUBCASE("max flow") {
     network.max_flow_by_ford_fulkerson();
-
     REQUIRE_EQ(network.get_flow_value(), 30);
+  }
+  SUBCASE("min cut") {
+    auto [s_set,t_set]=network.get_minimum_capacity_s_t_cut();
   }
 }

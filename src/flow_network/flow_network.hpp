@@ -27,7 +27,7 @@ namespace cyy::algorithm {
         : graph(std::move(graph_)) {
       source = graph.get_vertex_index(source_);
       sink = graph.get_vertex_index(sink_);
-      if(graph.get_adjacent_list().contains(sink)) {
+      if (graph.get_adjacent_list().contains(sink)) {
         throw std::runtime_error("some edge leaves sink");
       }
 
@@ -68,7 +68,7 @@ namespace cyy::algorithm {
             if (new_weight == 0) {
               residual_graph.remove_edge(e);
             } else {
-              residual_graph.capacities[e]=new_weight;
+              residual_graph.capacities[e] = new_weight;
             }
           } else {
             auto new_weight = graph.get_weight(e) + bottleneck;
@@ -76,7 +76,7 @@ namespace cyy::algorithm {
             if (capacities[e] == new_weight) {
               residual_graph.remove_edge(e);
             } else {
-              residual_graph.capacities[e]-=bottleneck;
+              residual_graph.capacities[e] -= bottleneck;
             }
           }
         }
@@ -84,6 +84,29 @@ namespace cyy::algorithm {
 #ifndef NDEBUG
       check_flow();
 #endif
+    }
+
+    std::pair<std::set<size_t>, std::set<size_t>>
+    get_minimum_capacity_s_t_cut() {
+      max_flow_by_ford_fulkerson();
+      auto residual_graph = get_residual_graph();
+      std::set<size_t> s_set;
+      std::set<size_t> t_set;
+      s_set.insert(source);
+      residual_graph.graph.recursive_depth_first_search(source, [&s_set](auto u, auto v) {
+        s_set.insert(v);
+        return false;
+      });
+      for (auto v : graph.get_vertices()) {
+        if (!s_set.contains(v)) {
+          t_set.insert(v);
+        }
+      }
+#ifndef NDEBUG
+      assert(t_set.contains(sink));
+#endif
+
+      return {s_set, t_set};
     }
 
   private:
