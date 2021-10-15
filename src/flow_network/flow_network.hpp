@@ -67,12 +67,16 @@ namespace cyy::algorithm {
             graph.set_weight(e.reverse(), new_weight);
             if (new_weight == 0) {
               residual_graph.remove_edge(e);
+            } else {
+              residual_graph.capacities[e]=new_weight;
             }
           } else {
             auto new_weight = graph.get_weight(e) + bottleneck;
             graph.set_weight(e, new_weight);
             if (capacities[e] == new_weight) {
               residual_graph.remove_edge(e);
+            } else {
+              residual_graph.capacities[e]-=bottleneck;
             }
           }
         }

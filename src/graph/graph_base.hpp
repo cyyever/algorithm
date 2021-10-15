@@ -90,11 +90,11 @@ namespace cyy::algorithm {
 
     edge<vertex_type> get_edge(const indexed_edge &edge) const {
       for (auto const &to_vertice : get_adjacent_list(edge.first)) {
-       // if(to_vertice.first==edge.second) {
+        if(to_vertice.first==edge.second) {
           auto first_vertex = get_vertex(edge.first);
           auto second_vertex = get_vertex(edge.second);
           return {first_vertex, second_vertex, to_vertice.second};
-       // }
+        }
       }
       throw std::runtime_error("no edge");
     }
