@@ -30,14 +30,25 @@ namespace cyy::algorithm {
   struct indexed_edge {
     size_t first;
     size_t second;
-    float weight = 1;
-    auto operator<=>(const auto &rhs) const { return weight <=> rhs.weight; }
     auto operator==(const auto &rhs) const {
       return first == rhs.first && second == rhs.second;
     }
-    indexed_edge reverse() const { return {second, first, weight}; }
+    auto operator<=>(const auto &rhs) const {
+      return std::tuple(first, second) <=> std::tuple(rhs.first, rhs.second);
+    }
+    indexed_edge reverse() const { return {second, first}; }
   };
+} // namespace cyy::algorithm
 
+namespace std {
+  template <> struct hash<cyy::algorithm::indexed_edge> {
+    size_t operator()(const cyy::algorithm::indexed_edge &x) const noexcept {
+      return ::std::hash<size_t>()(x.first) ^ ::std::hash<size_t>()(x.second);
+    }
+  };
+} // namespace std
+
+namespace cyy::algorithm {
   template <typename vertex_type, bool directed> class graph_base {
   public:
     using edge_type = edge<vertex_type>;
@@ -58,10 +69,10 @@ namespace cyy::algorithm {
            weighted_adjacent_list) {
         for (auto const &[to_index, weight] : adjacent_vertices) {
           if constexpr (directed) {
-            edge_callback({from_index, to_index, weight});
+            edge_callback({from_index, to_index});
           } else {
             if (from_index <= to_index) {
-              edge_callback({from_index, to_index, weight});
+              edge_callback({from_index, to_index});
             }
           }
         }
@@ -75,6 +86,19 @@ namespace cyy::algorithm {
       }
       vertex_indices.insert({std::move(vertex), next_vertex_index});
       return next_vertex_index++;
+    }
+
+    edge<vertex_type> get_edge(const indexed_edge &edge) const {
+      for (auto const &to_vertice : get_adjacent_list(edge.first)) {
+        auto first_vertex = get_vertex(edge.first);
+        auto second_vertex = get_vertex(edge.second);
+        return {first_vertex, second_vertex, to_vertice.second};
+      }
+      throw std::runtime_error("no edge");
+    }
+
+    indexed_edge get_edge(const edge<vertex_type> &edge) const {
+      return {get_vertex_index(edge.first), get_vertex_index(edge.second)};
     }
 
     void add_edge(const edge<vertex_type> &e) {
@@ -130,6 +154,7 @@ namespace cyy::algorithm {
       return adjacent_matrix;
     }
 
+
     auto get_vertices() const {
       return std::views::all(vertex_indices.right) |
              std::views::transform([](auto const &it) { return it.first; });
@@ -141,6 +166,24 @@ namespace cyy::algorithm {
     }
     size_t get_vertex_index(const vertex_type &vertex) const {
       return vertex_indices.left.at(vertex);
+    }
+    void change_all_weights( float new_weight){
+
+      for (auto &[_,to_vertices] :weighted_adjacent_list) {
+      for (auto &to_vertice :to_vertices) {
+
+          to_vertice.second=new_weight;
+      }
+      }
+    }
+
+    void change_weight( const indexed_edge &edge,           float new_weight){
+      for (auto &to_vertice :weighted_adjacent_list.at(edge.first)) {
+        if(to_vertice.first==edge.second) {
+          to_vertice.second=new_weight;
+        }
+      }
+
     }
 
     // breadth first search in g from s

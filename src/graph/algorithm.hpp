@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <functional>
+#include <unordered_set>
 #include <vector>
 
 #include "graph.hpp"
@@ -92,11 +93,11 @@ namespace cyy::algorithm {
     graph<vertex_type> MST;
 
     for (auto const &edge : edges) {
-      auto [u, v, weight] = edge;
-      auto u_component = connected_components.find(u);
-      auto v_component = connected_components.find(v);
-      if (u_component != v_component) {
-        MST.add_edge({g.get_vertex(u), g.get_vertex(v), weight});
+      auto [u, v] = edge;
+      if (u != v) {
+        auto u_component = connected_components.find(u);
+        auto v_component = connected_components.find(v);
+        MST.add_edge({g.get_edge(edge)});
         connected_components.UNION(u_component, v_component);
       }
     }

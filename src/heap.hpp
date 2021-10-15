@@ -105,7 +105,7 @@ namespace cyy::algorithm {
         std::swap(position[items[i].data],
                   position[items[min_child_index].data]);
         std::swap(items[i], items[min_child_index]);
-          heapify_down(min_child_index);
+        heapify_down(min_child_index);
       }
       return;
     }
