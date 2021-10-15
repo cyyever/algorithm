@@ -29,4 +29,5 @@ TEST_CASE("graph") {
   capacities[{"v", "t"}] = 20;
 
   cyy::algorithm::flow_network<std::string> network(g, "s", "t", capacities);
+  network.get_residual_graph();
 }

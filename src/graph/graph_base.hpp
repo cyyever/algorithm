@@ -107,10 +107,10 @@ namespace cyy::algorithm {
       }
       edge_num++;
       if constexpr (!directed) {
-
         add_directed_edge(e.reverse());
       }
     }
+    void clear_edges() { weighted_adjacent_list.clear(); }
     void remove_vertex(size_t vertex_index) {
       weighted_adjacent_list.erase(vertex_index);
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
@@ -154,7 +154,6 @@ namespace cyy::algorithm {
       return adjacent_matrix;
     }
 
-
     auto get_vertices() const {
       return std::views::all(vertex_indices.right) |
              std::views::transform([](auto const &it) { return it.first; });
@@ -167,23 +166,25 @@ namespace cyy::algorithm {
     size_t get_vertex_index(const vertex_type &vertex) const {
       return vertex_indices.left.at(vertex);
     }
-    void change_all_weights( float new_weight){
+    void set_all_weights(float new_weight) {
 
-      for (auto &[_,to_vertices] :weighted_adjacent_list) {
-      for (auto &to_vertice :to_vertices) {
+      for (auto &[_, to_vertices] : weighted_adjacent_list) {
+        for (auto &to_vertice : to_vertices) {
 
-          to_vertice.second=new_weight;
-      }
-      }
-    }
-
-    void change_weight( const indexed_edge &edge,           float new_weight){
-      for (auto &to_vertice :weighted_adjacent_list.at(edge.first)) {
-        if(to_vertice.first==edge.second) {
-          to_vertice.second=new_weight;
+          to_vertice.second = new_weight;
         }
       }
+    }
+    float get_weight(const indexed_edge &edge) const {
+      return get_edge(edge).weight;
+    }
 
+    void set_weight(const indexed_edge &edge, float new_weight) {
+      for (auto &to_vertice : weighted_adjacent_list.at(edge.first)) {
+        if (to_vertice.first == edge.second) {
+          to_vertice.second = new_weight;
+        }
+      }
     }
 
     // breadth first search in g from s
@@ -254,7 +255,7 @@ namespace cyy::algorithm {
       size_t tree_edge_num = 0;
       depth_first_search(
           get_vertices()[0],
-          [&tree_edge_num](auto u, auto v, float weight) { tree_edge_num++; });
+          [&tree_edge_num](auto , auto ,auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number();
     }
 
@@ -262,7 +263,7 @@ namespace cyy::algorithm {
       size_t tree_edge_num = 0;
       depth_first_search(
           *get_vertices().begin(),
-          [&tree_edge_num](auto u, auto v, float weight) { tree_edge_num++; });
+          [&tree_edge_num](auto , auto ,auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number() &&
              tree_edge_num == get_edge_number();
     }

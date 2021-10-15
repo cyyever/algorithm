@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -34,7 +35,7 @@ namespace cyy::algorithm {
       }
 
       // init flow to zero
-      graph.change_all_weights(0);
+      graph.set_all_weights(0);
     }
     bool check_flow() {
       // capacity condition
@@ -60,11 +61,47 @@ namespace cyy::algorithm {
       return true;
     }
 
+    flow_network<vertex_type> get_residual_graph() const {
+      if (!backward_capacities.empty()) {
+        throw std::runtime_error(
+            "can't get residual graph from a residual graph");
+      }
+      auto residual_graph = *this;
+      residual_graph.graph.clear_edges();
+      residual_graph.capacities.clear();
+      graph.foreach_edge([this,&residual_graph](auto const &edge) {
+        auto weight = graph.get_weight(edge);
+        auto leftover_capacity = capacities.at(edge) - weight;
+        if (leftover_capacity > 0 || weight > 0) {
+          auto first_vertex = graph.get_vertex(edge.first);
+          auto second_vertex = graph.get_vertex(edge.second);
+          auto new_edge = cyy::algorithm::edge<vertex_type>{first_vertex, second_vertex, 0};
+          if (leftover_capacity > 0) {
+            residual_graph.graph.add_edge(new_edge);
+            residual_graph.capacities[edge] =
+                leftover_capacity;
+          }
+          if (weight > 0) {
+            residual_graph.graph.add_edge(new_edge.reverse());
+            residual_graph.backward_capacities[edge.reverse()] =
+                weight;
+          }
+        }
+      }
+      );
+
+      return residual_graph;
+    }
+
+  private:
+    flow_network() = default;
+
   private:
     directed_graph<vertex_type> graph;
     size_t source;
     size_t sink;
-    std::unordered_map<std::pair<size_t, size_t>, float> capacities;
+    std::unordered_map<indexed_edge, float> capacities;
+    std::unordered_map<indexed_edge, float> backward_capacities;
   };
 
 } // namespace cyy::algorithm
