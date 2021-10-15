@@ -27,6 +27,9 @@ namespace cyy::algorithm {
         : graph(std::move(graph_)) {
       source = graph.get_vertex_index(source_);
       sink = graph.get_vertex_index(sink_);
+      if(graph.get_adjacent_list().contains(sink)) {
+        throw std::runtime_error("some edge leaves sink");
+      }
 
       for (auto &[edge, capacity] : capacity_) {
         assert(capacity >= 0);
@@ -141,7 +144,6 @@ namespace cyy::algorithm {
       graph.recursive_depth_first_search(source,
                                          [&parent, this](auto u, auto v) {
                                            parent[v] = u;
-
                                            return v == sink;
                                          });
       std::vector<size_t> path;
@@ -156,7 +158,6 @@ namespace cyy::algorithm {
       }
       path.push_back(source);
       std::ranges::reverse(path);
-
       return path;
     }
 

@@ -90,9 +90,11 @@ namespace cyy::algorithm {
 
     edge<vertex_type> get_edge(const indexed_edge &edge) const {
       for (auto const &to_vertice : get_adjacent_list(edge.first)) {
-        auto first_vertex = get_vertex(edge.first);
-        auto second_vertex = get_vertex(edge.second);
-        return {first_vertex, second_vertex, to_vertice.second};
+       // if(to_vertice.first==edge.second) {
+          auto first_vertex = get_vertex(edge.first);
+          auto second_vertex = get_vertex(edge.second);
+          return {first_vertex, second_vertex, to_vertice.second};
+       // }
       }
       throw std::runtime_error("no edge");
     }
@@ -148,7 +150,7 @@ namespace cyy::algorithm {
       adjacent_matrix_type adjacent_matrix;
       adjacent_matrix.reserve(next_vertex_index);
 
-      for (auto const &[vertex, _] : weighted_adjacent_list) {
+      for (auto const &_ : weighted_adjacent_list) {
         adjacent_matrix.emplace_back(next_vertex_index, 0);
       }
       for (auto const &[from_index, adjacent_vertices] :
