@@ -61,16 +61,30 @@ namespace cyy::algorithm {
       return true;
     }
     std::vector<size_t> get_s_t_path() const {
-      std::vector<size_t> path(graph.get_next_vertex_index(), 0);
-      graph.recursive_depth_first_search(source, [&path, this](auto u, auto v) {
-        path[v] = u;
-        return v == sink;
-      });
+      std::vector<size_t> parent(graph.get_next_vertex_index(),
+                                 graph.get_next_vertex_index());
+      graph.recursive_depth_first_search(source,
+                                         [&parent, this](auto u, auto v) {
+                                           parent[v] = u;
+                                           return v == sink;
+                                         });
+      std::vector<size_t> path;
+      path.reserve(graph.get_next_vertex_index());
+      auto vertex = sink;
+      while (vertex != source) {
+        if (vertex == graph.get_next_vertex_index()) {
+          return {};
+        }
+        path.push_back(vertex);
+        vertex = parent[vertex];
+      }
+      std::ranges::reverse(path);
+
       return path;
     }
 
     flow_network<vertex_type> get_residual_graph() const {
-      if (!backward_capacities.empty()) {
+      if (!backward_edges.empty()) {
         throw std::runtime_error(
             "can't get residual graph from a residual graph");
       }
@@ -91,7 +105,8 @@ namespace cyy::algorithm {
           }
           if (weight > 0) {
             residual_graph.graph.add_edge(new_edge.reverse());
-            residual_graph.backward_capacities[edge.reverse()] = weight;
+            residual_graph.capacities[edge.reverse()] = weight;
+            residual_graph.backward_edges.insert(edge.reverse());
           }
         }
       });
@@ -99,15 +114,55 @@ namespace cyy::algorithm {
       return residual_graph;
     }
 
+    void max_flow_by_ford_fulkerson() {
+      auto residual_graph = get_residual_graph();
+      while (true) {
+        auto path = residual_graph.get_s_t_path();
+        if (path.empty()) {
+          return;
+        }
+        float bottleneck = std::numeric_limits<float>::max();
+        for (size_t i = 0; i + 1 < path.size(); i++) {
+          indexed_edge e{path[i], path[i + 1]};
+          bottleneck = std::min(bottleneck, residual_graph.capacities[e]);
+        }
+        for (size_t i = 0; i + 1 < path.size(); i++) {
+          indexed_edge e{path[i], path[i + 1]};
+          if (residual_graph.is_backward_edge(e)) {
+            auto new_weight = graph.get_weight(e.reverse()) - bottleneck;
+            graph.set_weight(e.reverse(), new_weight);
+            if (new_weight == 0) {
+              residual_graph.remove_edge(e);
+            }
+          } else {
+            auto new_weight = graph.get_weight(e) + bottleneck;
+            graph.set_weight(e, new_weight);
+            if (capacities[e] == new_weight) {
+              residual_graph.remove_edge(e);
+            }
+          }
+        }
+      }
+    }
+
   private:
     flow_network() = default;
+    bool is_backward_edge(const indexed_edge &e) const {
+      return backward_edges.contains(e);
+    }
+
+    void remove_edge(const indexed_edge &e) {
+      graph.remove_edge(e);
+      capacities.erase(e);
+      backward_edges.erase(e);
+    }
 
   private:
     directed_graph<vertex_type> graph;
     size_t source;
     size_t sink;
     std::unordered_map<indexed_edge, float> capacities;
-    std::unordered_map<indexed_edge, float> backward_capacities;
+    std::unordered_set<indexed_edge> backward_edges;
   };
 
 } // namespace cyy::algorithm

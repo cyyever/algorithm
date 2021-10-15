@@ -27,6 +27,7 @@ TEST_CASE("graph") {
     h.recursive_depth_first_search(0, [](auto u, auto v) {
       REQUIRE_EQ(u, 0);
       REQUIRE_EQ(v, 1);
+      return false;
     });
   }
   SUBCASE("topological ordering") {

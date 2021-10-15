@@ -122,6 +122,11 @@ namespace cyy::algorithm {
       }
     }
     void remove_edge(const edge_type &e) {
+      return remove_edge(
+          {get_vertex_index(e.first), get_vertex_index(e.second)});
+    }
+
+    void remove_edge(const indexed_edge &e) {
       if (!remove_directed_edge(e)) {
         return;
       }
@@ -130,6 +135,7 @@ namespace cyy::algorithm {
         remove_directed_edge(e.reverse());
       }
     }
+
     auto const &get_adjacent_list() const { return weighted_adjacent_list; }
     auto const &get_adjacent_list(size_t vertex_index) const {
       auto it = weighted_adjacent_list.find(vertex_index);
@@ -211,7 +217,7 @@ namespace cyy::algorithm {
     // depth first search in g from s
 
     void recursive_depth_first_search(
-        size_t s, std::function<void(size_t, size_t)> after_edge_fun) const {
+        size_t s, std::function<bool(size_t, size_t)> after_edge_fun) const {
 
       std::vector<bool> explored(get_next_vertex_index(), false);
       auto search_fun = [&](auto &&self, size_t u) {
@@ -221,7 +227,9 @@ namespace cyy::algorithm {
         explored[u] = true;
         for (auto const &neighbor : get_adjacent_list(u)) {
           self(self, neighbor.first);
-          after_edge_fun(u, neighbor.first);
+          if (after_edge_fun(u, neighbor.first)) {
+            break;
+          }
         }
       };
       search_fun(search_fun, s);
@@ -253,9 +261,9 @@ namespace cyy::algorithm {
 
     bool is_connected() const {
       size_t tree_edge_num = 0;
-      depth_first_search(
-          get_vertices()[0],
-          [&tree_edge_num](auto , auto ,auto) { tree_edge_num++; });
+      depth_first_search(get_vertices()[0], [&tree_edge_num](auto, auto, auto) {
+        tree_edge_num++;
+      });
       return tree_edge_num + 1 == get_vertex_number();
     }
 
@@ -263,7 +271,7 @@ namespace cyy::algorithm {
       size_t tree_edge_num = 0;
       depth_first_search(
           *get_vertices().begin(),
-          [&tree_edge_num](auto , auto ,auto) { tree_edge_num++; });
+          [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number() &&
              tree_edge_num == get_edge_number();
     }
@@ -285,8 +293,11 @@ namespace cyy::algorithm {
       return true;
     }
     bool remove_directed_edge(const edge<vertex_type> &e) {
-      auto first_index = get_vertex_index(e.first);
-      auto second_index = get_vertex_index(e.second);
+      return remove_directed_edge({get_vertex(e.first), get_vertex(e.second)});
+    }
+    bool remove_directed_edge(const indexed_edge &e) {
+      auto first_index = e.first;
+      auto second_index = e.second;
       auto it = weighted_adjacent_list.find(first_index);
       if (it == weighted_adjacent_list.end()) {
         return false;
