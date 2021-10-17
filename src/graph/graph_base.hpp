@@ -215,10 +215,8 @@ namespace cyy::algorithm {
       return vertex_indices.left.at(vertex);
     }
     void set_all_weights(float new_weight) {
-
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
         for (auto &to_vertice : to_vertices) {
-
           to_vertice.second = new_weight;
         }
       }
