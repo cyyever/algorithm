@@ -21,6 +21,9 @@ TEST_CASE("graph") {
     g.add_edge({"1", "2"});
     g.remove_edge({"1", "2"});
   }
+  SUBCASE("rearrange") {
+    g.rearrange_vertices();
+  }
   SUBCASE("transpose") { h.get_transpose(); }
   SUBCASE("depth first recursive search") {
     h.add_edge({"1", "2"});

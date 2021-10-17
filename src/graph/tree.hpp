@@ -23,7 +23,7 @@ namespace cyy::algorithm {
         throw std::logic_error("not a tree");
       }
     }
-    tree(graph<vertex_type> g, bool check = true)
+    explicit tree(graph<vertex_type> g, bool check = true)
         : graph<vertex_type>(std::move(g)) {
       if (check && !this->is_tree()) {
         throw std::logic_error("not a tree");
