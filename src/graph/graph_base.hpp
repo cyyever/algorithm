@@ -160,11 +160,7 @@ namespace cyy::algorithm {
     void remove_vertex(size_t vertex_index) {
       weighted_adjacent_list.erase(vertex_index);
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
-        const auto [first, last] =
-            std::ranges::remove_if(to_vertices, [vertex_index](auto const &a) {
-              return a.first == vertex_index;
-            });
-        to_vertices.erase(first, last);
+        to_vertices.remove(vertex_index);
       }
     }
     void remove_edge(const edge_type &e) {
