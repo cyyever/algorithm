@@ -62,36 +62,48 @@ namespace cyy::algorithm {
         add_edge(edge);
       }
     }
-    void rearrange_vertices() {
-      size_t vertex_index=0;
-      std::unordered_map<size_t,size_t> index_map;
-      for(auto it=vertex_indices.right.begin();it!=vertex_indices.right.end();it++,vertex_index++) {
-        if(it->first==vertex_index) {
+
+    bool has_continuous_vertices() const {
+      size_t vertex_index = 0;
+      for (auto it = vertex_indices.right.begin();
+           it != vertex_indices.right.end(); it++, vertex_index++) {
+        if (it->first == vertex_index) {
           continue;
         }
-        index_map[it->first]=vertex_index;
+        return false;
       }
-      for(auto [old_index,new_index]:index_map){
-        auto it=vertex_indices.right.find(old_index);
-        vertex_indices.insert({std::move(it->second),new_index});
-        vertex_indices.right.erase(it);
-        auto it2=weighted_adjacent_list.find(old_index);
-        if(it2==weighted_adjacent_list.end()) {
+      return true;
+    }
+    void rearrange_vertices() {
+      size_t vertex_index = 0;
+      std::unordered_map<size_t, size_t> index_map;
+      for (auto it = vertex_indices.right.begin();
+           it != vertex_indices.right.end(); it++, vertex_index++) {
+        if (it->first == vertex_index) {
           continue;
         }
-        weighted_adjacent_list[new_index]=std::move(it2->second);
+        index_map[it->first] = vertex_index;
+      }
+      for (auto [old_index, new_index] : index_map) {
+        auto it = vertex_indices.right.find(old_index);
+        vertex_indices.insert({std::move(it->second), new_index});
+        vertex_indices.right.erase(it);
+        auto it2 = weighted_adjacent_list.find(old_index);
+        if (it2 == weighted_adjacent_list.end()) {
+          continue;
+        }
+        weighted_adjacent_list[new_index] = std::move(it2->second);
         weighted_adjacent_list.erase(it2);
 
-        for (auto &[from_index, adjacent_vertices] :
-            weighted_adjacent_list) {
-          for(auto &p:adjacent_vertices) {
-            if(p.first==old_index) {
-              p.first=new_index;
+        for (auto &[_, adjacent_vertices] : weighted_adjacent_list) {
+          for (auto &p : adjacent_vertices) {
+            if (p.first == old_index) {
+              p.first = new_index;
             }
           }
         }
       }
-      next_vertex_index=vertex_indices.size();
+      next_vertex_index = vertex_indices.size();
     }
 
     auto get_next_vertex_index() const { return next_vertex_index; }

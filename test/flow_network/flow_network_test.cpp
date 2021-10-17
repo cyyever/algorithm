@@ -32,6 +32,6 @@ TEST_CASE("flow network") {
     REQUIRE_EQ(network.get_flow_value(), 30);
   }
   SUBCASE("min cut") {
-    auto [s_set,t_set]=network.get_minimum_capacity_s_t_cut();
+    auto [s_set, t_set] = network.get_minimum_capacity_s_t_cut();
   }
 }

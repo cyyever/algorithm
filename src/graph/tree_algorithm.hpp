@@ -55,7 +55,6 @@ namespace cyy::algorithm {
 
   template <typename vertex_type>
   auto MST_kruskal(const graph<vertex_type> &g) {
-
     std::set<indexed_edge> edges;
     g.foreach_edge([&edges](auto edge) { edges.emplace(std::move(edge)); });
     union_find<size_t> connected_components(g.get_vertices());
@@ -72,4 +71,12 @@ namespace cyy::algorithm {
     }
     return tree(MST, false);
   }
+
+  template <typename vertex_type>
+  auto get_prufer_code(const tree<vertex_type> &T) {
+    if (!T.has_continuous_vertices()) {
+      throw std::logic_error("need continuous vertices");
+    }
+  }
+
 } // namespace cyy::algorithm

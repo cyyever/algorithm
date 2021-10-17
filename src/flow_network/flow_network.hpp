@@ -93,10 +93,11 @@ namespace cyy::algorithm {
       std::set<size_t> s_set;
       std::set<size_t> t_set;
       s_set.insert(source);
-      residual_graph.graph.recursive_depth_first_search(source, [&s_set](auto u, auto v) {
-        s_set.insert(v);
-        return false;
-      });
+      residual_graph.graph.recursive_depth_first_search(
+          source, [&s_set](auto u, auto v) {
+            s_set.insert(v);
+            return false;
+          });
       for (auto v : graph.get_vertices()) {
         if (!s_set.contains(v)) {
           t_set.insert(v);

@@ -9,9 +9,9 @@
 
 #include <doctest/doctest.h>
 
-#include "graph/path.hpp"
 #include "graph/dag.hpp"
 #include "graph/graph.hpp"
+#include "graph/path.hpp"
 
 using namespace cyy::algorithm;
 TEST_CASE("graph") {
@@ -21,9 +21,7 @@ TEST_CASE("graph") {
     g.add_edge({"1", "2"});
     g.remove_edge({"1", "2"});
   }
-  SUBCASE("rearrange") {
-    g.rearrange_vertices();
-  }
+  SUBCASE("rearrange") { g.rearrange_vertices(); }
   SUBCASE("transpose") { h.get_transpose(); }
   SUBCASE("depth first recursive search") {
     h.add_edge({"1", "2"});
