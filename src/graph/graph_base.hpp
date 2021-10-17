@@ -189,10 +189,10 @@ namespace cyy::algorithm {
     adjacent_matrix_type get_adjacent_matrix() const {
       adjacent_matrix_type adjacent_matrix;
       adjacent_matrix.reserve(next_vertex_index);
-
-      for (auto const &_ : weighted_adjacent_list) {
+      for (size_t i = 0; i < next_vertex_index; i++) {
         adjacent_matrix.emplace_back(next_vertex_index, 0);
       }
+
       for (auto const &[from_index, adjacent_vertices] :
            weighted_adjacent_list) {
         for (auto const &[to_index, weight] : adjacent_vertices) {

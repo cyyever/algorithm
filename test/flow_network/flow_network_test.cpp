@@ -26,12 +26,18 @@ TEST_CASE("flow network") {
   capacities[{"u", "t"}] = 10;
   capacities[{"v", "t"}] = 20;
 
-  cyy::algorithm::flow_network<std::string> network(g, "s", "t", capacities);
   SUBCASE("max flow") {
+    cyy::algorithm::flow_network<std::string> network(g, "s", "t", capacities);
     network.max_flow_by_ford_fulkerson();
     REQUIRE_EQ(network.get_flow_value(), 30);
   }
+  SUBCASE("max flow2") {
+    cyy::algorithm::flow_network<std::string> network(g, "s", "t", capacities);
+    network.max_flow_by_edmonds_karp();
+    REQUIRE_EQ(network.get_flow_value(), 30);
+  }
   SUBCASE("min cut") {
+    cyy::algorithm::flow_network<std::string> network(g, "s", "t", capacities);
     auto [s_set, t_set] = network.get_minimum_capacity_s_t_cut();
   }
 }

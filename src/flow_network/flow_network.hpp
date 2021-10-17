@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <numeric>
+#include <optional>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -48,7 +49,13 @@ namespace cyy::algorithm {
       return source_flow;
     }
 
-    void max_flow_by_ford_fulkerson() {
+    // may not terminate when there is a real capacity.
+    void max_flow_by_ford_fulkerson(
+        std::optional<std::function<std::vector<size_t>()>> get_s_t_path_fun =
+            {}) {
+      if (!get_s_t_path_fun.has_value()) {
+        get_s_t_path_fun = std::bind(&flow_network::get_s_t_path, this);
+      }
       auto residual_graph = get_residual_graph();
       while (true) {
         auto path = residual_graph.get_s_t_path();
@@ -85,6 +92,10 @@ namespace cyy::algorithm {
       check_flow();
 #endif
     }
+    void max_flow_by_edmonds_karp() {
+      return max_flow_by_ford_fulkerson(
+          std::bind(&flow_network::get_shortest_s_t_path, this));
+    }
 
     std::pair<std::set<size_t>, std::set<size_t>>
     get_minimum_capacity_s_t_cut() {
@@ -93,11 +104,11 @@ namespace cyy::algorithm {
       std::set<size_t> s_set;
       std::set<size_t> t_set;
       s_set.insert(source);
-      residual_graph.graph.recursive_depth_first_search(
-          source, [&s_set](auto u, auto v) {
-            s_set.insert(v);
-            return false;
-          });
+      residual_graph.graph.recursive_depth_first_search(source,
+                                                        [&s_set](auto, auto v) {
+                                                          s_set.insert(v);
+                                                          return false;
+                                                        });
       for (auto v : graph.get_vertices()) {
         if (!s_set.contains(v)) {
           t_set.insert(v);
@@ -169,12 +180,11 @@ namespace cyy::algorithm {
     std::vector<size_t> get_shortest_s_t_path() const {
       std::vector<size_t> parent(graph.get_next_vertex_index(),
                                  graph.get_next_vertex_index());
-      graph.breath_first_search(source,
-                                [&parent, this](auto u, auto v, auto weight) {
-                                  parent[v] = u;
-                                  return v == sink;
-                                });
-      return get_s_t_path(parent);
+      graph.breadth_first_search(source, [&parent, this](auto u, auto v, auto) {
+        parent[v] = u;
+        return v == sink;
+      });
+      return convert_parents_to_path(parent);
     }
     std::vector<size_t> get_s_t_path() const {
       std::vector<size_t> parent(graph.get_next_vertex_index(),
@@ -184,7 +194,7 @@ namespace cyy::algorithm {
                                            parent[v] = u;
                                            return v == sink;
                                          });
-      return get_s_t_path(parent);
+      return convert_parents_to_path(parent);
     }
 
     bool is_backward_edge(const indexed_edge &e) const {
@@ -198,7 +208,8 @@ namespace cyy::algorithm {
     }
 
   private:
-    std::vector<size_t> get_s_t_path(const std::vector<size_t> &parent) const {
+    std::vector<size_t>
+    convert_parents_to_path(const std::vector<size_t> &parent) const {
       std::vector<size_t> path;
       path.reserve(graph.get_next_vertex_index());
       auto vertex = sink;
