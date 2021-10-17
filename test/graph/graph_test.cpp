@@ -9,7 +9,7 @@
 
 #include <doctest/doctest.h>
 
-#include "graph/algorithm.hpp"
+#include "graph/path.hpp"
 #include "graph/dag.hpp"
 #include "graph/graph.hpp"
 
@@ -43,13 +43,5 @@ TEST_CASE("graph") {
     g.add_edge({"1", "2"});
     auto edges = shortest_path_dijkstra(g, 0);
     REQUIRE(edges[1] == 0);
-  }
-  SUBCASE("Prim MST") {
-    g.add_edge({"1", "2"});
-    auto mst = MST_prime(g);
-  }
-  SUBCASE("Kruskal MST") {
-    g.add_edge({"1", "2"});
-    auto mst = MST_kruskal(g);
   }
 }

@@ -1,8 +1,7 @@
 /*!
- * \file container_test.cpp
+ * \file tree_test.cpp
  *
- * \brief 测试container相关函数
- * \author cyy
+ * \brief
  */
 
 #include <string>
@@ -10,9 +9,22 @@
 #include <doctest/doctest.h>
 
 #include "graph/tree.hpp"
+#include "graph/tree_algorithm.hpp"
 
 TEST_CASE("tree") {
-  std::vector<cyy::algorithm::edge<std::string>> edges;
-  edges.emplace_back("1", "2");
-  cyy::algorithm::tree<std::string> T(edges);
+  cyy::algorithm::tree<std::string> T;
+  T.add_edge({"1","2"});
+
+
+  SUBCASE("Prim MST") {
+  cyy::algorithm::graph<std::string> g;
+    g.add_edge({"1", "2"});
+    auto mst = MST_prime(g);
+  }
+  SUBCASE("Kruskal MST") {
+  cyy::algorithm::graph<std::string> g;
+    g.add_edge({"1", "2"});
+    auto mst = MST_kruskal(g);
+  }
+
 }

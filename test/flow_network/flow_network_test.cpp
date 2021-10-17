@@ -1,8 +1,7 @@
 /*!
- * \file container_test.cpp
+ * \file flow_network_test.cpp
  *
- * \brief 测试container相关函数
- * \author cyy
+ * \brief
  */
 
 #include <string>
@@ -10,11 +9,10 @@
 #include <doctest/doctest.h>
 
 #include "flow_network/flow_network.hpp"
-#include "graph/algorithm.hpp"
 #include "graph/graph.hpp"
 
 using namespace cyy::algorithm;
-TEST_CASE("graph") {
+TEST_CASE("flow network") {
   cyy::algorithm::directed_graph<std::string> g;
   g.add_edge({"s", "u"});
   g.add_edge({"s", "v"});
