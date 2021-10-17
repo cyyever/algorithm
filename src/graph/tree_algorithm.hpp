@@ -9,8 +9,8 @@
 
 #include <cassert>
 #include <functional>
-#include <vector>
 #include <iostream>
+#include <vector>
 
 #include "graph.hpp"
 #include "heap.hpp"
@@ -78,65 +78,66 @@ namespace cyy::algorithm {
     if (!T.has_continuous_vertices()) {
       throw std::logic_error("need continuous vertices");
     }
-    auto vertex_number=T.get_vertex_number();
-    if(vertex_number<2){
+    auto vertex_number = T.get_vertex_number();
+    if (vertex_number < 2) {
       throw std::logic_error("need at least two vertices");
     }
     std::vector<size_t> code;
-    if(vertex_number==2) {
+    if (vertex_number == 2) {
       return code;
     }
-    code.reserve(vertex_number-2);
-    std::map<size_t, std::list<std::pair<size_t, float>>>
-        adjacent_list(T.get_adjacent_list().begin(),T.get_adjacent_list().end());
-    while(vertex_number>2) {
-      auto it= std::find_if(adjacent_list.begin(),adjacent_list.end(),[](auto const &p){return p.second.size()==1;});
-      assert( it!=adjacent_list.end());
-      auto index=it->first;
-      assert(it->second.size()==1);
-      auto to_index=it->second.front().first;
+    code.reserve(vertex_number - 2);
+    std::map<size_t, std::list<std::pair<size_t, float>>> adjacent_list(
+        T.get_adjacent_list().begin(), T.get_adjacent_list().end());
+    while (vertex_number > 2) {
+      auto it =
+          std::find_if(adjacent_list.begin(), adjacent_list.end(),
+                       [](auto const &p) { return p.second.size() == 1; });
+      assert(it != adjacent_list.end());
+      auto index = it->first;
+      assert(it->second.size() == 1);
+      auto to_index = it->second.front().first;
       adjacent_list.erase(it);
       code.emplace_back(to_index);
       assert(adjacent_list.contains(to_index));
-      auto &to_vertices=adjacent_list[to_index];
-      assert(to_vertices.size()>1);
-      to_vertices.remove_if([index](auto const &p){return p.first==index;});
+      auto &to_vertices = adjacent_list[to_index];
+      assert(to_vertices.size() > 1);
+      to_vertices.remove_if(
+          [index](auto const &p) { return p.first == index; });
       vertex_number--;
     }
     return code;
   }
-    /*
-  tree<size_t> recover_tree(const std::vector<size_t> &prufer_code){
-    if (!T.has_continuous_vertices()) {
-      throw std::logic_error("need continuous vertices");
-    }
-    auto vertex_number=T.get_vertex_number();
-    if(vertex_number<2){
-      throw std::logic_error("need at least two vertices");
-    }
-    std::vector<size_t> code;
-    if(vertex_number==2) {
-      return code;
-    }
-    code.reserve(vertex_number-2);
-    std::map<size_t, std::list<std::pair<size_t, float>>>
-        adjacent_list(T.get_adjacent_list().begin(),T.get_adjacent_list().end());
-    while(vertex_number>2) {
-      auto it= std::find_if(adjacent_list.begin(),adjacent_list.end(),[](auto const &p){return p.second.size()==1;});
-      assert( it!=adjacent_list.end());
-      auto index=it->first;
-      assert(it->second.size()==1);
-      auto to_index=it->second.front().first;
-      adjacent_list.erase(it);
-      code.emplace_back(to_index);
-      assert(adjacent_list.contains(to_index));
-      auto &to_vertices=adjacent_list[to_index];
-      assert(to_vertices.size()>1);
-      to_vertices.remove_if([index](auto const &p){return p.first==index;});
-      vertex_number--;
-    }
+  /*
+tree<size_t> recover_tree(const std::vector<size_t> &prufer_code){
+  if (!T.has_continuous_vertices()) {
+    throw std::logic_error("need continuous vertices");
+  }
+  auto vertex_number=T.get_vertex_number();
+  if(vertex_number<2){
+    throw std::logic_error("need at least two vertices");
+  }
+  std::vector<size_t> code;
+  if(vertex_number==2) {
     return code;
   }
-    */
+  code.reserve(vertex_number-2);
+  std::map<size_t, std::list<std::pair<size_t, float>>>
+      adjacent_list(T.get_adjacent_list().begin(),T.get_adjacent_list().end());
+  while(vertex_number>2) {
+    auto it= std::find_if(adjacent_list.begin(),adjacent_list.end(),[](auto
+const &p){return p.second.size()==1;}); assert( it!=adjacent_list.end()); auto
+index=it->first; assert(it->second.size()==1); auto
+to_index=it->second.front().first; adjacent_list.erase(it);
+    code.emplace_back(to_index);
+    assert(adjacent_list.contains(to_index));
+    auto &to_vertices=adjacent_list[to_index];
+    assert(to_vertices.size()>1);
+    to_vertices.remove_if([index](auto const &p){return p.first==index;});
+    vertex_number--;
+  }
+  return code;
+}
+  */
 
 } // namespace cyy::algorithm

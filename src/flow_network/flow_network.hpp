@@ -166,6 +166,16 @@ namespace cyy::algorithm {
 
       return residual_graph;
     }
+    std::vector<size_t> get_shortest_s_t_path() const {
+      std::vector<size_t> parent(graph.get_next_vertex_index(),
+                                 graph.get_next_vertex_index());
+      graph.breath_first_search(source,
+                                [&parent, this](auto u, auto v, auto weight) {
+                                  parent[v] = u;
+                                  return v == sink;
+                                });
+      return get_s_t_path(parent);
+    }
     std::vector<size_t> get_s_t_path() const {
       std::vector<size_t> parent(graph.get_next_vertex_index(),
                                  graph.get_next_vertex_index());
@@ -174,6 +184,21 @@ namespace cyy::algorithm {
                                            parent[v] = u;
                                            return v == sink;
                                          });
+      return get_s_t_path(parent);
+    }
+
+    bool is_backward_edge(const indexed_edge &e) const {
+      return backward_edges.contains(e);
+    }
+
+    void remove_edge(const indexed_edge &e) {
+      graph.remove_edge(e);
+      capacities.erase(e);
+      backward_edges.erase(e);
+    }
+
+  private:
+    std::vector<size_t> get_s_t_path(const std::vector<size_t> &parent) const {
       std::vector<size_t> path;
       path.reserve(graph.get_next_vertex_index());
       auto vertex = sink;
@@ -187,16 +212,6 @@ namespace cyy::algorithm {
       path.push_back(source);
       std::ranges::reverse(path);
       return path;
-    }
-
-    bool is_backward_edge(const indexed_edge &e) const {
-      return backward_edges.contains(e);
-    }
-
-    void remove_edge(const indexed_edge &e) {
-      graph.remove_edge(e);
-      capacities.erase(e);
-      backward_edges.erase(e);
     }
 
   private:

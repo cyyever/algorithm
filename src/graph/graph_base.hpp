@@ -235,7 +235,7 @@ namespace cyy::algorithm {
 
     // breadth first search in g from s
     void breadth_first_search(
-        size_t s, std::function<void(size_t, size_t, float)> edge_fun) const {
+        size_t s, std::function<bool(size_t, size_t, float)> edge_fun) const {
       std::vector<bool> discovered(get_next_vertex_index(), false);
       discovered[s] = true;
       std::list<size_t> queue{s};
@@ -248,8 +248,9 @@ namespace cyy::algorithm {
           if (!discovered[v]) {
             discovered[v] = true;
             queue.push_back(v);
-            edge_fun(u, v, weight);
-            continue;
+            if (edge_fun(u, v, weight)) {
+              return;
+            }
           }
         }
       }
