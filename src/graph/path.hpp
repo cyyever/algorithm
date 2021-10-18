@@ -23,9 +23,11 @@ namespace cyy::algorithm {
     std::vector<float> distance(g.get_next_vertex_index(),
                                 std::numeric_limits<float>::max());
     distance[s] = 0;
-    std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
+    std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
+    parent[s]=s;
     heap<size_t, float> h;
     h.insert(s, 0);
+
     while (!h.empty()) {
       auto u = h.top();
       h.pop();
@@ -34,7 +36,7 @@ namespace cyy::algorithm {
         if (distance[v] <= distance[u] + weight) {
           continue;
         }
-        edge[v] = u;
+        parent[v] = u;
         distance[v] = distance[u] + weight;
         if (h.contains(v)) {
           h.change_key(v, distance[v]);
@@ -43,7 +45,7 @@ namespace cyy::algorithm {
         }
       }
     }
-    return edge;
+    return parent;
   }
 
 } // namespace cyy::algorithm

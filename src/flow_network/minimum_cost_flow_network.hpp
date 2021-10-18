@@ -45,6 +45,14 @@ namespace cyy::algorithm {
         upper_capacities[e] = upper_capacity;
         costs[e]=costs_.at(real_edge);
       });
+      float total_demand=0;
+      for(auto const &[_,d]:demand_) {
+        total_demand+=d;
+      }
+      if(total_demand!=0) {
+        throw std::logic_error("total demand must be 0");
+      }
+
       for(auto const &[vertex,index]:graph.get_vertices_and_indices()) {
         demand[index]=demand_.at(vertex);
       }
