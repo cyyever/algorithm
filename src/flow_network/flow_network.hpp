@@ -21,10 +21,10 @@ namespace cyy::algorithm {
   template <typename vertex_type = size_t>
   class flow_network : public directed_graph<vertex_type> {
   public:
+    using capacity_fun_type =
+        std::unordered_map<std::pair<vertex_type, vertex_type>, float>;
     flow_network(directed_graph<vertex_type> graph_, vertex_type source_,
-                 vertex_type sink_,
-                 const std::unordered_map<std::pair<vertex_type, vertex_type>,
-                                          float> &capacity_)
+                 vertex_type sink_, const capacity_fun_type &capacities_)
         : graph(std::move(graph_)) {
       source = graph.get_vertex_index(source_);
       sink = graph.get_vertex_index(sink_);
@@ -32,11 +32,16 @@ namespace cyy::algorithm {
         throw std::runtime_error("some edge leaves sink");
       }
 
-      for (auto &[edge, capacity] : capacity_) {
-        assert(capacity >= 0);
-        capacities[{graph.get_vertex_index(edge.first),
-                    graph.get_vertex_index(edge.second)}] = capacity;
-      }
+      graph.foreach_edge([this, &capacities_](auto const &e) {
+        auto real_edge =
+            std::pair{graph.get_vertex(e.first), graph.get_vertex(e.second)};
+        auto capacity = capacities_.at(real_edge);
+
+        if (capacity < 0) {
+          throw std::runtime_error("capacity should be non-negative");
+        }
+        capacities[e] = capacity;
+      });
 
       // init flow to zero
       graph.set_all_weights(0);
@@ -109,7 +114,7 @@ namespace cyy::algorithm {
                                                           s_set.insert(v);
                                                           return false;
                                                         });
-      for (auto v : graph.get_vertices()) {
+      for (auto v : graph.get_vertex_indices()) {
         if (!s_set.contains(v)) {
           t_set.insert(v);
         }

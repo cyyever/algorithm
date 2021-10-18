@@ -26,7 +26,7 @@ namespace cyy::algorithm {
     std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
     graph<vertex_type> MST;
     heap<size_t, float> h;
-    auto s = *g.get_vertices().begin();
+    auto s = *g.get_vertex_indices().begin();
     h.insert(s, 0);
     while (!h.empty()) {
       auto u = h.top();
@@ -58,7 +58,7 @@ namespace cyy::algorithm {
   auto MST_kruskal(const graph<vertex_type> &g) {
     std::set<indexed_edge> edges;
     g.foreach_edge([&edges](auto edge) { edges.emplace(std::move(edge)); });
-    union_find<size_t> connected_components(g.get_vertices());
+    union_find<size_t> connected_components(g.get_vertex_indices());
     graph<vertex_type> MST;
 
     for (auto const &edge : edges) {

@@ -19,7 +19,7 @@ TEST_CASE("flow network") {
   g.add_edge({"u", "v"});
   g.add_edge({"u", "t"});
   g.add_edge({"v", "t"});
-  std::unordered_map<std::pair<std::string, std::string>, float> capacities;
+  cyy::algorithm::flow_network<std::string>::capacity_fun_type capacities;
   capacities[{"s", "u"}] = 20;
   capacities[{"s", "v"}] = 10;
   capacities[{"u", "v"}] = 30;

@@ -202,9 +202,13 @@ namespace cyy::algorithm {
       return adjacent_matrix;
     }
 
-    auto get_vertices() const {
+    auto get_vertex_indices() const {
       return std::views::all(vertex_indices.right) |
              std::views::transform([](auto const &it) { return it.first; });
+    }
+    auto get_vertices_and_indices() const {
+      return std::views::all(vertex_indices.left) |
+             std::views::transform([](auto const &it) { return std::pair<const vertex_type&,size_t>{it.first,it.second}; });
     }
     size_t get_vertex_number() const { return vertex_indices.size(); }
     size_t get_edge_number() const { return edge_num; }
@@ -302,7 +306,7 @@ namespace cyy::algorithm {
 
     bool is_connected() const {
       size_t tree_edge_num = 0;
-      depth_first_search(get_vertices()[0], [&tree_edge_num](auto, auto, auto) {
+      depth_first_search(get_vertex_indices()[0], [&tree_edge_num](auto, auto, auto) {
         tree_edge_num++;
       });
       return tree_edge_num + 1 == get_vertex_number();
@@ -311,7 +315,7 @@ namespace cyy::algorithm {
     bool is_tree() const {
       size_t tree_edge_num = 0;
       depth_first_search(
-          *get_vertices().begin(),
+          *get_vertex_indices().begin(),
           [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number() &&
              tree_edge_num == get_edge_number();
