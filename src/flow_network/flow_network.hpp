@@ -1,13 +1,11 @@
 /*!
- * \file graph.hpp
+ * \file flow_network.hpp
  *
- * \brief implements graph
+ * \brief implements flow networks
  */
-
 #pragma once
 
 #include <algorithm>
-#include <map>
 #include <memory>
 #include <numeric>
 #include <optional>
@@ -28,9 +26,6 @@ namespace cyy::algorithm {
         : graph(std::move(graph_)) {
       source = graph.get_vertex_index(source_);
       sink = graph.get_vertex_index(sink_);
-      if (graph.get_adjacent_list().contains(sink)) {
-        throw std::runtime_error("some edge leaves sink");
-      }
 
       graph.foreach_edge([this, &capacities_](auto const &e) {
         auto real_edge =
