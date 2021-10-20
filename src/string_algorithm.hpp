@@ -70,7 +70,7 @@ namespace cyy::algorithm {
                std::basic_string_view<CharT> str) {
     // creat trie
     std::vector<std::map<CharT, size_t>> trie(1);
-    std::map<size_t, size_t> final_states;
+    std::unordered_map<size_t, size_t> final_states;
 
     {
       size_t next_state = 1;
@@ -120,7 +120,6 @@ namespace cyy::algorithm {
     }
 
     size_t s = 0;
-
     size_t i = 0;
 
     while (s != 0 || i < str.size()) {
