@@ -12,19 +12,20 @@ using namespace cyy::algorithm;
 TEST_CASE("KMP") {
   SUBCASE("match") {
 
-    auto str = "abababaab";
-    auto word = "ababaa";
+    std::string str = "abababaab";
+    std::string word = "ababaa";
 
-    auto p = KMP<char>(word, str);
-    REQUIRE(!p.empty());
-    CHECK(p == word);
+    auto idx_opt = KMP(word, str);
+    REQUIRE(idx_opt.has_value());
+    auto idx = *idx_opt;
+    REQUIRE(str.substr(idx, word.size()) == word);
   }
 
   SUBCASE("dismatch") {
-    auto str = "abababbaa";
-    auto word = "ababaa";
-    auto p = KMP<char>(word, str);
-    CHECK(p.empty());
+    std::string str = "abababbaa";
+    std::string word = "ababaa";
+    auto idx_opt = KMP(word, str);
+    REQUIRE(!idx_opt.has_value());
   }
 }
 

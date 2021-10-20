@@ -9,17 +9,22 @@
 #pragma once
 
 #include <map>
-#include <string>
 #include <vector>
+#include <optional>
 
 namespace cyy::algorithm {
 
   // find word from str
-  template <typename CharT>
-  std::basic_string_view<CharT> KMP(std::basic_string_view<CharT> word,
-                                    std::basic_string_view<CharT> str) {
-    if (word.empty() || word.size() > str.size()) {
+  template <std::ranges::input_range U,std::ranges::input_range V>
+    requires std::same_as<std::ranges::range_value_t<U>, std::ranges::range_value_t<V>>
+    std::optional<size_t>
+  KMP(U word, V str)
+  {
+    if (word.size() > str.size()) {
       return {};
+    }
+    if (word.empty()) {
+      return 0;
     }
 
     // for each substring w1...ws,compute the longest proper prefix w1...wf(s)
@@ -50,7 +55,7 @@ namespace cyy::algorithm {
       if (word[s] == next_char) {
         s++;
         if (s == word.size()) {
-          return {str.data() + i - word.size() + 1, word.size()};
+          return 0 + i - word.size() + 1;
         }
       }
     }
@@ -151,4 +156,4 @@ namespace cyy::algorithm {
     return {};
   }
 
-} // namespace cyy::computation
+}
