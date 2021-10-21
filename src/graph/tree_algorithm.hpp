@@ -21,11 +21,11 @@ namespace cyy::algorithm {
 
   template <typename vertex_type> auto MST_prime(const graph<vertex_type> &g) {
 
-    std::vector<float> weights(g.get_next_vertex_index(),
-                               std::numeric_limits<float>::max());
+    std::vector<double> weights(g.get_next_vertex_index(),
+                               std::numeric_limits<double>::max());
     std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
     graph<vertex_type> MST;
-    heap<size_t, float> h;
+    heap<size_t, double> h;
     auto s = *g.get_vertex_indices().begin();
     h.insert(s, 0);
     while (!h.empty()) {
@@ -87,7 +87,7 @@ namespace cyy::algorithm {
       return code;
     }
     code.reserve(vertex_number - 2);
-    std::map<size_t, std::list<std::pair<size_t, float>>> adjacent_list(
+    std::map<size_t, std::list<std::pair<size_t, double>>> adjacent_list(
         T.get_adjacent_list().begin(), T.get_adjacent_list().end());
     while (vertex_number > 2) {
       auto it =
@@ -122,7 +122,7 @@ tree<size_t> recover_tree(const std::vector<size_t> &prufer_code){
     return code;
   }
   code.reserve(vertex_number-2);
-  std::map<size_t, std::list<std::pair<size_t, float>>>
+  std::map<size_t, std::list<std::pair<size_t, double>>>
       adjacent_list(T.get_adjacent_list().begin(),T.get_adjacent_list().end());
   while(vertex_number>2) {
     auto it= std::find_if(adjacent_list.begin(),adjacent_list.end(),[](auto
