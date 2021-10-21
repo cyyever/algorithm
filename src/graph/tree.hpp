@@ -40,7 +40,7 @@ namespace cyy::algorithm {
   class directed_tree : public tree<vertex_type> {
   public:
     using tree<vertex_type>::tree;
-    using edge_type = tree<vertex_type>::edge_type;
+    using edge_type = typename tree<vertex_type>::edge_type;
     directed_tree() = default;
 
     template <std::ranges::input_range U>

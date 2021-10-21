@@ -14,7 +14,7 @@ namespace cyy::algorithm {
   class DAG : public directed_graph<vertex_type> {
   public:
     using directed_graph<vertex_type>::directed_graph;
-    using edge_type = directed_graph<vertex_type>::edge_type;
+    using edge_type = typename directed_graph<vertex_type>::edge_type;
 
     template <std::ranges::input_range U>
     requires std::same_as<edge_type, std::ranges::range_value_t<U>>
