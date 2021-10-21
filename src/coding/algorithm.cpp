@@ -8,8 +8,8 @@
 #include "heap.hpp"
 #include "iostream"
 namespace cyy::algorithm {
-  std::unordered_map<symbol_type, std::string>
-  huffman_code(const std::unordered_map<symbol_type, double> &symbol_frequency) {
+  std::unordered_map<symbol_type, std::string> huffman_code(
+      const std::unordered_map<symbol_type, double> &symbol_frequency) {
     assert(!symbol_frequency.empty());
     heap<symbol_type, double> h;
     for (auto [symbol, frequency] : symbol_frequency) {
