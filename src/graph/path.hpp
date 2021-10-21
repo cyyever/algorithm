@@ -20,12 +20,12 @@ namespace cyy::algorithm {
   auto shortest_path_dijkstra(const graph_base<vertex_type, directed> &g,
                               size_t s) {
 
-    std::vector<float> distance(g.get_next_vertex_index(),
-                                std::numeric_limits<float>::max());
+    std::vector<double> distance(g.get_next_vertex_index(),
+                                std::numeric_limits<double>::max());
     distance[s] = 0;
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
     parent[s]=s;
-    heap<size_t, float> h;
+    heap<size_t, double> h;
     h.insert(s, 0);
 
     while (!h.empty()) {

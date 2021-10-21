@@ -27,7 +27,7 @@ namespace cyy::algorithm {
       case common_token::INT:
         return "\"int\"";
       case common_token::FLOAT:
-        return "\"float\"";
+        return "\"double\"";
       case common_token::record:
         return "\"record\"";
       case common_token::CLASS:

@@ -20,7 +20,7 @@ namespace cyy::algorithm {
   class flow_network : public directed_graph<vertex_type> {
   public:
     using capacity_fun_type =
-        std::unordered_map<std::pair<vertex_type, vertex_type>, float>;
+        std::unordered_map<std::pair<vertex_type, vertex_type>, double>;
     flow_network(directed_graph<vertex_type> graph_, vertex_type source_,
                  vertex_type sink_, const capacity_fun_type &capacities_)
         : graph(std::move(graph_)) {
@@ -41,8 +41,8 @@ namespace cyy::algorithm {
       // init flow to zero
       graph.set_all_weights(0);
     }
-    float get_flow_value() const {
-      float source_flow = 0;
+    double get_flow_value() const {
+      double source_flow = 0;
       for (auto const &[_, edge_flow] : graph.get_adjacent_list(source)) {
         source_flow += edge_flow;
       }
@@ -62,7 +62,7 @@ namespace cyy::algorithm {
         if (path.empty()) {
           break;
         }
-        float bottleneck = std::numeric_limits<float>::max();
+        double bottleneck = std::numeric_limits<double>::max();
         for (size_t i = 0; i + 1 < path.size(); i++) {
           indexed_edge e{path[i], path[i + 1]};
           bottleneck = std::min(bottleneck, residual_graph.capacities[e]);
@@ -135,8 +135,8 @@ namespace cyy::algorithm {
       // conservation condition
       auto matrix = graph.get_adjacent_matrix();
       for (size_t i = 0; i < matrix.size(); i++) {
-        float sum = std::accumulate(matrix[i].begin(), matrix[i].end(), 0);
-        float sum2 = 0;
+        double sum = std::accumulate(matrix[i].begin(), matrix[i].end(), 0);
+        double sum2 = 0;
         for (size_t j = 0; j < matrix.size(); j++) {
           sum2 += matrix[j][i];
         }
@@ -229,7 +229,7 @@ namespace cyy::algorithm {
     directed_graph<vertex_type> graph;
     size_t source;
     size_t sink;
-    std::unordered_map<indexed_edge, float> capacities;
+    std::unordered_map<indexed_edge, double> capacities;
     std::unordered_set<indexed_edge> backward_edges;
   };
 

@@ -11,5 +11,5 @@
 
 namespace cyy::algorithm {
   std::unordered_map<symbol_type, std::string>
-  huffman_code(const std::unordered_map<symbol_type, float> &symbol_frequency);
+  huffman_code(const std::unordered_map<symbol_type, double> &symbol_frequency);
 }

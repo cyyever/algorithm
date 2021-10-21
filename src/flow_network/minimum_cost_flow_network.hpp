@@ -22,12 +22,12 @@ namespace cyy::algorithm {
   class minimum_cost_flow_network : public directed_graph<vertex_type> {
   public:
     using capacity_fun_type =
-        std::unordered_map<std::pair<vertex_type, vertex_type>, float>;
+        std::unordered_map<std::pair<vertex_type, vertex_type>, double>;
     minimum_cost_flow_network(directed_graph<vertex_type> graph_,
                               const capacity_fun_type &lower_capacities_,
                               const capacity_fun_type &upper_capacities_,
                               const capacity_fun_type &costs_,
-                                  std::unordered_map<vertex_type, float>
+                                  std::unordered_map<vertex_type, double>
                                       demand_ )
         : graph(std::move(graph_)) {
       graph.foreach_edge([this, &upper_capacities_,
@@ -45,7 +45,7 @@ namespace cyy::algorithm {
         upper_capacities[e] = upper_capacity;
         costs[e]=costs_.at(real_edge);
       });
-      float total_demand=0;
+      double total_demand=0;
       for(auto const &[_,d]:demand_) {
         total_demand+=d;
       }
@@ -57,8 +57,8 @@ namespace cyy::algorithm {
         demand[index]=demand_.at(vertex);
       }
     }
-    bool check_feasible_flow(const std::unordered_map<indexed_edge, float> &flow) { 
-      std::unordered_map<size_t, float> amount;
+    bool check_feasible_flow(const std::unordered_map<indexed_edge, double> &flow) { 
+      std::unordered_map<size_t, double> amount;
       bool flag=true;
 
       graph.foreach_edge([this, &flow,&flag,&amount](auto const &e) {
@@ -83,10 +83,10 @@ namespace cyy::algorithm {
 
   private:
     directed_graph<vertex_type> graph;
-    std::unordered_map<indexed_edge, float> upper_capacities;
-    std::unordered_map<indexed_edge, float> lower_capacities;
-    std::unordered_map<indexed_edge, float> costs;
-    std::unordered_map<size_t, float> demand;
+    std::unordered_map<indexed_edge, double> upper_capacities;
+    std::unordered_map<indexed_edge, double> lower_capacities;
+    std::unordered_map<indexed_edge, double> costs;
+    std::unordered_map<size_t, double> demand;
   };
 
 } // namespace cyy::algorithm
