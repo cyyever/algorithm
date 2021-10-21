@@ -95,13 +95,10 @@ namespace cyy::algorithm {
                        [](auto const &p) { return p.second.size() == 1; });
       assert(it != adjacent_list.end());
       auto index = it->first;
-      assert(it->second.size() == 1);
       auto to_index = it->second.front().first;
       adjacent_list.erase(it);
       code.emplace_back(to_index);
-      assert(adjacent_list.contains(to_index));
       auto &to_vertices = adjacent_list[to_index];
-      assert(to_vertices.size() > 1);
       to_vertices.remove_if(
           [index](auto const &p) { return p.first == index; });
       vertex_number--;
