@@ -13,7 +13,7 @@ add_library(MyAlgorithmLib ${SOURCE})
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   find_package(libcxx REQUIRED)
-  target_link_libraries(MyAlgorithmLib PRIVATE libcxx::libcxx)
+  target_link_libraries(MyAlgorithmLib PUBLIC libcxx::libcxx)
 endif()
 
 target_link_libraries(MyAlgorithmLib PUBLIC Boost::headers)
