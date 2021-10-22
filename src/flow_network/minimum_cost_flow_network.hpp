@@ -21,7 +21,7 @@ namespace cyy::algorithm {
   template <typename vertex_type = size_t>
   class minimum_cost_flow_network : public directed_graph<vertex_type> {
   public:
-    using  flow_fun_type= std::unordered_map<indexed_edge, double>;
+    using flow_fun_type = std::unordered_map<indexed_edge, double>;
     using capacity_and_cost_fun_type =
         std::unordered_map<std::pair<vertex_type, vertex_type>,
                            std::tuple<double, double, double>>;
@@ -56,15 +56,14 @@ namespace cyy::algorithm {
 
     flow_fun_type min_cost_flow_by_network_simplex() {
       flow_fun_type flow;
-      auto tree_structure=get_strongly_feasible_tree_structure();
-      flow=determin_flow(tree_structure);
+      auto tree_structure = get_strongly_feasible_tree_structure();
+      flow = determin_flow(tree_structure);
 
       return flow;
     }
 
-    bool
-    check_flow(const flow_fun_type &flow) {
-        decltype(demand) amount;
+    bool check_flow(const flow_fun_type &flow) {
+      decltype(demand) amount;
 
       graph.foreach_edge([this, &flow, &amount](auto const &e) {
         auto edge_flow = flow.at(e);
@@ -74,21 +73,21 @@ namespace cyy::algorithm {
       return amount == demand;
     }
 
-    bool
-    check_feasible_flow(const flow_fun_type &flow) {
-      if(!check_flow(flow)) {
+    bool check_feasible_flow(const flow_fun_type &flow) {
+      if (!check_flow(flow)) {
         return false;
       }
+      bool flag = true;
 
-      graph.foreach_edge([this, &flow](auto const &e) {
+      graph.foreach_edge([this, &flag, &flow](auto const &e) {
         auto lower_capacity = lower_capacities.at(e);
         auto upper_capacity = upper_capacities.at(e);
         auto edge_flow = flow.at(e);
         if (edge_flow > upper_capacity || edge_flow < lower_capacity) {
-        return false;
+          flag = false;
         }
       });
-        return true;
+      return flag;
     }
 
     struct tree_structure {
@@ -100,60 +99,66 @@ namespace cyy::algorithm {
   private:
     minimum_cost_flow_network() = default;
 
-    flow_fun_type determin_flow(const tree_structure& ts) {
+    flow_fun_type determin_flow(const tree_structure &ts) {
       flow_fun_type flow;
-      for(auto const &e:ts.U) {
-        flow[e]=upper_capacities[e];
+      for (auto const &e : ts.U) {
+        flow[e] = upper_capacities[e];
       }
-      for(auto const &e:ts.L) {
-        flow[e]=lower_capacities[e];
-      }
-
-      auto remain_demand=demand;
-      for(auto &[_,v]:remain_demand) {
-        v=0;
-      }
-      for(auto const &[e,edge_flow]:flow) {
-        remain_demand[e.first]-=edge_flow;
-        remain_demand[e.second]+=edge_flow;
+      for (auto const &e : ts.L) {
+        flow[e] = lower_capacities[e];
       }
 
-        auto leaves=ts.T.get_leaves();
-      while(!leaves.empty()) {
+      auto remain_demand = demand;
+      for (auto &[_, v] : remain_demand) {
+        v = 0;
+      }
+      for (auto const &[e, edge_flow] : flow) {
+        remain_demand[e.first] -= edge_flow;
+        remain_demand[e.second] += edge_flow;
+      }
+
+      auto leaves = ts.T.get_leaves();
+      while (!leaves.empty()) {
         decltype(leaves) next_leaves;
-        for(auto &leaf:leaves) {
-          auto parent_opt=ts.T.parent(leaf);
-          if(!parent_opt) {
+        for (auto &leaf : leaves) {
+          auto parent_opt = ts.T.parent(leaf);
+          if (!parent_opt) {
             continue;
           }
-          auto parent=*parent_opt;
-          if(graph.has_edge({leaf,parent})) {
-              auto edge_flow=remain_demand[leaf]-demand[leaf];
-            flow[{leaf,parent}]=edge_flow;
-            remain_demand[parent]+=edge_flow;
+
+          auto parent = *parent_opt;
+          if (graph.has_edge({leaf, parent})) {
+            auto edge_flow = remain_demand[leaf] - demand[leaf];
+            flow[{leaf, parent}] = edge_flow;
+            remain_demand[parent] += edge_flow;
           } else {
-              auto edge_flow=demand[leaf]-remain_demand[leaf];
-            flow[{parent,leaf}]=edge_flow;
-            remain_demand[parent]-=edge_flow;
+            auto edge_flow = demand[leaf] - remain_demand[leaf];
+            flow[{parent, leaf}] = edge_flow;
+            remain_demand[parent] -= edge_flow;
           }
           next_leaves.push_back(parent);
         }
-        leaves=std::move(next_leaves);
+        leaves = std::move(next_leaves);
       }
-      assert(flow.size()==costs.size());
+      assert(flow.size() == costs.size());
       assert(check_flow(flow));
+      assert(check_feasible_flow(flow));
       return flow;
     }
-
 
     tree_structure get_strongly_feasible_tree_structure() {
       static constexpr auto artificial_vertex_name = "_____artificial_vertex";
       if (!artificial_vertex_opt) {
-        double C = graph.get_max_weight() * graph.get_vertex_number() + 1;
+        double max_abs_cost=std::numeric_limits<double>::min();
+        for(auto &[_,cost]:costs) {
+          max_abs_cost=std::max(std::fabs(cost),max_abs_cost);
+        }
+        double C =max_abs_cost    * graph.get_vertex_number() + 1;
+        
         auto B = demand;
         graph.foreach_edge([this, &B](auto const &e) {
-          B[e.first] += graph.get_weight(e);
-          B[e.second] -= graph.get_weight(e);
+          B[e.first] +=lower_capacities[e];
+          B[e.second] -= lower_capacities[e];
         });
         auto artificial_vertex = graph.add_vertex(artificial_vertex_name);
         artificial_vertex_opt = artificial_vertex;
@@ -176,7 +181,8 @@ namespace cyy::algorithm {
         }
       }
       std::vector<indexed_edge> L;
-      directed_graph<vertex_type> T;
+      auto T = graph;
+      T.clear_edges();
       graph.foreach_edge([&L, &T, this](auto const &e) {
         if (e.first == artificial_vertex_opt) {
           T.add_edge(graph.get_edge(e).reverse());

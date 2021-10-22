@@ -18,14 +18,14 @@ namespace cyy::algorithm {
 
     template <std::ranges::input_range U>
     requires std::same_as<edge_type, std::ranges::range_value_t<U>>
-    explicit DAG(U edges, bool check =false)
+    explicit DAG(U edges, bool check = false)
         : directed_graph<vertex_type>(edges) {
       if (check && !get_topological_ordering()) {
         throw std::logic_error("not a DAG");
       }
     }
 
-    explicit DAG(directed_graph<vertex_type> g, bool check =false)
+    explicit DAG(directed_graph<vertex_type> g, bool check = false)
         : directed_graph<vertex_type>(std::move(g)) {
       if (check && !get_topological_ordering()) {
         throw std::logic_error("not a DAG");

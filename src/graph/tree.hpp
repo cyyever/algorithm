@@ -100,10 +100,11 @@ namespace cyy::algorithm {
     }
 
     std::vector<size_t> get_leaves() const {
-    std::vector<size_t> leaves;
-      auto indegrees=this->get_indegrees();
-      for(size_t idx=0;idx<indegrees.size();idx++) {
-        if(indegrees[idx]==0 && this->vertex_indices.right.find(idx)!=this->vertex_indices.right.end()  ) {
+      std::vector<size_t> leaves;
+      auto indegrees = this->get_indegrees();
+      for (size_t idx = 0; idx < indegrees.size(); idx++) {
+        if (indegrees[idx] == 0 && this->vertex_indices.right.find(idx) !=
+                                       this->vertex_indices.right.end()) {
 
           leaves.push_back(idx);
         }

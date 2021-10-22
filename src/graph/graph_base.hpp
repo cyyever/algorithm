@@ -77,6 +77,13 @@ namespace cyy::algorithm {
         }
       }
     }
+    double get_max_abs_weight() const {
+      auto max_weight = std::numeric_limits<double>::min();
+      foreach_weight([&max_weight](auto weight) {
+        max_weight = std::max(max_weight,std::fabs( weight));
+      });
+      return max_weight;
+    }
     double get_max_weight() const {
       auto max_weight = std::numeric_limits<double>::min();
       foreach_weight([&max_weight](auto weight) {
@@ -169,8 +176,10 @@ namespace cyy::algorithm {
       return {get_vertex_index(edge.first), get_vertex_index(edge.second)};
     }
     bool has_edge(const indexed_edge &e) {
-        auto const &l=get_adjacent_list(e.first);
-        return std::ranges::find_if(l,[&e](auto const &p){ return p.first==e.second;})!=l.end();
+      auto const &l = get_adjacent_list(e.first);
+      return std::ranges::find_if(l, [&e](auto const &p) {
+               return p.first == e.second;
+             }) != l.end();
     }
 
     void add_edge(const edge<vertex_type> &e) {
