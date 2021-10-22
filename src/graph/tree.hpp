@@ -91,12 +91,24 @@ namespace cyy::algorithm {
     using edge_type = tree<vertex_type>::edge_type;
     using directed_tree_base<vertex_type>::directed_tree_base;
 
-    std::optional<size_t> parent(size_t u) {
+    std::optional<size_t> parent(size_t u) const {
       auto const &l = this->get_adjacent_list(u);
       if (l.empty()) {
         return {};
       }
-      return l.front();
+      return l.begin()->first;
+    }
+
+    std::vector<size_t> get_leaves() const {
+    std::vector<size_t> leaves;
+      auto indegrees=this->get_indegrees();
+      for(size_t idx=0;idx<indegrees.size();idx++) {
+        if(indegrees[idx]==0 && this->vertex_indices.right.find(idx)!=this->vertex_indices.right.end()  ) {
+
+          leaves.push_back(idx);
+        }
+      }
+      return leaves;
     }
 
     size_t nearest_ancestor(size_t u, size_t v) {

@@ -47,6 +47,8 @@ namespace cyy::algorithm {
       }
       return transpose;
     }
+
+
     std::vector<size_t> get_indegrees() const {
       std::vector<size_t> indegrees(this->get_next_vertex_index(), 0);
       for (auto const &[_, adjacent_vertices] : this->weighted_adjacent_list) {

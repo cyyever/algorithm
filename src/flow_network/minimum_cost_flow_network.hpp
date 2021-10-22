@@ -21,8 +21,7 @@ namespace cyy::algorithm {
   template <typename vertex_type = size_t>
   class minimum_cost_flow_network : public directed_graph<vertex_type> {
   public:
-    using capacity_fun_type =
-        std::unordered_map<std::pair<vertex_type, vertex_type>, double>;
+    using  flow_fun_type= std::unordered_map<indexed_edge, double>;
     using capacity_and_cost_fun_type =
         std::unordered_map<std::pair<vertex_type, vertex_type>,
                            std::tuple<double, double, double>>;
@@ -55,30 +54,41 @@ namespace cyy::algorithm {
       }
     }
 
-    void min_cost_flow_by_network_simplex() {
-      get_strongly_feasible_tree_structure();
+    flow_fun_type min_cost_flow_by_network_simplex() {
+      flow_fun_type flow;
+      auto tree_structure=get_strongly_feasible_tree_structure();
+      flow=determin_flow(tree_structure);
+
+      return flow;
     }
 
     bool
-    check_feasible_flow(const std::unordered_map<indexed_edge, double> &flow) {
-      std::unordered_map<size_t, double> amount;
-      bool flag = true;
+    check_flow(const flow_fun_type &flow) {
+        decltype(demand) amount;
 
-      graph.foreach_edge([this, &flow, &flag, &amount](auto const &e) {
+      graph.foreach_edge([this, &flow, &amount](auto const &e) {
+        auto edge_flow = flow.at(e);
+        amount[e.second] += edge_flow;
+        amount[e.first] -= edge_flow;
+      });
+      return amount == demand;
+    }
+
+    bool
+    check_feasible_flow(const flow_fun_type &flow) {
+      if(!check_flow(flow)) {
+        return false;
+      }
+
+      graph.foreach_edge([this, &flow](auto const &e) {
         auto lower_capacity = lower_capacities.at(e);
         auto upper_capacity = upper_capacities.at(e);
         auto edge_flow = flow.at(e);
         if (edge_flow > upper_capacity || edge_flow < lower_capacity) {
-          flag = false;
-          return;
-        }
-        amount[e.second] += edge_flow;
-        amount[e.first] -= edge_flow;
-      });
-      if (!flag) {
         return false;
-      }
-      return amount == demand;
+        }
+      });
+        return true;
     }
 
     struct tree_structure {
@@ -89,6 +99,52 @@ namespace cyy::algorithm {
 
   private:
     minimum_cost_flow_network() = default;
+
+    flow_fun_type determin_flow(const tree_structure& ts) {
+      flow_fun_type flow;
+      for(auto const &e:ts.U) {
+        flow[e]=upper_capacities[e];
+      }
+      for(auto const &e:ts.L) {
+        flow[e]=lower_capacities[e];
+      }
+
+      auto remain_demand=demand;
+      for(auto &[_,v]:remain_demand) {
+        v=0;
+      }
+      for(auto const &[e,edge_flow]:flow) {
+        remain_demand[e.first]-=edge_flow;
+        remain_demand[e.second]+=edge_flow;
+      }
+
+        auto leaves=ts.T.get_leaves();
+      while(!leaves.empty()) {
+        decltype(leaves) next_leaves;
+        for(auto &leaf:leaves) {
+          auto parent_opt=ts.T.parent(leaf);
+          if(!parent_opt) {
+            continue;
+          }
+          auto parent=*parent_opt;
+          if(graph.has_edge({leaf,parent})) {
+              auto edge_flow=remain_demand[leaf]-demand[leaf];
+            flow[{leaf,parent}]=edge_flow;
+            remain_demand[parent]+=edge_flow;
+          } else {
+              auto edge_flow=demand[leaf]-remain_demand[leaf];
+            flow[{parent,leaf}]=edge_flow;
+            remain_demand[parent]-=edge_flow;
+          }
+          next_leaves.push_back(parent);
+        }
+        leaves=std::move(next_leaves);
+      }
+      assert(flow.size()==costs.size());
+      assert(check_flow(flow));
+      return flow;
+    }
+
 
     tree_structure get_strongly_feasible_tree_structure() {
       static constexpr auto artificial_vertex_name = "_____artificial_vertex";
@@ -138,9 +194,9 @@ namespace cyy::algorithm {
 
   private:
     directed_graph<vertex_type> graph;
-    std::unordered_map<indexed_edge, double> upper_capacities;
-    std::unordered_map<indexed_edge, double> lower_capacities;
-    std::unordered_map<indexed_edge, double> costs;
+    flow_fun_type upper_capacities;
+    flow_fun_type lower_capacities;
+    flow_fun_type costs;
     std::unordered_map<size_t, double> demand;
     std::optional<size_t> artificial_vertex_opt;
   };

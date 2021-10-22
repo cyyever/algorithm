@@ -168,6 +168,10 @@ namespace cyy::algorithm {
     indexed_edge get_edge(const edge<vertex_type> &edge) const {
       return {get_vertex_index(edge.first), get_vertex_index(edge.second)};
     }
+    bool has_edge(const indexed_edge &e) {
+        auto const &l=get_adjacent_list(e.first);
+        return std::ranges::find_if(l,[&e](auto const &p){ return p.first==e.second;})!=l.end();
+    }
 
     void add_edge(const edge<vertex_type> &e) {
       if (!add_directed_edge(e)) {
