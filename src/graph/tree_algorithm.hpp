@@ -22,7 +22,7 @@ namespace cyy::algorithm {
   template <typename vertex_type> auto MST_prime(const graph<vertex_type> &g) {
 
     std::vector<double> weights(g.get_next_vertex_index(),
-                               std::numeric_limits<double>::max());
+                                std::numeric_limits<double>::max());
     std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
     graph<vertex_type> MST;
     heap<size_t, double> h;

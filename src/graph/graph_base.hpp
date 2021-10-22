@@ -9,12 +9,12 @@
 #include <algorithm>
 #include <list>
 #include <memory>
-#include <range/v3/all.hpp>
 #include <ranges>
 #include <unordered_map>
 #include <vector>
 
 #include <boost/bimap.hpp>
+#include <range/v3/all.hpp>
 
 namespace cyy::algorithm {
   template <typename vertex_type> struct edge {
@@ -78,15 +78,12 @@ namespace cyy::algorithm {
       }
     }
     double get_max_weight() const {
-      auto max_weight=std::numeric_limits<double>::min();
-      foreach_weight([&max_weight](auto weight){
-        max_weight=std::max(max_weight,weight);
-
-          });
+      auto max_weight = std::numeric_limits<double>::min();
+      foreach_weight([&max_weight](auto weight) {
+        max_weight = std::max(max_weight, weight);
+      });
       return max_weight;
-
     }
-
 
     bool has_continuous_vertices() const {
       size_t vertex_index = 0;
@@ -185,9 +182,8 @@ namespace cyy::algorithm {
     void remove_vertex(size_t vertex_index) {
       weighted_adjacent_list.erase(vertex_index);
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
-        to_vertices.remove_if([vertex_index](auto const &a) {
-        return a.first == vertex_index;
-      });
+        to_vertices.remove_if(
+            [vertex_index](auto const &a) { return a.first == vertex_index; });
       }
     }
     void remove_edge(const edge_type &e) {
@@ -235,7 +231,10 @@ namespace cyy::algorithm {
     }
     auto get_vertices_and_indices() const {
       return std::views::all(vertex_indices.left) |
-             std::views::transform([](auto const &it) { return std::pair<const vertex_type&,size_t>{it.first,it.second}; });
+             std::views::transform([](auto const &it) {
+               return std::pair<const vertex_type &, size_t>{it.first,
+                                                             it.second};
+             });
     }
     size_t get_vertex_number() const { return vertex_indices.size(); }
     size_t get_edge_number() const { return edge_num; }
@@ -333,20 +332,19 @@ namespace cyy::algorithm {
 
     bool is_connected() const {
       size_t tree_edge_num = 0;
-      depth_first_search(get_vertex_indices()[0], [&tree_edge_num](auto, auto, auto) {
-        tree_edge_num++;
-      });
+      depth_first_search(
+          get_vertex_indices()[0],
+          [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number();
     }
 
-    bool is_tree(size_t root=SIZE_MAX) const {
+    bool is_tree(size_t root = SIZE_MAX) const {
       size_t tree_edge_num = 0;
-      if(root==SIZE_MAX) {
-        root=*get_vertex_indices().begin();
+      if (root == SIZE_MAX) {
+        root = *get_vertex_indices().begin();
       }
       depth_first_search(
-          root,
-          [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
+          root, [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number() &&
              tree_edge_num == get_edge_number();
     }

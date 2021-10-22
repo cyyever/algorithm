@@ -28,10 +28,10 @@ namespace cyy::algorithm {
       for (auto &[from_vertex, to_vertices] : this->weighted_adjacent_list) {
         for (auto &to_vertex : to_vertices) {
           g.add_edge({this->get_vertex(to_vertex.first),
-                              this->get_vertex(from_vertex), to_vertex.second});
+                      this->get_vertex(from_vertex), to_vertex.second});
         }
       }
-      for(auto const &n:this->get_vertices()) {
+      for (auto const &n : this->get_vertices()) {
         g.add_vertex(n);
       }
       return g;

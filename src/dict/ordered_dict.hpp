@@ -51,7 +51,7 @@ namespace cyy::algorithm {
       data_index.clear();
     }
     template <class KeyArg, class... Args>
-    bool emplace(KeyArg &&key, Args &&... args) {
+    bool emplace(KeyArg &&key, Args &&...args) {
       auto [it, inserted] =
           data_index.emplace(std::forward<KeyArg>(key), data.end());
       if (!inserted) {
@@ -128,4 +128,4 @@ namespace cyy::algorithm {
     data_list_type data;
     data_index_type data_index;
   };
-} // namespace cyy::naive_lib
+} // namespace cyy::algorithm

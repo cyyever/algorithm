@@ -14,8 +14,8 @@
 #include <memory>
 #include <optional>
 #include <shared_mutex>
-#include <vector>
 #include <type_traits>
+#include <vector>
 
 namespace cyy::algorithm {
 
@@ -238,4 +238,4 @@ namespace cyy::algorithm {
       cb(container[key]);
     }
   };
-} // namespace cyy::naive_lib
+} // namespace cyy::algorithm

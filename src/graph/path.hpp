@@ -21,10 +21,10 @@ namespace cyy::algorithm {
                               size_t s) {
 
     std::vector<double> distance(g.get_next_vertex_index(),
-                                std::numeric_limits<double>::max());
+                                 std::numeric_limits<double>::max());
     distance[s] = 0;
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
-    parent[s]=s;
+    parent[s] = s;
     heap<size_t, double> h;
     h.insert(s, 0);
 
