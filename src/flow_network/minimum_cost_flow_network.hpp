@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "graph/graph.hpp"
+#include "graph/tree.hpp"
 #include "hash.hpp"
 namespace cyy::algorithm {
   template <typename vertex_type = size_t>
@@ -99,7 +100,6 @@ namespace cyy::algorithm {
        });
        auto artificial_vertex=graph.add_vertex("_____artificial_vertex");
        artificial_vertex_opt=artificial_vertex;
-
        demand[artificial_vertex]=0;
 
        for(auto [v,b]:B) {

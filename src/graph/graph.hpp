@@ -23,6 +23,20 @@ namespace cyy::algorithm {
   public:
     using graph_base<vertex_type, true>::graph_base;
 
+    graph<vertex_type> get_underlying_graph() const {
+      graph<vertex_type> g;
+      for (auto &[from_vertex, to_vertices] : this->weighted_adjacent_list) {
+        for (auto &to_vertex : to_vertices) {
+          g.add_edge({this->get_vertex(to_vertex.first),
+                              this->get_vertex(from_vertex), to_vertex.second});
+        }
+      }
+      for(auto const &n:this->get_vertices()) {
+        g.add_vertex(n);
+      }
+      return g;
+    }
+
     directed_graph get_transpose() const {
       directed_graph transpose;
       for (auto &[from_vertex, to_vertices] : this->weighted_adjacent_list) {

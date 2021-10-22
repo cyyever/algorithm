@@ -339,10 +339,13 @@ namespace cyy::algorithm {
       return tree_edge_num + 1 == get_vertex_number();
     }
 
-    bool is_tree() const {
+    bool is_tree(size_t root=SIZE_MAX) const {
       size_t tree_edge_num = 0;
+      if(root==SIZE_MAX) {
+        root=*get_vertex_indices().begin();
+      }
       depth_first_search(
-          *get_vertex_indices().begin(),
+          root,
           [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number() &&
              tree_edge_num == get_edge_number();
