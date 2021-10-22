@@ -117,7 +117,6 @@ namespace cyy::algorithm {
 #ifndef NDEBUG
       assert(t_set.contains(sink));
 #endif
-
       return {s_set, t_set};
     }
 

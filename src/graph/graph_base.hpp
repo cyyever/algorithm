@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <list>
 #include <memory>
+#include <range/v3/all.hpp>
 #include <ranges>
 #include <unordered_map>
 #include <vector>
@@ -62,6 +63,30 @@ namespace cyy::algorithm {
         add_edge(edge);
       }
     }
+    void foreach_weight(std::function<void(double)> weight_callback) const {
+      for (auto const &[from_index, adjacent_vertices] :
+           weighted_adjacent_list) {
+        for (auto const &[to_index, weight] : adjacent_vertices) {
+          if constexpr (directed) {
+            weight_callback(weight);
+          } else {
+            if (from_index <= to_index) {
+              weight_callback(weight);
+            }
+          }
+        }
+      }
+    }
+    double get_max_weight() const {
+      auto max_weight=std::numeric_limits<double>::min();
+      foreach_weight([&max_weight](auto weight){
+        max_weight=std::max(max_weight,weight);
+
+          });
+      return max_weight;
+
+    }
+
 
     bool has_continuous_vertices() const {
       size_t vertex_index = 0;

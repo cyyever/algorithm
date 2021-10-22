@@ -13,10 +13,18 @@
 
 using namespace cyy::algorithm;
 TEST_CASE("flow network") {
-  cyy::algorithm::directed_graph<std::string> g;
-  g.add_edge({"s", "u"});
-  g.add_edge({"s", "v"});
-  g.add_edge({"u", "v"});
-  g.add_edge({"u", "t"});
-  g.add_edge({"v", "t"});
+  cyy::algorithm::minimum_cost_flow_network<
+      std::string>::capacity_and_cost_fun_type capacity_and_cost{
+
+      {{"s", "u"}, {0, 5, 1}},  {{"s", "t"}, {0, 6, 1}},
+      {{"t", "x"}, {0, 9, -1}}, {{"t", "v"}, {0, 5, -1}},
+      {{"u", "x"}, {0, 2, 1}},  {{"u", "v"}, {0, 9, -1}},
+      {{"x", "v"}, {3, 7, -1}}, {{"v", "s"}, {0, 7, 1}},
+      {{"w", "s"}, {0, 5, -1}}, {{"w", "v"}, {-2, 2, -1}}};
+  std::unordered_map<std::string, double> demand{{"s", 0}, {"t", 0}, {"u", 0},
+                                                 {"v", 0}, {"w", 0}, {"x", 0}};
+
+  cyy::algorithm::minimum_cost_flow_network<std::string> network(
+      capacity_and_cost, demand);
+  network.min_cost_flow_by_network_simplex();
 }
