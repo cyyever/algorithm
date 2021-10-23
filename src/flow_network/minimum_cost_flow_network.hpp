@@ -57,9 +57,25 @@ namespace cyy::algorithm {
     flow_fun_type min_cost_flow_by_network_simplex() {
       flow_fun_type flow;
       auto ts = get_strongly_feasible_tree_structure();
-      flow = determin_flow(ts);
-      determin_potential(ts);
+      while(true) {
+        flow = determin_flow(ts);
+        determin_potential(ts);
+        break;
+        auto it=std::ranges::find_if(ts.U,[this](auto const &e){
+            return reduced_costs[e]>0;
+            });
+        if(it!=ts.U.end()) {
+          continue;
+        } 
+        it=std::ranges::find_if(ts.L,[this](auto const &e){
+            return reduced_costs[e]<0;
+            });
+        if(it!=ts.L.end()) {
 
+          continue;
+        } 
+        break;
+      }
       return flow;
     }
 
@@ -147,7 +163,6 @@ namespace cyy::algorithm {
       return flow;
     }
     void determin_potential(const tree_structure &ts) {
-      potential.clear();
       auto T = ts.T.get_transpose();
       auto root = T.get_root();
       potential[root] = 0;

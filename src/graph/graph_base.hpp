@@ -77,20 +77,20 @@ namespace cyy::algorithm {
         }
       }
     }
-    double get_max_abs_weight() const {
-      auto max_weight = std::numeric_limits<double>::min();
-      foreach_weight([&max_weight](auto weight) {
-        max_weight = std::max(max_weight,std::fabs( weight));
-      });
-      return max_weight;
-    }
-    double get_max_weight() const {
-      auto max_weight = std::numeric_limits<double>::min();
-      foreach_weight([&max_weight](auto weight) {
-        max_weight = std::max(max_weight, weight);
-      });
-      return max_weight;
-    }
+    /* double get_max_abs_weight() const { */
+    /*   auto max_weight = std::numeric_limits<double>::min(); */
+    /*   foreach_weight([&max_weight](auto weight) { */
+    /*     max_weight = std::max(max_weight, std::fabs(weight)); */
+    /*   }); */
+    /*   return max_weight; */
+    /* } */
+    /* double get_max_weight() const { */
+    /*   auto max_weight = std::numeric_limits<double>::min(); */
+    /*   foreach_weight([&max_weight](auto weight) { */
+    /*     max_weight = std::max(max_weight, weight); */
+    /*   }); */
+    /*   return max_weight; */
+    /* } */
 
     bool has_continuous_vertices() const {
       size_t vertex_index = 0;
