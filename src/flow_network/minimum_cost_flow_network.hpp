@@ -54,32 +54,94 @@ namespace cyy::algorithm {
       }
     }
 
+    double get_cost(const flow_fun_type &flow) const {
+      double total_cost = 0;
+      for (auto const &[e, edge_flow] : flow) {
+        total_cost += edge_flow * costs.at(e);
+      }
+      return total_cost;
+    }
+
     flow_fun_type min_cost_flow_by_network_simplex() {
       flow_fun_type flow;
       auto ts = get_strongly_feasible_tree_structure();
-      while(true) {
+      while (true) {
         flow = determin_flow(ts);
         determin_potential(ts);
-        break;
-        bool forward_direction=true;
+        bool forward_direction = true;
         indexed_edge violating_edge;
-        size_t u,v;
-        auto it=std::ranges::find_if(ts.U,[this](auto const &e){
-            return reduced_costs[e]>0;
-            });
-        if(it!=ts.U.end()) {
-          violating_edge=*it;
-          forward_direction=false;
-        } else {
-          it=std::ranges::find_if(ts.L,[this](auto const &e){
-              return reduced_costs[e]<0;
-              });
-          if(it!=ts.L.end()) {
-            violating_edge=*it;
+        {
+          auto it = std::ranges::find_if(
+              ts.U, [this](auto const &e) { return reduced_costs[e] > 0; });
+          if (it != ts.U.end()) {
+            violating_edge = *it;
+            ts.U.erase(it);
+            forward_direction = false;
           } else {
-            break;
-          } 
-        } 
+            it = std::ranges::find_if(
+                ts.L, [this](auto const &e) { return reduced_costs[e] < 0; });
+            if (it != ts.L.end()) {
+              violating_edge = *it;
+            ts.L.erase(it);
+            } else {
+              break;
+            }
+          }
+        }
+        // create cycle
+        auto ancestor =
+            ts.T.nearest_ancestor(violating_edge.first, violating_edge.second);
+        std::vector<size_t> cycle;
+        if (forward_direction) {
+          cycle = ts.T.get_path(violating_edge.first, ancestor);
+          std::ranges::reverse(cycle);
+          auto path = ts.T.get_path(violating_edge.second, ancestor);
+          cycle.insert(cycle.end(), path.begin(), path.end());
+        } else {
+          cycle = ts.T.get_path(violating_edge.second, ancestor);
+          std::ranges::reverse(cycle);
+          auto path = ts.T.get_path(violating_edge.first, ancestor);
+          cycle.insert(cycle.end(), path.begin(), path.end());
+        }
+        double delta = std::numeric_limits<double>::min();
+        for (size_t i = 0; i + 1 < cycle.size(); i++) {
+          auto it = flow.find({cycle[i], cycle[i + 1]});
+          if (it != flow.end()) {
+            delta =
+                std::min(delta, upper_capacities.at(it->first) - it->second);
+          } else {
+            it = flow.find({cycle[i + 1], cycle[i]});
+            assert(it != flow.end());
+            delta =
+                std::min(delta, it->second - lower_capacities.at(it->first));
+          }
+        }
+        std::optional<indexed_edge> last_blocking_edge;
+
+        // check from the end of cycle
+        for (auto it = cycle.rbegin(); it + 1 < cycle.rend(); it++) {
+          auto u = *(it + 1);
+          auto v = *it;
+          auto it2 = flow.find({u, v});
+          if (it2 != flow.end()) {
+            if (it2->second == upper_capacities[it2->first]) {
+              last_blocking_edge = it2->first;
+              ts.U.push_back(last_blocking_edge.value());
+              break;
+            }
+          } else {
+            it2 = flow.find({v, u});
+            assert(it2 != flow.end());
+            if (it2->second == lower_capacities[it2->first]) {
+              last_blocking_edge = it2->first;
+              ts.L.push_back(last_blocking_edge.value());
+              break;
+            }
+          }
+        }
+        assert(last_blocking_edge.has_value());
+        ts.T.add_edge(graph.get_edge(violating_edge));
+        ts.T.remove_edge(*last_blocking_edge);
       }
       return flow;
     }
@@ -234,10 +296,10 @@ namespace cyy::algorithm {
           L.emplace_back(e);
         }
       });
-      return {in_directed_tree<vertex_type>(std::move(T),
-                                            artificial_vertex_name, false),
-              std::move(L),
-              {}};
+      return {
+          in_directed_tree<vertex_type>(std::move(T), artificial_vertex_name),
+          std::move(L),
+          {}};
     }
 
   private:
