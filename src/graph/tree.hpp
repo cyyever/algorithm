@@ -46,19 +46,16 @@ namespace cyy::algorithm {
     template <std::ranges::input_range U>
     requires std::same_as<edge_type, std::ranges::range_value_t<U>>
     directed_tree_base(U edges, vertex_type root_, bool check)
-        : directed_graph<vertex_type>(edges), root(root_) {
-      if (check && !this->is_tree(root)) {
-        throw std::logic_error("not a tree");
-      }
-    }
+        : directed_tree_base(directed_graph<vertex_type>(edges), root(root_)) {}
 
     directed_tree_base(directed_graph<vertex_type> g, vertex_type root_,
-                       bool check)
+                       bool check = false)
         : directed_graph<vertex_type>(std::move(g)) {
       root = this->get_vertex_index(root_);
-      if (check && !this->is_tree(root)) {
-        throw std::logic_error("not a tree");
-      }
+      auto rootaaa = this->get_vertex(root);
+      /* if (check && !this->is_tree(root)) { */
+      /*   throw std::logic_error("not a tree"); */
+      /* } */
     }
 
     std::vector<size_t> get_path(size_t u) const {
@@ -69,6 +66,7 @@ namespace cyy::algorithm {
       }
       return path;
     }
+    auto get_root() const { return root; }
 
   protected:
     size_t root;
@@ -77,12 +75,7 @@ namespace cyy::algorithm {
   template <typename vertex_type>
   class directed_tree : public directed_tree_base<vertex_type> {
   public:
-    using edge_type = typename tree<vertex_type>::edge_type;
-
-    template <std::ranges::input_range U>
-    requires std::same_as<edge_type, std::ranges::range_value_t<U>>
-    explicit directed_tree(U edges, vertex_type root_, bool check = true)
-        : directed_tree_base<vertex_type>(edges, root_, check) {}
+    using directed_tree_base<vertex_type>::directed_tree_base;
   };
 
   template <typename vertex_type>
@@ -90,6 +83,12 @@ namespace cyy::algorithm {
   public:
     using edge_type = tree<vertex_type>::edge_type;
     using directed_tree_base<vertex_type>::directed_tree_base;
+
+    directed_tree<vertex_type> get_transpose() const {
+      directed_tree<vertex_type> T(directed_graph<vertex_type>::get_transpose(),
+                                   this->get_vertex(this->root), false);
+      return T;
+    }
 
     std::optional<size_t> parent(size_t u) const {
       auto const &l = this->get_adjacent_list(u);
@@ -112,7 +111,7 @@ namespace cyy::algorithm {
       return leaves;
     }
 
-    size_t nearest_ancestor(size_t u, size_t v) {
+    size_t nearest_ancestor(size_t u, size_t v) const {
       if (u == v) {
         return v;
       }
@@ -134,8 +133,5 @@ namespace cyy::algorithm {
       }
       throw std::runtime_error("shouldn't be here");
     }
-
-  protected:
-    size_t root;
   };
 } // namespace cyy::algorithm

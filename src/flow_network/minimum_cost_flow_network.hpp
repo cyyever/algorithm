@@ -56,8 +56,9 @@ namespace cyy::algorithm {
 
     flow_fun_type min_cost_flow_by_network_simplex() {
       flow_fun_type flow;
-      auto tree_structure = get_strongly_feasible_tree_structure();
-      flow = determin_flow(tree_structure);
+      auto ts = get_strongly_feasible_tree_structure();
+      flow = determin_flow(ts);
+      determin_potential(ts);
 
       return flow;
     }
@@ -127,7 +128,7 @@ namespace cyy::algorithm {
           }
 
           auto parent = *parent_opt;
-          if (graph.has_edge({leaf, parent})) {
+          if (costs.count({leaf, parent})) {
             auto edge_flow = remain_demand[leaf] - demand[leaf];
             flow[{leaf, parent}] = edge_flow;
             remain_demand[parent] += edge_flow;
@@ -145,19 +146,40 @@ namespace cyy::algorithm {
       assert(check_feasible_flow(flow));
       return flow;
     }
+    void determin_potential(const tree_structure &ts) {
+      potential.clear();
+      auto T = ts.T.get_transpose();
+      auto root = T.get_root();
+      potential[root] = 0;
+
+      T.breadth_first_search(root, [this](size_t u, size_t v, double) {
+        auto it = costs.find({u, v});
+        if (it != costs.end()) {
+          potential[v] = potential[u] + it->second;
+        } else {
+          it = costs.find({v, u});
+          potential[v] = potential[u] - it->second;
+        }
+        return false;
+      });
+      assert(potential.size() == demand.size());
+      for (const auto &[e, cost] : costs) {
+        reduced_costs[e] = cost + potential[e.first] - potential[e.second];
+      }
+    }
 
     tree_structure get_strongly_feasible_tree_structure() {
       static constexpr auto artificial_vertex_name = "_____artificial_vertex";
       if (!artificial_vertex_opt) {
-        double max_abs_cost=std::numeric_limits<double>::min();
-        for(auto &[_,cost]:costs) {
-          max_abs_cost=std::max(std::fabs(cost),max_abs_cost);
+        double max_abs_cost = std::numeric_limits<double>::min();
+        for (auto &[_, cost] : costs) {
+          max_abs_cost = std::max(std::fabs(cost), max_abs_cost);
         }
-        double C =max_abs_cost    * graph.get_vertex_number() + 1;
-        
+        double C = max_abs_cost * graph.get_vertex_number() + 1;
+
         auto B = demand;
         graph.foreach_edge([this, &B](auto const &e) {
-          B[e.first] +=lower_capacities[e];
+          B[e.first] += lower_capacities[e];
           B[e.second] -= lower_capacities[e];
         });
         auto artificial_vertex = graph.add_vertex(artificial_vertex_name);
@@ -203,7 +225,9 @@ namespace cyy::algorithm {
     flow_fun_type upper_capacities;
     flow_fun_type lower_capacities;
     flow_fun_type costs;
+    flow_fun_type reduced_costs;
     std::unordered_map<size_t, double> demand;
+    std::unordered_map<size_t, double> potential;
     std::optional<size_t> artificial_vertex_opt;
   };
 
