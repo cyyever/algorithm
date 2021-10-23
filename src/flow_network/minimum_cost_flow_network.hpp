@@ -18,8 +18,7 @@
 #include "graph/tree.hpp"
 #include "hash.hpp"
 namespace cyy::algorithm {
-  template <typename vertex_type = size_t>
-  class minimum_cost_flow_network : public directed_graph<vertex_type> {
+  template <typename vertex_type = size_t> class minimum_cost_flow_network {
   public:
     using flow_fun_type = std::unordered_map<indexed_edge, double>;
     using capacity_and_cost_fun_type =
@@ -40,6 +39,7 @@ namespace cyy::algorithm {
         lower_capacities[indexed_e] = lower_capacity;
         upper_capacities[indexed_e] = upper_capacity;
         costs[indexed_e] = cost;
+        // assert(costs.contains({4,5}) || costs.contains({5,4}));
       }
       double total_demand = 0;
       for (auto const &[_, d] : demand_) {
@@ -62,11 +62,13 @@ namespace cyy::algorithm {
       return total_cost;
     }
 
-    flow_fun_type min_cost_flow_by_network_simplex() {
+    std::optional<flow_fun_type> min_cost_flow_by_network_simplex() {
       flow_fun_type flow;
       auto ts = get_strongly_feasible_tree_structure();
+      flow = determin_flow(ts);
       while (true) {
-        flow = determin_flow(ts);
+        // std::cout << "cost is " << get_cost(flow) << std::endl;
+        assert(ts.T.get_underlying_graph().is_tree());
         determin_potential(ts);
         bool forward_direction = true;
         indexed_edge violating_edge;
@@ -82,12 +84,13 @@ namespace cyy::algorithm {
                 ts.L, [this](auto const &e) { return reduced_costs[e] < 0; });
             if (it != ts.L.end()) {
               violating_edge = *it;
-            ts.L.erase(it);
+              ts.L.erase(it);
             } else {
               break;
             }
           }
         }
+        assert(costs.contains(violating_edge));
         // create cycle
         auto ancestor =
             ts.T.nearest_ancestor(violating_edge.first, violating_edge.second);
@@ -103,7 +106,7 @@ namespace cyy::algorithm {
           auto path = ts.T.get_path(violating_edge.first, ancestor);
           cycle.insert(cycle.end(), path.begin(), path.end());
         }
-        double delta = std::numeric_limits<double>::min();
+        double delta = std::numeric_limits<double>::max();
         for (size_t i = 0; i + 1 < cycle.size(); i++) {
           auto it = flow.find({cycle[i], cycle[i + 1]});
           if (it != flow.end()) {
@@ -116,6 +119,18 @@ namespace cyy::algorithm {
                 std::min(delta, it->second - lower_capacities.at(it->first));
           }
         }
+
+        for (size_t i = 0; i + 1 < cycle.size(); i++) {
+          auto it = flow.find({cycle[i], cycle[i + 1]});
+          if (it != flow.end()) {
+            it->second += delta;
+          } else {
+            it = flow.find({cycle[i + 1], cycle[i]});
+            assert(it != flow.end());
+            it->second -= delta;
+          }
+        }
+
         std::optional<indexed_edge> last_blocking_edge;
 
         // check from the end of cycle
@@ -140,9 +155,35 @@ namespace cyy::algorithm {
           }
         }
         assert(last_blocking_edge.has_value());
-        ts.T.add_edge(graph.get_edge(violating_edge));
-        ts.T.remove_edge(*last_blocking_edge);
+        assert(costs.contains(violating_edge));
+
+        auto underlying_graph = ts.T.get_underlying_graph();
+        underlying_graph.add_edge(graph.get_edge(violating_edge));
+        underlying_graph.remove_edge(*last_blocking_edge);
+        ts.T.clear_edges();
+        underlying_graph.breadth_first_search(
+            ts.T.get_root(), [&ts, this](size_t u, size_t v, double weight) {
+              ts.T.add_edge(edge<vertex_type>{graph.get_vertex(v),
+                                              graph.get_vertex(u), weight});
+              return false;
+            });
+        // ts.T.print_edges(std::cout);
       }
+      if (std::ranges::any_of(flow, [&ts](const auto &p) {
+            if (p.first.first == ts.T.get_root() ||
+                p.first.second == ts.T.get_root()) {
+              if (p.second != 0) {
+                return true;
+              }
+            }
+            return false;
+          })) {
+        return {};
+      }
+      std::erase_if(flow, [&ts](const auto &p) {
+        return p.first.first == ts.T.get_root() ||
+               p.first.second == ts.T.get_root();
+      });
       return flow;
     }
 
@@ -240,6 +281,7 @@ namespace cyy::algorithm {
           potential[v] = potential[u] + it->second;
         } else {
           it = costs.find({v, u});
+          assert(it != costs.end());
           potential[v] = potential[u] - it->second;
         }
         return false;
@@ -296,6 +338,7 @@ namespace cyy::algorithm {
           L.emplace_back(e);
         }
       });
+      // T.print_edges(std::cout);
       return {
           in_directed_tree<vertex_type>(std::move(T), artificial_vertex_name),
           std::move(L),

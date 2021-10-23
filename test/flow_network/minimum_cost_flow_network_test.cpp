@@ -26,5 +26,7 @@ TEST_CASE("flow network") {
 
   cyy::algorithm::minimum_cost_flow_network<std::string> network(
       capacity_and_cost, demand);
-  network.min_cost_flow_by_network_simplex();
+  auto flow_opt = network.min_cost_flow_by_network_simplex();
+  REQUIRE(flow_opt.has_value());
+  REQUIRE(network.get_cost(*flow_opt) == -2);
 }

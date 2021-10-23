@@ -25,26 +25,21 @@ namespace cyy::algorithm {
 
     graph<vertex_type> get_underlying_graph() const {
       graph<vertex_type> g;
-      for (auto &[from_vertex, to_vertices] : this->weighted_adjacent_list) {
-        for (auto &to_vertex : to_vertices) {
-          g.add_edge({this->get_vertex(to_vertex.first),
-                      this->get_vertex(from_vertex), to_vertex.second});
-        }
-      }
-      for (auto const &n : this->get_vertices()) {
-        g.add_vertex(n);
-      }
+      g.set_vertex_indices(this->vertex_indices);
+      this->foreach_edge(
+          [&g, this](const auto &e) { g.add_edge(this->get_edge(e)); });
       return g;
     }
 
     directed_graph get_transpose() const {
-      directed_graph transpose;
-      for (auto &[from_vertex, to_vertices] : this->weighted_adjacent_list) {
-        for (auto &to_vertex : to_vertices) {
-          transpose.add_edge({this->get_vertex(to_vertex.first),
-                              this->get_vertex(from_vertex), to_vertex.second});
-        }
-      }
+      directed_graph transpose = *this;
+      transpose.clear_edges();
+      this->foreach_edge([&transpose, this](const auto &e) {
+        auto edge = this->get_edge(e).reverse();
+
+        transpose.add_edge(edge);
+      });
+
       return transpose;
     }
 

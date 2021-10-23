@@ -51,10 +51,13 @@ namespace cyy::algorithm {
     directed_tree_base(directed_graph<vertex_type> g, vertex_type root_)
         : directed_graph<vertex_type>(std::move(g)) {
       root = this->get_vertex_index(root_);
-      auto rootaaa = this->get_vertex(root);
-      /* if (check && !this->is_tree(root)) { */
-      /*   throw std::logic_error("not a tree"); */
-      /* } */
+#ifndef NDEUG
+      /*
+      if (!this->is_tree(root)) {
+        throw std::logic_error("not a tree");
+      }
+      */
+#endif
     }
 
     // get a path from root to u

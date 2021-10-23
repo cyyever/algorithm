@@ -77,20 +77,22 @@ namespace cyy::algorithm {
         }
       }
     }
-    /* double get_max_abs_weight() const { */
-    /*   auto max_weight = std::numeric_limits<double>::min(); */
-    /*   foreach_weight([&max_weight](auto weight) { */
-    /*     max_weight = std::max(max_weight, std::fabs(weight)); */
-    /*   }); */
-    /*   return max_weight; */
-    /* } */
-    /* double get_max_weight() const { */
-    /*   auto max_weight = std::numeric_limits<double>::min(); */
-    /*   foreach_weight([&max_weight](auto weight) { */
-    /*     max_weight = std::max(max_weight, weight); */
-    /*   }); */
-    /*   return max_weight; */
-    /* } */
+    void set_vertex_indices(boost::bimap<vertex_type, size_t> new_vertices) {
+      if (!weighted_adjacent_list.empty()) {
+        throw std::runtime_error("this graph has some edge");
+      }
+      vertex_indices = new_vertices;
+      next_vertex_index = 0;
+      for (auto const &[_, idx] : vertex_indices) {
+        next_vertex_index = std::max(next_vertex_index, idx + 1);
+      }
+    }
+
+    void print_edges(std::ostream &os) const {
+      foreach_edge([&os](auto const &e) {
+        os << e.first << " -> " << e.second << std::endl;
+      });
+    }
 
     bool has_continuous_vertices() const {
       size_t vertex_index = 0;
@@ -191,7 +193,10 @@ namespace cyy::algorithm {
         add_directed_edge(e.reverse());
       }
     }
-    void clear_edges() { weighted_adjacent_list.clear(); }
+    void clear_edges() {
+      weighted_adjacent_list.clear();
+      edge_num = 0;
+    }
     void remove_vertex(size_t vertex_index) {
       weighted_adjacent_list.erase(vertex_index);
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
@@ -199,19 +204,20 @@ namespace cyy::algorithm {
             [vertex_index](auto const &a) { return a.first == vertex_index; });
       }
     }
-    void remove_edge(const edge_type &e) {
+    bool remove_edge(const edge_type &e) {
       return remove_edge(
           {get_vertex_index(e.first), get_vertex_index(e.second)});
     }
 
-    void remove_edge(const indexed_edge &e) {
+    bool remove_edge(const indexed_edge &e) {
       if (!remove_directed_edge(e)) {
-        return;
+        return false;
       }
       edge_num--;
       if constexpr (!directed) {
         remove_directed_edge(e.reverse());
       }
+      return true;
     }
 
     auto const &get_adjacent_list() const { return weighted_adjacent_list; }

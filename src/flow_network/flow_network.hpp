@@ -16,8 +16,7 @@
 #include "graph/graph.hpp"
 #include "hash.hpp"
 namespace cyy::algorithm {
-  template <typename vertex_type = size_t>
-  class flow_network : public directed_graph<vertex_type> {
+  template <typename vertex_type = size_t> class flow_network {
   public:
     using capacity_fun_type =
         std::unordered_map<std::pair<vertex_type, vertex_type>, double>;
