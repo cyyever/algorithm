@@ -61,20 +61,25 @@ namespace cyy::algorithm {
         flow = determin_flow(ts);
         determin_potential(ts);
         break;
+        bool forward_direction=true;
+        indexed_edge violating_edge;
+        size_t u,v;
         auto it=std::ranges::find_if(ts.U,[this](auto const &e){
             return reduced_costs[e]>0;
             });
         if(it!=ts.U.end()) {
-          continue;
+          violating_edge=*it;
+          forward_direction=false;
+        } else {
+          it=std::ranges::find_if(ts.L,[this](auto const &e){
+              return reduced_costs[e]<0;
+              });
+          if(it!=ts.L.end()) {
+            violating_edge=*it;
+          } else {
+            break;
+          } 
         } 
-        it=std::ranges::find_if(ts.L,[this](auto const &e){
-            return reduced_costs[e]<0;
-            });
-        if(it!=ts.L.end()) {
-
-          continue;
-        } 
-        break;
       }
       return flow;
     }
