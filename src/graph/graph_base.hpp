@@ -139,6 +139,21 @@ namespace cyy::algorithm {
 
     auto get_next_vertex_index() const { return next_vertex_index; }
 
+    void foreach_edge_with_weight(std::function<void(indexed_edge,double)> edge_callback) const {
+      for (auto const &[from_index, adjacent_vertices] :
+           weighted_adjacent_list) {
+        for (auto const &[to_index, weight] : adjacent_vertices) {
+          if constexpr (directed) {
+            edge_callback({from_index, to_index},weight);
+          } else {
+            if (from_index <= to_index) {
+              edge_callback({from_index, to_index},weight);
+            }
+          }
+        }
+      }
+    }
+
     void foreach_edge(std::function<void(indexed_edge)> edge_callback) const {
       for (auto const &[from_index, adjacent_vertices] :
            weighted_adjacent_list) {
@@ -234,13 +249,13 @@ namespace cyy::algorithm {
       for (size_t i = 0; i < next_vertex_index; i++) {
         adjacent_matrix.emplace_back(next_vertex_index, 0);
       }
+      foreach_edge_with_weight([&adjacent_matrix](auto const &e,auto weight) {
+          adjacent_matrix[e.first][e.second] = weight;
+          if constexpr(!directed) {
+          adjacent_matrix[e.second][e.first] = weight;
+          }
+          });
 
-      for (auto const &[from_index, adjacent_vertices] :
-           weighted_adjacent_list) {
-        for (auto const &[to_index, weight] : adjacent_vertices) {
-          adjacent_matrix[from_index][to_index] = weight;
-        }
-      }
       return adjacent_matrix;
     }
 
