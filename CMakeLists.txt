@@ -17,7 +17,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   target_link_libraries(CyyAlgorithmLib PUBLIC range-v3::range-v3)
 endif()
 
-target_link_libraries(CyyAlgorithmLib INTERFACE Boost::headers)
+target_link_libraries(CyyAlgorithmLib PUBLIC Boost::headers)
 
 target_include_directories(
   CyyAlgorithmLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
