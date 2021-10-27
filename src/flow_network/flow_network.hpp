@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
 #include <range/v3/all.hpp>
 
 #include "graph/graph.hpp"
@@ -134,7 +135,7 @@ namespace cyy::algorithm {
       // conservation condition
       auto matrix = graph.get_adjacent_matrix();
       for (size_t i = 0; i < matrix.size(); i++) {
-        double sum = ::ranges::accumulate(matrix[i],0.0);
+        double sum = ::ranges::accumulate(matrix[i], 0.0);
         double sum2 = 0;
         for (size_t j = 0; j < matrix.size(); j++) {
           sum2 += matrix[j][i];

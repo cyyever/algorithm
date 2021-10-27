@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <string>
 #include <map>
+#include <string>
 #include <unordered_map>
 
 #include <boost/bimap.hpp>

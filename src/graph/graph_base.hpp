@@ -17,10 +17,10 @@
 #include <range/v3/all.hpp>
 
 namespace cyy::algorithm {
-  template <typename vertex_type> struct edge {
+  template <typename vertex_type, typename weight_type = double> struct edge {
     vertex_type first;
     vertex_type second;
-    double weight = 1;
+    weight_type weight = 1;
     auto operator<=>(const auto &rhs) const { return weight <=> rhs.weight; }
     auto operator==(const auto &rhs) const {
       return first == rhs.first && second == rhs.second;
@@ -139,15 +139,16 @@ namespace cyy::algorithm {
 
     auto get_next_vertex_index() const { return next_vertex_index; }
 
-    void foreach_edge_with_weight(std::function<void(indexed_edge,double)> edge_callback) const {
+    void foreach_edge_with_weight(
+        std::function<void(indexed_edge, double)> edge_callback) const {
       for (auto const &[from_index, adjacent_vertices] :
            weighted_adjacent_list) {
         for (auto const &[to_index, weight] : adjacent_vertices) {
           if constexpr (directed) {
-            edge_callback({from_index, to_index},weight);
+            edge_callback({from_index, to_index}, weight);
           } else {
             if (from_index <= to_index) {
-              edge_callback({from_index, to_index},weight);
+              edge_callback({from_index, to_index}, weight);
             }
           }
         }
@@ -249,12 +250,12 @@ namespace cyy::algorithm {
       for (size_t i = 0; i < next_vertex_index; i++) {
         adjacent_matrix.emplace_back(next_vertex_index, 0);
       }
-      foreach_edge_with_weight([&adjacent_matrix](auto const &e,auto weight) {
-          adjacent_matrix[e.first][e.second] = weight;
-          if constexpr(!directed) {
+      foreach_edge_with_weight([&adjacent_matrix](auto const &e, auto weight) {
+        adjacent_matrix[e.first][e.second] = weight;
+        if constexpr (!directed) {
           adjacent_matrix[e.second][e.first] = weight;
-          }
-          });
+        }
+      });
 
       return adjacent_matrix;
     }
