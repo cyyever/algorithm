@@ -38,5 +38,8 @@ TEST_CASE("tree") {
     REQUIRE(T.is_tree());
     auto code = cyy::algorithm::get_prufer_code(T);
     REQUIRE_EQ(code, std::vector<size_t>{3, 3, 3, 4});
+    auto T2 = cyy::algorithm::recover_tree(code);
+
+    REQUIRE_EQ(T2.get_edge_number(), 5);
   }
 }
