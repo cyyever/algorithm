@@ -10,23 +10,23 @@
 #include <memory>
 #include <numeric>
 #include <optional>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include "graph/graph.hpp"
 #include "graph/tree.hpp"
 #include "hash.hpp"
 namespace cyy::algorithm {
-  template <typename vertex_type = size_t> class minimum_cost_flow_network {
+  template <typename vertex_type = size_t, typename weight_type = double>
+  class minimum_cost_flow_network {
   public:
-    using flow_fun_type = std::unordered_map<indexed_edge, double>;
+    using edge_type = edge<weight_type>;
+    using flow_fun_type = std::unordered_map<indexed_edge, weight_type>;
     using capacity_and_cost_fun_type =
         std::unordered_map<std::pair<vertex_type, vertex_type>,
-                           std::tuple<double, double, double>>;
+                           std::tuple<weight_type, weight_type, weight_type>>;
     minimum_cost_flow_network(
         const capacity_and_cost_fun_type &capacity_and_cost_map,
-        std::unordered_map<vertex_type, double> demand_) {
+        std::unordered_map<vertex_type, weight_type> demand_) {
       for (const auto &[e, capacity_and_cost] : capacity_and_cost_map) {
         graph.add_edge({e.first, e.second});
         auto indexed_e = indexed_edge{graph.get_vertex_index(e.first),
@@ -41,7 +41,7 @@ namespace cyy::algorithm {
         costs[indexed_e] = cost;
         // assert(costs.contains({4,5}) || costs.contains({5,4}));
       }
-      double total_demand = 0;
+      weight_type total_demand = 0;
       for (auto const &[_, d] : demand_) {
         total_demand += d;
       }
@@ -54,8 +54,8 @@ namespace cyy::algorithm {
       }
     }
 
-    double get_cost(const flow_fun_type &flow) const {
-      double total_cost = 0;
+    weight_type get_cost(const flow_fun_type &flow) const {
+      weight_type total_cost = 0;
       for (auto const &[e, edge_flow] : flow) {
         total_cost += edge_flow * costs.at(e);
       }
@@ -67,7 +67,6 @@ namespace cyy::algorithm {
       auto ts = get_strongly_feasible_tree_structure();
       flow = determin_flow(ts);
       while (true) {
-        // std::cout << "cost is " << get_cost(flow) << std::endl;
         assert(ts.T.get_underlying_graph().is_tree());
         determin_potential(ts);
         bool forward_direction = true;
@@ -106,7 +105,7 @@ namespace cyy::algorithm {
           auto path = ts.T.get_path(violating_edge.first, ancestor);
           cycle.insert(cycle.end(), path.begin(), path.end());
         }
-        double delta = std::numeric_limits<double>::max();
+        weight_type delta = std::numeric_limits<weight_type>::max();
         for (size_t i = 0; i + 1 < cycle.size(); i++) {
           auto it = flow.find({cycle[i], cycle[i + 1]});
           if (it != flow.end()) {
@@ -162,9 +161,9 @@ namespace cyy::algorithm {
         underlying_graph.remove_edge(*last_blocking_edge);
         ts.T.clear_edges();
         underlying_graph.breadth_first_search(
-            ts.T.get_root(), [&ts, this](size_t u, size_t v, double weight) {
-              ts.T.add_edge(edge<vertex_type>{graph.get_vertex(v),
-                                              graph.get_vertex(u), weight});
+            ts.T.get_root(),
+            [&ts, this](size_t u, size_t v, weight_type weight) {
+              ts.T.add_edge({graph.get_vertex(v), graph.get_vertex(u), weight});
               return false;
             });
         // ts.T.print_edges(std::cout);
@@ -216,7 +215,7 @@ namespace cyy::algorithm {
     }
 
     struct tree_structure {
-      in_directed_tree<vertex_type> T;
+      in_directed_tree<vertex_type, weight_type> T;
       std::vector<indexed_edge> L;
       std::vector<indexed_edge> U;
     };
@@ -275,7 +274,7 @@ namespace cyy::algorithm {
       auto root = T.get_root();
       potential[root] = 0;
 
-      T.breadth_first_search(root, [this](size_t u, size_t v, double) {
+      T.breadth_first_search(root, [this](size_t u, size_t v, weight_type) {
         auto it = costs.find({u, v});
         if (it != costs.end()) {
           potential[v] = potential[u] + it->second;
@@ -295,11 +294,15 @@ namespace cyy::algorithm {
     tree_structure get_strongly_feasible_tree_structure() {
       static constexpr auto artificial_vertex_name = "_____artificial_vertex";
       if (!artificial_vertex_opt) {
-        double max_abs_cost = std::numeric_limits<double>::min();
+        weight_type max_abs_cost = std::numeric_limits<weight_type>::min();
         for (auto &[_, cost] : costs) {
-          max_abs_cost = std::max(std::fabs(cost), max_abs_cost);
+          auto abs_cost = cost;
+          if (abs_cost < 0) {
+            abs_cost = -abs_cost;
+          }
+          max_abs_cost = std::max(abs_cost, max_abs_cost);
         }
-        double C = max_abs_cost * graph.get_vertex_number() + 1;
+        weight_type C = max_abs_cost * graph.get_vertex_number() + 1;
 
         auto B = demand;
         graph.foreach_edge([this, &B](auto const &e) {
@@ -339,20 +342,20 @@ namespace cyy::algorithm {
         }
       });
       // T.print_edges(std::cout);
-      return {
-          in_directed_tree<vertex_type>(std::move(T), artificial_vertex_name),
-          std::move(L),
-          {}};
+      return {in_directed_tree<vertex_type, weight_type>(
+                  std::move(T), artificial_vertex_name),
+              std::move(L),
+              {}};
     }
 
   private:
-    directed_graph<vertex_type> graph;
+    directed_graph<vertex_type, weight_type> graph;
     flow_fun_type upper_capacities;
     flow_fun_type lower_capacities;
     flow_fun_type costs;
     flow_fun_type reduced_costs;
-    std::unordered_map<size_t, double> demand;
-    std::unordered_map<size_t, double> potential;
+    std::unordered_map<size_t, weight_type> demand;
+    std::unordered_map<size_t, weight_type> potential;
     std::optional<size_t> artificial_vertex_opt;
   };
 

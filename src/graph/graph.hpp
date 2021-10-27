@@ -13,18 +13,18 @@
 #include "graph_base.hpp"
 namespace cyy::algorithm {
 
-  template <typename vertex_type>
-  class graph : public graph_base<vertex_type, false> {
+  template <typename vertex_type, typename weight_type = double>
+  class graph : public graph_base<vertex_type, false, weight_type> {
   public:
-    using graph_base<vertex_type, false>::graph_base;
+    using graph_base<vertex_type, false, weight_type>::graph_base;
   };
-  template <typename vertex_type>
-  class directed_graph : public graph_base<vertex_type, true> {
+  template <typename vertex_type, typename weight_type = double>
+  class directed_graph : public graph_base<vertex_type, true, weight_type> {
   public:
-    using graph_base<vertex_type, true>::graph_base;
+    using graph_base<vertex_type, true, weight_type>::graph_base;
 
-    graph<vertex_type> get_underlying_graph() const {
-      graph<vertex_type> g;
+    auto get_underlying_graph() const {
+      graph<vertex_type, weight_type> g;
       g.set_vertex_indices(this->vertex_indices);
       this->foreach_edge(
           [&g, this](const auto &e) { g.add_edge(this->get_edge(e)); });

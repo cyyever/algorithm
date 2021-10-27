@@ -18,12 +18,15 @@
 #include "graph/graph.hpp"
 #include "hash.hpp"
 namespace cyy::algorithm {
-  template <typename vertex_type = size_t> class flow_network {
+  template <typename vertex_type = size_t, typename weight_type = double>
+  class flow_network {
   public:
+    using edge_type = edge<vertex_type, weight_type>;
     using capacity_fun_type =
-        std::unordered_map<std::pair<vertex_type, vertex_type>, double>;
-    flow_network(directed_graph<vertex_type> graph_, vertex_type source_,
-                 vertex_type sink_, const capacity_fun_type &capacities_)
+        std::unordered_map<std::pair<vertex_type, vertex_type>, weight_type>;
+    flow_network(directed_graph<vertex_type, weight_type> graph_,
+                 vertex_type source_, vertex_type sink_,
+                 const capacity_fun_type &capacities_)
         : graph(std::move(graph_)) {
       source = graph.get_vertex_index(source_);
       sink = graph.get_vertex_index(sink_);
@@ -42,8 +45,8 @@ namespace cyy::algorithm {
       // init flow to zero
       graph.set_all_weights(0);
     }
-    double get_flow_value() const {
-      double source_flow = 0;
+    weight_type get_flow_value() const {
+      weight_type source_flow = 0;
       for (auto const &[_, edge_flow] : graph.get_adjacent_list(source)) {
         source_flow += edge_flow;
       }
@@ -55,7 +58,8 @@ namespace cyy::algorithm {
         std::optional<std::function<std::vector<size_t>()>> get_s_t_path_fun =
             {}) {
       if (!get_s_t_path_fun.has_value()) {
-        get_s_t_path_fun = std::bind(&flow_network::get_s_t_path, this);
+        get_s_t_path_fun = std::bind(
+            &flow_network<vertex_type, weight_type>::get_s_t_path, this);
       }
       auto residual_graph = get_residual_graph();
       while (true) {
@@ -63,7 +67,7 @@ namespace cyy::algorithm {
         if (path.empty()) {
           break;
         }
-        double bottleneck = std::numeric_limits<double>::max();
+        weight_type bottleneck = std::numeric_limits<weight_type>::max();
         for (size_t i = 0; i + 1 < path.size(); i++) {
           indexed_edge e{path[i], path[i + 1]};
           bottleneck = std::min(bottleneck, residual_graph.capacities[e]);
@@ -135,8 +139,8 @@ namespace cyy::algorithm {
       // conservation condition
       auto matrix = graph.get_adjacent_matrix();
       for (size_t i = 0; i < matrix.size(); i++) {
-        double sum = ::ranges::accumulate(matrix[i], 0.0);
-        double sum2 = 0;
+        weight_type sum = ::ranges::accumulate(matrix[i], 0.0);
+        weight_type sum2 = 0;
         for (size_t j = 0; j < matrix.size(); j++) {
           sum2 += matrix[j][i];
         }
@@ -147,7 +151,7 @@ namespace cyy::algorithm {
       return true;
     }
 
-    flow_network<vertex_type> get_residual_graph() const {
+    auto get_residual_graph() const {
       if (!backward_edges.empty()) {
         throw std::runtime_error(
             "can't get residual graph from a residual graph");
@@ -161,8 +165,7 @@ namespace cyy::algorithm {
         if (leftover_capacity > 0 || weight > 0) {
           auto first_vertex = graph.get_vertex(edge.first);
           auto second_vertex = graph.get_vertex(edge.second);
-          auto new_edge =
-              cyy::algorithm::edge<vertex_type>{first_vertex, second_vertex, 0};
+          auto new_edge = edge_type{first_vertex, second_vertex, 0};
           if (leftover_capacity > 0) {
             residual_graph.graph.add_edge(new_edge);
             residual_graph.capacities[edge] = leftover_capacity;
@@ -226,10 +229,10 @@ namespace cyy::algorithm {
     }
 
   private:
-    directed_graph<vertex_type> graph;
+    directed_graph<vertex_type, weight_type> graph;
     size_t source;
     size_t sink;
-    std::unordered_map<indexed_edge, double> capacities;
+    std::unordered_map<indexed_edge, weight_type> capacities;
     std::unordered_set<indexed_edge> backward_edges;
   };
 

@@ -16,16 +16,16 @@
 
 namespace cyy::algorithm {
 
-  template <typename vertex_type, bool directed>
-  auto shortest_path_dijkstra(const graph_base<vertex_type, directed> &g,
-                              size_t s) {
+  template <typename vertex_type, bool directed, typename weight_type = double>
+  auto shortest_path_dijkstra(
+      const graph_base<vertex_type, directed, weight_type> &g, size_t s) {
 
-    std::vector<double> distance(g.get_next_vertex_index(),
-                                 std::numeric_limits<double>::max());
+    std::vector<weight_type> distance(g.get_next_vertex_index(),
+                                      std::numeric_limits<weight_type>::max());
     distance[s] = 0;
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
     parent[s] = s;
-    heap<size_t, double> h;
+    heap<size_t, weight_type> h;
     h.insert(s, 0);
 
     while (!h.empty()) {

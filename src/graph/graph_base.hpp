@@ -14,7 +14,6 @@
 #include <vector>
 
 #include <boost/bimap.hpp>
-#include <range/v3/all.hpp>
 
 namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type = double> struct edge {
@@ -50,11 +49,12 @@ namespace std {
 } // namespace std
 
 namespace cyy::algorithm {
-  template <typename vertex_type, bool directed> class graph_base {
+  template <typename vertex_type, bool directed, typename weight_type = double>
+  class graph_base {
   public:
-    using edge_type = edge<vertex_type>;
+    using edge_type = edge<vertex_type, weight_type>;
     using vertex_index_map_type = std::unordered_map<vertex_type, size_t>;
-    using adjacent_matrix_type = std::vector<std::vector<double>>;
+    using adjacent_matrix_type = std::vector<std::vector<weight_type>>;
     graph_base() = default;
     template <std::ranges::input_range U>
     requires std::same_as<edge_type, std::ranges::range_value_t<U>>
@@ -63,7 +63,8 @@ namespace cyy::algorithm {
         add_edge(edge);
       }
     }
-    void foreach_weight(std::function<void(double)> weight_callback) const {
+    void
+    foreach_weight(std::function<void(weight_type)> weight_callback) const {
       for (auto const &[from_index, adjacent_vertices] :
            weighted_adjacent_list) {
         for (auto const &[to_index, weight] : adjacent_vertices) {
@@ -140,7 +141,7 @@ namespace cyy::algorithm {
     auto get_next_vertex_index() const { return next_vertex_index; }
 
     void foreach_edge_with_weight(
-        std::function<void(indexed_edge, double)> edge_callback) const {
+        std::function<void(indexed_edge, weight_type)> edge_callback) const {
       for (auto const &[from_index, adjacent_vertices] :
            weighted_adjacent_list) {
         for (auto const &[to_index, weight] : adjacent_vertices) {
@@ -179,7 +180,7 @@ namespace cyy::algorithm {
       return next_vertex_index++;
     }
 
-    edge<vertex_type> get_edge(const indexed_edge &edge) const {
+    edge_type get_edge(const indexed_edge &edge) const {
       for (auto const &to_vertice : get_adjacent_list(edge.first)) {
         if (to_vertice.first == edge.second) {
           auto first_vertex = get_vertex(edge.first);
@@ -190,7 +191,7 @@ namespace cyy::algorithm {
       throw std::runtime_error("no edge");
     }
 
-    indexed_edge get_edge(const edge<vertex_type> &edge) const {
+    indexed_edge get_edge(const edge_type &edge) const {
       return {get_vertex_index(edge.first), get_vertex_index(edge.second)};
     }
     bool has_edge(const indexed_edge &e) {
@@ -200,7 +201,7 @@ namespace cyy::algorithm {
              }) != l.end();
     }
 
-    void add_edge(const edge<vertex_type> &e) {
+    void add_edge(const edge_type &e) {
       if (!add_directed_edge(e)) {
         return;
       }
@@ -279,18 +280,18 @@ namespace cyy::algorithm {
     size_t get_vertex_index(const vertex_type &vertex) const {
       return vertex_indices.left.at(vertex);
     }
-    void set_all_weights(double new_weight) {
+    void set_all_weights(weight_type new_weight) {
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
         for (auto &to_vertice : to_vertices) {
           to_vertice.second = new_weight;
         }
       }
     }
-    double get_weight(const indexed_edge &edge) const {
+    auto get_weight(const indexed_edge &edge) const {
       return get_edge(edge).weight;
     }
 
-    void set_weight(const indexed_edge &edge, double new_weight) {
+    void set_weight(const indexed_edge &edge, weight_type new_weight) {
       for (auto &to_vertice : weighted_adjacent_list.at(edge.first)) {
         if (to_vertice.first == edge.second) {
           to_vertice.second = new_weight;
@@ -300,7 +301,8 @@ namespace cyy::algorithm {
 
     // breadth first search in g from s
     void breadth_first_search(
-        size_t s, std::function<bool(size_t, size_t, double)> edge_fun) const {
+        size_t s,
+        std::function<bool(size_t, size_t, weight_type)> edge_fun) const {
       std::vector<bool> discovered(get_next_vertex_index(), false);
       discovered[s] = true;
       std::list<size_t> queue{s};
@@ -343,9 +345,10 @@ namespace cyy::algorithm {
 
     // depth first search in g from s
     void depth_first_search(
-        size_t s, std::function<void(size_t, size_t, double)> edge_fun) const {
+        size_t s,
+        std::function<void(size_t, size_t, weight_type)> edge_fun) const {
       std::vector<bool> explored(get_next_vertex_index(), false);
-      std::vector<std::pair<size_t, double>> stack{{s, 0}};
+      std::vector<std::pair<size_t, weight_type>> stack{{s, 0}};
       std::vector<size_t> parent(get_next_vertex_index(), 0);
 
       while (!stack.empty()) {
@@ -385,7 +388,7 @@ namespace cyy::algorithm {
     }
 
   protected:
-    bool add_directed_edge(const edge<vertex_type> &e) {
+    bool add_directed_edge(const edge_type &e) {
       auto first_index = add_vertex(e.first);
       auto second_index = add_vertex(e.second);
       auto &neighbors = weighted_adjacent_list[first_index];
@@ -400,7 +403,7 @@ namespace cyy::algorithm {
       neighbors.emplace_back(second_index, e.weight);
       return true;
     }
-    bool remove_directed_edge(const edge<vertex_type> &e) {
+    bool remove_directed_edge(const edge_type &e) {
       return remove_directed_edge({get_vertex(e.first), get_vertex(e.second)});
     }
     bool remove_directed_edge(const indexed_edge &e) {
@@ -418,13 +421,13 @@ namespace cyy::algorithm {
 
   protected:
     size_t edge_num = 0;
-    std::unordered_map<size_t, std::list<std::pair<size_t, double>>>
+    std::unordered_map<size_t, std::list<std::pair<size_t, weight_type>>>
         weighted_adjacent_list;
     boost::bimap<vertex_type, size_t> vertex_indices;
 
   private:
     size_t next_vertex_index = 0;
-    static inline std::list<std::pair<size_t, double>> empty_adjacent_list;
+    static inline std::list<std::pair<size_t, weight_type>> empty_adjacent_list;
   };
 
 } // namespace cyy::algorithm

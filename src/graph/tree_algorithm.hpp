@@ -19,13 +19,14 @@
 
 namespace cyy::algorithm {
 
-  template <typename vertex_type> auto MST_prime(const graph<vertex_type> &g) {
+  template <typename vertex_type, typename weight_type = double>
+  auto MST_prime(const graph<vertex_type, weight_type> &g) {
 
-    std::vector<double> weights(g.get_next_vertex_index(),
-                                std::numeric_limits<double>::max());
+    std::vector<weight_type> weights(g.get_next_vertex_index(),
+                                     std::numeric_limits<weight_type>::max());
     std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
     graph<vertex_type> MST;
-    heap<size_t, double> h;
+    heap<size_t, weight_type> h;
     auto s = *g.get_vertex_indices().begin();
     h.insert(s, 0);
     while (!h.empty()) {
@@ -73,8 +74,8 @@ namespace cyy::algorithm {
     return tree(MST, false);
   }
 
-  template <typename vertex_type>
-  auto get_prufer_code(const tree<vertex_type> &T) {
+  template <typename vertex_type, typename weight_type = double>
+  auto get_prufer_code(const tree<vertex_type, weight_type> &T) {
     if (!T.has_continuous_vertices()) {
       throw std::logic_error("need continuous vertices");
     }
@@ -87,7 +88,7 @@ namespace cyy::algorithm {
       return code;
     }
     code.reserve(vertex_number - 2);
-    std::map<size_t, std::list<std::pair<size_t, double>>> adjacent_list(
+    std::map<size_t, std::list<std::pair<size_t, weight_type>>> adjacent_list(
         T.get_adjacent_list().begin(), T.get_adjacent_list().end());
     while (vertex_number > 2) {
       auto it =

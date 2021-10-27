@@ -12,9 +12,10 @@
 
 namespace cyy::algorithm {
 
-  template <typename vertex_type> class tree : public graph<vertex_type> {
+  template <typename vertex_type, typename weight_type = double>
+  class tree : public graph<vertex_type, weight_type> {
   public:
-    using edge_type = edge<vertex_type>;
+    using edge_type = edge<vertex_type, weight_type>;
     tree() = default;
 
     template <std::ranges::input_range U>
@@ -38,18 +39,19 @@ namespace cyy::algorithm {
     std::optional<size_t> root;
   };
 
-  template <typename vertex_type>
-  class directed_tree_base : public directed_graph<vertex_type> {
+  template <typename vertex_type, typename weight_type = double>
+  class directed_tree_base : public directed_graph<vertex_type, weight_type> {
   public:
-    using edge_type = edge<vertex_type>;
+    using edge_type = edge<vertex_type, weight_type>;
 
     template <std::ranges::input_range U>
     requires std::same_as<edge_type, std::ranges::range_value_t<U>>
     directed_tree_base(U edges, vertex_type root_)
         : directed_tree_base(directed_graph<vertex_type>(edges), root(root_)) {}
 
-    directed_tree_base(directed_graph<vertex_type> g, vertex_type root_)
-        : directed_graph<vertex_type>(std::move(g)) {
+    directed_tree_base(directed_graph<vertex_type, weight_type> g,
+                       vertex_type root_)
+        : directed_graph<vertex_type, weight_type>(std::move(g)) {
       root = this->get_vertex_index(root_);
 #ifndef NDEUG
       /*
@@ -84,21 +86,21 @@ namespace cyy::algorithm {
     size_t root;
   };
 
-  template <typename vertex_type>
-  class directed_tree : public directed_tree_base<vertex_type> {
+  template <typename vertex_type, typename weight_type = double>
+  class directed_tree : public directed_tree_base<vertex_type, weight_type> {
   public:
-    using directed_tree_base<vertex_type>::directed_tree_base;
+    using directed_tree_base<vertex_type, weight_type>::directed_tree_base;
   };
 
-  template <typename vertex_type>
-  class in_directed_tree : public directed_tree_base<vertex_type> {
+  template <typename vertex_type, typename weight_type = double>
+  class in_directed_tree : public directed_tree_base<vertex_type, weight_type> {
   public:
     using edge_type = tree<vertex_type>::edge_type;
-    using directed_tree_base<vertex_type>::directed_tree_base;
+    using directed_tree_base<vertex_type, weight_type>::directed_tree_base;
 
-    directed_tree<vertex_type> get_transpose() const {
-      return directed_tree<vertex_type>(
-          directed_graph<vertex_type>::get_transpose(),
+    auto get_transpose() const {
+      return directed_tree<vertex_type, weight_type>(
+          directed_graph<vertex_type, weight_type>::get_transpose(),
           this->get_vertex(this->root));
     }
 
