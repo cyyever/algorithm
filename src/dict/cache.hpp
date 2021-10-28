@@ -12,8 +12,8 @@
 #include <cyy/naive_lib/log/log.hpp>
 #include <cyy/naive_lib/util/runnable.hpp>
 
-#include "ordered_dict.hpp"
 #include "../thread_safe_container.hpp"
+#include "ordered_dict.hpp"
 
 namespace cyy::algorithm {
   template <class T> class cache {
@@ -27,6 +27,11 @@ namespace cyy::algorithm {
       for (auto &key : load_keys()) {
         LOG_DEBUG("load key {}", key);
         data_info[std::move(key)] = data_state::IN_DISK;
+      }
+      if (data_info.empty()) {
+        LOG_WARN("no key to load");
+      } else {
+        LOG_WARN("load {} keys", data_info.size());
       }
       for (size_t i = 0; i < saving_thread_num; i++) {
         saving_threads.emplace_back(*this, i);
@@ -48,7 +53,7 @@ namespace cyy::algorithm {
     cache(cache &&) noexcept = delete;
     cache &operator=(cache &&) noexcept = delete;
 
-    ~cache() { release(); }
+    virtual ~cache() { release(); }
 
     void release() {
       if (permanent) {
@@ -278,7 +283,7 @@ namespace cyy::algorithm {
                 continue;
               }
             }
-            value = dict.load_data_from_disk(key);
+            auto value = dict.load_data_from_disk(key);
             {
               std::lock_guard lk(dict.data_mutex);
               if (!dict.change_state(key, data_state::LOADING,
