@@ -1,54 +1,33 @@
 #pragma once
 #include <chrono>
 #include <filesystem>
+#include <mutex>
 #include <optional>
 #include <stdexcept>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
 
-#include <torch/types.h>
-
+#include "cache_fetch_thread.hpp"
+#include "cache_save_thread.hpp"
 #include "dict/ordered_dict.hpp"
 #include "hardware/hardware.hpp"
 #include "log/log.hpp"
-#include "cache_fetch_thread.hpp"
-#include "cache_save_thread.hpp"
 #include "thread_safe_container.hpp"
 #include "util/runnable.hpp"
 
 namespace cyy::algorithm {
-  template <class Key, class T> class cache {
+  template <class T> class cache {
   public:
-    explicit synced_tensor_dict(const Key &storage_dir_)
-        : storage_dir(storage_dir_) {
+    explicit cache() {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
       auto cpu_num = cyy::naive_lib::hardware::cpu_num();
       saving_thread_num = cpu_num;
       fetch_thread_num = cpu_num;
       LOG_WARN("saving_thread_num and fetch_thread_num {}", cpu_num);
-      if (!storage_dir.empty()) {
-        if (std::filesystem::exists(storage_dir)) {
-          if (!std::filesystem::is_directory(storage_dir)) {
-            throw std::invalid_argument(storage_dir.string() +
-                                        " is not a directory");
-          }
-          for (const auto &f :
-               std::filesystem::directory_iterator(storage_dir)) {
-            if (f.is_regular_file()) {
-              auto key = f.path().filename().string();
-              data_info[key] = data_state::IN_DISK;
-              LOG_DEBUG("load key {}", key);
-            }
-          }
-          if (data_info.empty()) {
-            LOG_WARN("no key to load");
-          } else {
-            LOG_WARN("load {} keys", data_info.size());
-          }
-        } else {
-          std::filesystem::create_directories(storage_dir);
-        }
+      for (auto &key : load_keys()) {
+        LOG_DEBUG("load key {}", key);
+        data_info[std::move(key)] = data_state::IN_DISK;
       }
       for (size_t i = 0; i < saving_thread_num; i++) {
         saving_threads.emplace_back(*this, i);
@@ -64,15 +43,14 @@ namespace cyy::algorithm {
       }
     }
 
-    synced_tensor_dict(const synced_tensor_dict &rhs) {
-      LOG_WARN("stub function");
-    }
-    synced_tensor_dict &operator=(const synced_tensor_dict &) = default;
+    cache(const cache &rhs) { LOG_WARN("stub function"); }
+    cache &operator=(const cache &) = default;
 
-    synced_tensor_dict(synced_tensor_dict &&) noexcept = delete;
-    synced_tensor_dict &operator=(synced_tensor_dict &&) noexcept = delete;
+    cache(cache &&) noexcept = delete;
+    cache &operator=(cache &&) noexcept = delete;
 
-    ~synced_tensor_dict() { release(); }
+    ~cache() { release(); }
+
     void release() {
       if (permanent) {
         flush_all(true);
@@ -95,13 +73,12 @@ namespace cyy::algorithm {
       data_info.clear();
       saving_data.clear();
 
-      if (!permanent && !storage_dir.empty()) {
-        LOG_INFO("remove {}", storage_dir.string());
-        std::filesystem::remove_all(storage_dir);
+      if (!permanent) {
+        clear_data();
       }
     }
 
-    void emplace(const Key &key, const torch::Tensor &value) {
+    void emplace(const std::string &key, const T &value) {
       std::unique_lock lk(data_mutex);
       data.emplace(key, value);
       data_info[key] = data_state::IN_MEMORY_NEW_DATA;
@@ -122,7 +99,7 @@ namespace cyy::algorithm {
       }
     }
 
-    std::optional<torch::Tensor> get(const Key &key) {
+    std::optional<T> get(const std::string &key) {
       while (true) {
         std::unique_lock lk(data_mutex);
         auto [result, value_opt] = prefetch(key, false);
@@ -143,19 +120,17 @@ namespace cyy::algorithm {
       std::lock_guard lk(data_mutex);
       return data_info.size();
     }
-    void erase(const Key &key) {
+    void erase(const std::string &key) {
       std::lock_guard lk(data_mutex);
       if (!data_info.erase(key)) {
         return;
       }
       data.erase(key);
       saving_data.erase(key);
-      if (!storage_dir.empty() && std::filesystem::exists(storage_dir)) {
-        std::filesystem::remove(get_tensor_file_path(key));
-      }
+      erase_data(key);
     }
 
-    bool contains(const Key &key) const {
+    bool contains(const std::string &key) const {
       std::lock_guard lk(data_mutex);
       return data_info.find(key) != data_info.end();
     }
@@ -168,8 +143,8 @@ namespace cyy::algorithm {
       }
     }
 
-    std::vector<Key> keys() const {
-      std::vector<Key> res;
+    std::vector<std::string> keys() const {
+      std::vector<std::string> res;
       std::lock_guard lk(data_mutex);
       res.reserve(data_info.size());
       for (auto const &[key, __] : data_info) {
@@ -178,8 +153,8 @@ namespace cyy::algorithm {
       return res;
     }
 
-    std::vector<Key> in_memory_keys() const {
-      std::vector<Key> res;
+    std::vector<std::string> in_memory_keys() const {
+      std::vector<std::string> res;
       std::lock_guard lk(data_mutex);
       res.reserve(data_info.size());
       for (auto const &[key, state] : data_info) {
@@ -222,12 +197,9 @@ namespace cyy::algorithm {
       data_info.clear();
       data.clear();
       saving_data.clear();
-      if (!storage_dir.empty() && std::filesystem::exists(storage_dir)) {
-        std::filesystem::remove_all(storage_dir);
-        std::filesystem::create_directories(storage_dir);
-      }
+      clear_data();
     }
-    void prefetch(const std::vector<Key> &keys) {
+    void prefetch(const std::vector<std::string> &keys) {
       for (auto const &key : keys) {
         prefetch(key);
       }
@@ -240,25 +212,6 @@ namespace cyy::algorithm {
     size_t get_in_memory_number() const {
       std::lock_guard lk(data_mutex);
       return in_memory_number;
-    }
-    void set_storage_dir(Key storage_dir_) {
-      if (storage_dir_.empty()) {
-        throw std::invalid_argument(storage_dir_ + " is not a directory");
-      }
-      std::lock_guard lk(data_mutex);
-      storage_dir = std::move(storage_dir_);
-      if (!std::filesystem::exists(storage_dir)) {
-        std::filesystem::create_directories(storage_dir);
-      } else {
-        if (!std::filesystem::is_directory(storage_dir)) {
-          throw std::invalid_argument(storage_dir.string() +
-                                      " is not a directory");
-        }
-      }
-    }
-    Key get_storage_dir() const {
-      std::lock_guard lk(data_mutex);
-      return storage_dir.string();
     }
     void set_wait_flush_ratio(float wait_flush_ratio_) {
       std::lock_guard lk(data_mutex);
@@ -301,6 +254,124 @@ namespace cyy::algorithm {
     void enable_permanent_storage() { permanent = true; }
     void disable_permanent_storage() { permanent = false; }
 
+    class fetch_thread final : public cyy::naive_lib::runnable {
+    public:
+      fetch_thread(cache &dict_) : dict(dict_) {}
+      ~fetch_thread() override { stop(); }
+
+    private:
+      void run() override {
+        while (!needs_stop()) {
+          auto value_opt =
+              dict.fetch_request_queue.pop_front(std::chrono::minutes(1));
+          if (!value_opt.has_value()) {
+            continue;
+          }
+          if (!(*value_opt).has_value()) {
+            return;
+          }
+          auto const &key = value_opt.value().value();
+          try {
+            {
+              std::lock_guard lk(dict.data_mutex);
+              if (!dict.change_state(key, data_state::PRE_LOAD,
+                                     data_state::LOADING)) {
+                continue;
+              }
+            }
+            value = dict.load_data_from_disk(key);
+            {
+              std::lock_guard lk(dict.data_mutex);
+              if (!dict.change_state(key, data_state::LOADING,
+                                     data_state::IN_MEMORY)) {
+                continue;
+              }
+              dict.data.emplace(key, std::move(value));
+            }
+            LOG_DEBUG("load {} succ", key);
+          } catch (const std::exception &e) {
+            LOG_ERROR("load {} failed:{}", key, e.what());
+            {
+              std::lock_guard lk(dict.data_mutex);
+              if (!dict.change_state(key, data_state::LOADING,
+                                     data_state::LOAD_FAILED)) {
+                continue;
+              }
+            }
+          }
+          dict.new_data_cv.notify_all();
+        }
+      }
+
+    private:
+      cache &dict;
+    };
+
+    class save_thread final : public cyy::naive_lib::runnable {
+    public:
+      explicit save_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {}
+
+    private:
+      void run() override {
+        LOG_DEBUG("run save_thread id {}", id);
+        std::optional<std::optional<cache::save_task>> value_opt;
+        while (!needs_stop()) {
+          if (id == 0) {
+            value_opt = dict.save_request_queue.pop_front(
+                std::chrono::milliseconds(500));
+          } else {
+            value_opt =
+                dict.save_request_queue.pop_front(std::chrono::minutes(1));
+          }
+          if (!value_opt.has_value()) {
+            if (id == 0) {
+              dict.flush();
+              LOG_DEBUG("flush by save thread");
+            }
+            continue;
+          }
+          if (!(*value_opt).has_value()) {
+            return;
+          }
+          auto &key = value_opt.value().value();
+          try {
+            std::unique_lock lk(dict.data_mutex);
+            if (!dict.change_state(key, data_state::PRE_SAVING,
+                                   data_state::SAVING)) {
+              continue;
+            }
+            auto value = dict.saving_data[key];
+            lk.unlock();
+            save_data(key, value);
+            lk.lock();
+            if (dict.change_state(key, data_state::SAVING,
+                                  data_state::IN_DISK)) {
+              dict.saving_data.erase(key);
+              LOG_DEBUG("torch::save {} succ", key);
+              if (dict.saving_data.empty()) {
+                lk.unlock();
+                dict.flush_finished_cv.notify_all();
+              }
+              continue;
+            }
+            if (!dict.data_info.count(key)) {
+              dict.erase_data(key);
+            }
+          } catch (const std::exception &e) {
+            LOG_ERROR("torch::save {} failed,drop it:{}", key, e.what());
+            dict.erase(key);
+          }
+        }
+      }
+
+    private:
+      cache &dict;
+      size_t id;
+    };
+
+  protected:
+    mutable std::recursive_mutex data_mutex;
+
   private:
     enum class data_state : int {
       IN_MEMORY = 0,
@@ -312,10 +383,14 @@ namespace cyy::algorithm {
       LOADING,
       LOAD_FAILED,
     };
-    class save_thread;
-    class fetch_thread;
 
-    bool change_state(const Key &key, data_state old_state,
+    virtual T load_data_from_disk(const std::string &key) = 0;
+    virtual std::vector<std::string> load_keys() = 0;
+    virtual void clear_data() = 0;
+    virtual void erase_data(const std::string &key) = 0;
+    virtual void save_data(const std::string &key, T data) = 0;
+
+    bool change_state(const std::string &key, data_state old_state,
                       data_state new_state) {
       auto it = data_info.find(key);
       if (it == data_info.end()) {
@@ -327,16 +402,9 @@ namespace cyy::algorithm {
       it->second = new_state;
       return true;
     }
-    std::filesystem::path get_tensor_file_path(const Key &key) const {
-      std::lock_guard lk(data_mutex);
-      if (storage_dir.empty()) {
-        throw std::runtime_error("storage_dir is empty");
-      }
-      return storage_dir / std::filesystem::path(key);
-    }
 
-    std::pair<int, std::optional<torch::Tensor>>
-    prefetch(const Key &key, bool with_lock = true) {
+    std::pair<int, std::optional<T>> prefetch(const std::string &key,
+                                              bool with_lock = true) {
       {
         std::unique_lock lk(data_mutex, std::defer_lock);
         if (with_lock) {
@@ -366,18 +434,16 @@ namespace cyy::algorithm {
         }
         it->second = data_state::PRE_LOAD;
       }
-      auto file_path = get_tensor_file_path(key);
       // jump to queue front
-      fetch_request_queue.emplace_front(fetch_task{key, file_path});
+      fetch_request_queue.emplace_front(fetch_task{key});
       return {0, {}};
     }
-    using save_task = std::tuple<Key, std::filesystem::path>;
-    std::list<synced_tensor_dict::save_task>
-    pop_expired_data(size_t max_number) {
+    using save_task = std::string;
+    std::list<cache::save_task> pop_expired_data(size_t max_number) {
       std::list<save_task> expired_data;
       while (expired_data.size() < max_number) {
-        Key key;
-        torch::Tensor value;
+        std::string key;
+        T value;
         {
           std::unique_lock lk(data_mutex);
 
@@ -387,7 +453,7 @@ namespace cyy::algorithm {
           std::tie(key, value) = data.pop_front();
           auto it = data_info.find(key);
           if (it == data_info.end()) {
-            throw std::runtime_error(Key("can't find info :" + key));
+            throw std::runtime_error(std::string("can't find info :" + key));
           }
           if (it->second == data_state::IN_MEMORY) {
             it->second = data_state::IN_DISK;
@@ -395,14 +461,14 @@ namespace cyy::algorithm {
           }
           if (it->second != data_state::IN_MEMORY_NEW_DATA) {
             throw std::runtime_error(
-                Key("invalid state " +
+                std::string("invalid state " +
                             std::to_string(static_cast<int>(it->second)) +
                             " of key:" + key));
           }
           it->second = data_state::PRE_SAVING;
           saving_data[key] = value;
         }
-        expired_data.emplace_back(save_task{key, get_tensor_file_path(key)});
+        expired_data.emplace_back(save_task{key});
       }
       return expired_data;
     }
@@ -412,11 +478,9 @@ namespace cyy::algorithm {
       }
     }
 
-    mutable std::recursive_mutex data_mutex;
-    std::filesystem::path storage_dir;
-    cyy::algorithm::ordered_dict<Key, torch::Tensor> data;
-    std::unordered_map<Key, torch::Tensor> saving_data;
-    std::unordered_map<Key, data_state> data_info;
+    cyy::algorithm::ordered_dict<std::string, T> data;
+    std::unordered_map<std::string, T> saving_data;
+    std::unordered_map<std::string, data_state> data_info;
     size_t in_memory_number{128};
     bool permanent{true};
 
@@ -427,7 +491,7 @@ namespace cyy::algorithm {
     size_t saving_thread_num{8};
     std::list<save_thread> saving_threads;
 
-    using fetch_task = std::pair<Key, std::filesystem::path>;
+    using fetch_task = std::string;
     using fetch_request_queue_type =
         cyy::algorithm::thread_safe_linear_container<
             std::list<std::optional<fetch_task>>>;
