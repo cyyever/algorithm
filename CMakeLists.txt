@@ -7,6 +7,8 @@ include(cmake/all.cmake)
 file(GLOB_RECURSE SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
 
 find_package(Boost REQUIRED)
+find_package(Threads REQUIRED)
+find_package(CyyNaiveLib REQUIRED)
 
 add_library(CyyAlgorithmLib ${SOURCE})
 
@@ -18,10 +20,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 target_link_libraries(CyyAlgorithmLib PUBLIC Boost::headers)
+target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::util)
 
 target_include_directories(
   CyyAlgorithmLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-                        $<INSTALL_INTERFACE:include/cyy/algorithm>)
+                         $<INSTALL_INTERFACE:include/cyy/algorithm>)
 
 # test
 add_subdirectory(test)
