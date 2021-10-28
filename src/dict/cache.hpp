@@ -392,7 +392,7 @@ namespace cyy::algorithm {
     virtual std::vector<std::string> load_keys() = 0;
     virtual void clear_data() = 0;
     virtual void erase_data(const std::string &key) = 0;
-    virtual void save_data(const std::string &key, T data) = 0;
+    virtual void save_data(const std::string &key, T value) = 0;
 
     bool change_state(const std::string &key, data_state old_state,
                       data_state new_state) {
