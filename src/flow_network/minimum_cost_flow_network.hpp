@@ -302,7 +302,7 @@ namespace cyy::algorithm {
           }
           max_abs_cost = std::max(abs_cost, max_abs_cost);
         }
-        weight_type C = max_abs_cost * graph.get_vertex_number() + 1;
+        weight_type C = static_cast<weight_type>(max_abs_cost * graph.get_vertex_number() + 1);
 
         auto B = demand;
         graph.foreach_edge([this, &B](auto const &e) {
