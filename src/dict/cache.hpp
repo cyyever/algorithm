@@ -366,15 +366,10 @@ namespace cyy::algorithm {
 
   protected:
     virtual T load_data_from_disk(const std::string &key) = 0;
-    virtual std::vector<std::string> load_keys() = 0;
     virtual void clear_data() = 0;
     virtual void erase_data(const std::string &key) = 0;
     virtual void save_data(const std::string &key, T value) = 0;
   protected:
-    std::unordered_map<std::string, data_state> data_info;
-    mutable std::recursive_mutex data_mutex;
-
-  private:
     enum class data_state : int {
       IN_MEMORY = 0,
       IN_MEMORY_NEW_DATA,
@@ -385,6 +380,10 @@ namespace cyy::algorithm {
       LOADING,
       LOAD_FAILED,
     };
+    std::unordered_map<std::string, data_state> data_info;
+    mutable std::recursive_mutex data_mutex;
+
+  private:
 
 
     bool change_state(const std::string &key, data_state old_state,
