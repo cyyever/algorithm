@@ -8,9 +8,9 @@
 #include <unordered_map>
 #include <utility>
 
-#include <cyy/hardware/hardware.hpp>
-#include <cyy/log/log.hpp>
-#include <cyy/util/runnable.hpp>
+#include <cyy/naive_lib/hardware/hardware.hpp>
+#include <cyy/naive_lib/log/log.hpp>
+#include <cyy/naive_lib/util/runnable.hpp>
 
 #include "ordered_dict.hpp"
 #include "thread_safe_container.hpp"
