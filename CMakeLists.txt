@@ -9,6 +9,7 @@ file(GLOB_RECURSE SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
 find_package(Boost REQUIRED)
 find_package(Threads REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(CUDAToolkit)
 find_package(CyyNaiveLib REQUIRED)
 
 add_library(CyyAlgorithmLib ${SOURCE})
