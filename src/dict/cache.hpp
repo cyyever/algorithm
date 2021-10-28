@@ -346,7 +346,7 @@ namespace cyy::algorithm {
             }
             auto value = dict.saving_data[key];
             lk.unlock();
-            save_data(key, value);
+            dict.save_data(key, value);
             lk.lock();
             if (dict.change_state(key, data_state::SAVING,
                                   data_state::IN_DISK)) {
