@@ -7,8 +7,8 @@
 #include <tuple>
 #include <unordered_map>
 #include <utility>
+#include <thread>
 
-#include <cyy/naive_lib/hardware/hardware.hpp>
 #include <cyy/naive_lib/log/log.hpp>
 #include <cyy/naive_lib/util/runnable.hpp>
 
@@ -20,7 +20,7 @@ namespace cyy::algorithm {
   public:
     explicit cache() {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
-      auto cpu_num = cyy::naive_lib::hardware::cpu_num();
+      auto cpu_num = std::jthread::hardware_concurrency();
       saving_thread_num = cpu_num;
       fetch_thread_num = cpu_num;
       LOG_WARN("saving_thread_num and fetch_thread_num {}", cpu_num);
