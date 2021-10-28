@@ -8,13 +8,12 @@
 #include <unordered_map>
 #include <utility>
 
-#include "cache_fetch_thread.hpp"
-#include "cache_save_thread.hpp"
-#include "dict/ordered_dict.hpp"
-#include "hardware/hardware.hpp"
-#include "log/log.hpp"
+#include <cyy/hardware/hardware.hpp>
+#include <cyy/log/log.hpp>
+#include <cyy/util/runnable.hpp>
+
+#include "ordered_dict.hpp"
 #include "thread_safe_container.hpp"
-#include "util/runnable.hpp"
 
 namespace cyy::algorithm {
   template <class T> class cache {
