@@ -18,21 +18,12 @@
 namespace cyy::algorithm {
   template <class T> class cache {
   public:
-    explicit cache() {
+    cache() {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
       auto cpu_num = std::jthread::hardware_concurrency();
       saving_thread_num = cpu_num;
       fetch_thread_num = cpu_num;
       LOG_WARN("saving_thread_num and fetch_thread_num {}", cpu_num);
-      for (auto &key : load_keys()) {
-        LOG_DEBUG("load key {}", key);
-        data_info[std::move(key)] = data_state::IN_DISK;
-      }
-      if (data_info.empty()) {
-        LOG_WARN("no key to load");
-      } else {
-        LOG_WARN("load {} keys", data_info.size());
-      }
       for (size_t i = 0; i < saving_thread_num; i++) {
         saving_threads.emplace_back(*this, i);
       }
@@ -380,6 +371,7 @@ namespace cyy::algorithm {
     virtual void erase_data(const std::string &key) = 0;
     virtual void save_data(const std::string &key, T value) = 0;
   protected:
+    std::unordered_map<std::string, data_state> data_info;
     mutable std::recursive_mutex data_mutex;
 
   private:
@@ -485,7 +477,6 @@ namespace cyy::algorithm {
 
     cyy::algorithm::ordered_dict<std::string, T> data;
     std::unordered_map<std::string, T> saving_data;
-    std::unordered_map<std::string, data_state> data_info;
     size_t in_memory_number{128};
     bool permanent{true};
 
