@@ -13,7 +13,7 @@
 #include <cyy/naive_lib/util/runnable.hpp>
 
 #include "ordered_dict.hpp"
-#include "thread_safe_container.hpp"
+#include "../thread_safe_container.hpp"
 
 namespace cyy::algorithm {
   template <class T> class cache {
