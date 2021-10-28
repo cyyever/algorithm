@@ -305,6 +305,7 @@ namespace cyy::algorithm {
     class save_thread final : public cyy::naive_lib::runnable {
     public:
       explicit save_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {}
+      ~save_thread() override { stop(); }
 
     private:
       void run() override {
