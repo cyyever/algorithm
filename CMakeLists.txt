@@ -21,8 +21,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 target_link_libraries(CyyAlgorithmLib PUBLIC Boost::headers)
-target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::util)
-target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::log)
+target_link_libraries(CyyAlgorithmLib PUBLIC CyyNaiveLib::util)
+target_link_libraries(CyyAlgorithmLib PUBLIC CyyNaiveLib::log)
 
 target_include_directories(
   CyyAlgorithmLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
