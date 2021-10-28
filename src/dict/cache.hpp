@@ -12,15 +12,15 @@
 #include "dict/ordered_dict.hpp"
 #include "hardware/hardware.hpp"
 #include "log/log.hpp"
-#include "synced_tensor_dict_fetch_thread.hpp"
-#include "synced_tensor_dict_save_thread.hpp"
+#include "cache_fetch_thread.hpp"
+#include "cache_save_thread.hpp"
 #include "thread_safe_container.hpp"
 #include "util/runnable.hpp"
 
 namespace cyy::algorithm {
   template <class Key, class T> class cache {
   public:
-    explicit synced_tensor_dict(const std::string &storage_dir_)
+    explicit synced_tensor_dict(const Key &storage_dir_)
         : storage_dir(storage_dir_) {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
       auto cpu_num = cyy::naive_lib::hardware::cpu_num();
@@ -101,7 +101,7 @@ namespace cyy::algorithm {
       }
     }
 
-    void emplace(const std::string &key, const torch::Tensor &value) {
+    void emplace(const Key &key, const torch::Tensor &value) {
       std::unique_lock lk(data_mutex);
       data.emplace(key, value);
       data_info[key] = data_state::IN_MEMORY_NEW_DATA;
@@ -122,7 +122,7 @@ namespace cyy::algorithm {
       }
     }
 
-    std::optional<torch::Tensor> get(const std::string &key) {
+    std::optional<torch::Tensor> get(const Key &key) {
       while (true) {
         std::unique_lock lk(data_mutex);
         auto [result, value_opt] = prefetch(key, false);
@@ -143,7 +143,7 @@ namespace cyy::algorithm {
       std::lock_guard lk(data_mutex);
       return data_info.size();
     }
-    void erase(const std::string &key) {
+    void erase(const Key &key) {
       std::lock_guard lk(data_mutex);
       if (!data_info.erase(key)) {
         return;
@@ -155,7 +155,7 @@ namespace cyy::algorithm {
       }
     }
 
-    bool contains(const std::string &key) const {
+    bool contains(const Key &key) const {
       std::lock_guard lk(data_mutex);
       return data_info.find(key) != data_info.end();
     }
@@ -168,8 +168,8 @@ namespace cyy::algorithm {
       }
     }
 
-    std::vector<std::string> keys() const {
-      std::vector<std::string> res;
+    std::vector<Key> keys() const {
+      std::vector<Key> res;
       std::lock_guard lk(data_mutex);
       res.reserve(data_info.size());
       for (auto const &[key, __] : data_info) {
@@ -178,8 +178,8 @@ namespace cyy::algorithm {
       return res;
     }
 
-    std::vector<std::string> in_memory_keys() const {
-      std::vector<std::string> res;
+    std::vector<Key> in_memory_keys() const {
+      std::vector<Key> res;
       std::lock_guard lk(data_mutex);
       res.reserve(data_info.size());
       for (auto const &[key, state] : data_info) {
@@ -227,7 +227,7 @@ namespace cyy::algorithm {
         std::filesystem::create_directories(storage_dir);
       }
     }
-    void prefetch(const std::vector<std::string> &keys) {
+    void prefetch(const std::vector<Key> &keys) {
       for (auto const &key : keys) {
         prefetch(key);
       }
@@ -241,7 +241,7 @@ namespace cyy::algorithm {
       std::lock_guard lk(data_mutex);
       return in_memory_number;
     }
-    void set_storage_dir(std::string storage_dir_) {
+    void set_storage_dir(Key storage_dir_) {
       if (storage_dir_.empty()) {
         throw std::invalid_argument(storage_dir_ + " is not a directory");
       }
@@ -256,7 +256,7 @@ namespace cyy::algorithm {
         }
       }
     }
-    std::string get_storage_dir() const {
+    Key get_storage_dir() const {
       std::lock_guard lk(data_mutex);
       return storage_dir.string();
     }
@@ -315,7 +315,7 @@ namespace cyy::algorithm {
     class save_thread;
     class fetch_thread;
 
-    bool change_state(const std::string &key, data_state old_state,
+    bool change_state(const Key &key, data_state old_state,
                       data_state new_state) {
       auto it = data_info.find(key);
       if (it == data_info.end()) {
@@ -327,7 +327,7 @@ namespace cyy::algorithm {
       it->second = new_state;
       return true;
     }
-    std::filesystem::path get_tensor_file_path(const std::string &key) const {
+    std::filesystem::path get_tensor_file_path(const Key &key) const {
       std::lock_guard lk(data_mutex);
       if (storage_dir.empty()) {
         throw std::runtime_error("storage_dir is empty");
@@ -336,7 +336,7 @@ namespace cyy::algorithm {
     }
 
     std::pair<int, std::optional<torch::Tensor>>
-    prefetch(const std::string &key, bool with_lock = true) {
+    prefetch(const Key &key, bool with_lock = true) {
       {
         std::unique_lock lk(data_mutex, std::defer_lock);
         if (with_lock) {
@@ -371,12 +371,12 @@ namespace cyy::algorithm {
       fetch_request_queue.emplace_front(fetch_task{key, file_path});
       return {0, {}};
     }
-    using save_task = std::tuple<std::string, std::filesystem::path>;
+    using save_task = std::tuple<Key, std::filesystem::path>;
     std::list<synced_tensor_dict::save_task>
     pop_expired_data(size_t max_number) {
       std::list<save_task> expired_data;
       while (expired_data.size() < max_number) {
-        std::string key;
+        Key key;
         torch::Tensor value;
         {
           std::unique_lock lk(data_mutex);
@@ -387,7 +387,7 @@ namespace cyy::algorithm {
           std::tie(key, value) = data.pop_front();
           auto it = data_info.find(key);
           if (it == data_info.end()) {
-            throw std::runtime_error(std::string("can't find info :" + key));
+            throw std::runtime_error(Key("can't find info :" + key));
           }
           if (it->second == data_state::IN_MEMORY) {
             it->second = data_state::IN_DISK;
@@ -395,7 +395,7 @@ namespace cyy::algorithm {
           }
           if (it->second != data_state::IN_MEMORY_NEW_DATA) {
             throw std::runtime_error(
-                std::string("invalid state " +
+                Key("invalid state " +
                             std::to_string(static_cast<int>(it->second)) +
                             " of key:" + key));
           }
@@ -414,9 +414,9 @@ namespace cyy::algorithm {
 
     mutable std::recursive_mutex data_mutex;
     std::filesystem::path storage_dir;
-    cyy::algorithm::ordered_dict<std::string, torch::Tensor> data;
-    std::unordered_map<std::string, torch::Tensor> saving_data;
-    std::unordered_map<std::string, data_state> data_info;
+    cyy::algorithm::ordered_dict<Key, torch::Tensor> data;
+    std::unordered_map<Key, torch::Tensor> saving_data;
+    std::unordered_map<Key, data_state> data_info;
     size_t in_memory_number{128};
     bool permanent{true};
 
@@ -427,7 +427,7 @@ namespace cyy::algorithm {
     size_t saving_thread_num{8};
     std::list<save_thread> saving_threads;
 
-    using fetch_task = std::pair<std::string, std::filesystem::path>;
+    using fetch_task = std::pair<Key, std::filesystem::path>;
     using fetch_request_queue_type =
         cyy::algorithm::thread_safe_linear_container<
             std::list<std::optional<fetch_task>>>;
