@@ -5,10 +5,8 @@
 #include <mutex>
 #include <optional>
 #include <stdexcept>
-#include <tuple>
 #include <unordered_map>
 #include <utility>
-#include <thread>
 #include <memory>
 
 #include <cyy/naive_lib/log/log.hpp>
