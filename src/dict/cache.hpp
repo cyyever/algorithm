@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <vector>
 #include <filesystem>
 #include <mutex>
 #include <optional>
@@ -16,10 +17,32 @@
 #include "ordered_dict.hpp"
 
 namespace cyy::algorithm {
-  template <class T> class cache {
+  template <typename T>
+    class storage_backend{
+      public:
+        virtual std::vector<std::string> load_keys()=0;
+        virtual T load_data(const std::string &key) = 0;
+        virtual void clear_data() = 0;
+        virtual void erase_data(const std::string &key) = 0;
+        virtual void save_data(const std::string &key, T value) = 0;
+    };
+  template <typename T> class cache{
   public:
-    cache() {
+    cache(storage_backend<T> backend_):backend(std::move(backend_)) {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
+
+        for (const auto key : backend.load_keys()) {
+            data_info[key] = data_state::IN_DISK;
+            LOG_DEBUG("load key {}", key);
+        }
+        if (data_info.empty()) {
+          LOG_WARN("no key to load");
+        } else {
+          LOG_WARN("load {} keys", data_info.size());
+        }
+
+
+
       auto cpu_num = std::jthread::hardware_concurrency();
       saving_thread_num = cpu_num;
       fetch_thread_num = cpu_num;
@@ -69,7 +92,7 @@ namespace cyy::algorithm {
       saving_data.clear();
 
       if (!permanent) {
-        clear_data();
+        backend.clear_data();
       }
     }
 
@@ -122,7 +145,7 @@ namespace cyy::algorithm {
       }
       data.erase(key);
       saving_data.erase(key);
-      erase_data(key);
+      backend.erase_data(key);
     }
 
     bool contains(const std::string &key) const {
@@ -192,7 +215,7 @@ namespace cyy::algorithm {
       data_info.clear();
       data.clear();
       saving_data.clear();
-      clear_data();
+      backend.clear_data();
     }
     void prefetch(const std::vector<std::string> &keys) {
       for (auto const &key : keys) {
@@ -274,7 +297,7 @@ namespace cyy::algorithm {
                 continue;
               }
             }
-            auto value = dict.load_data_from_disk(key);
+            auto value =backend.load_data(key);
             {
               std::lock_guard lk(dict.data_mutex);
               if (!dict.change_state(key, data_state::LOADING,
@@ -338,7 +361,7 @@ namespace cyy::algorithm {
             }
             auto value = dict.saving_data[key];
             lk.unlock();
-            dict.save_data(key, value);
+            dict.backend.save_data(key, value);
             lk.lock();
             if (dict.change_state(key, data_state::SAVING,
                                   data_state::IN_DISK)) {
@@ -351,7 +374,7 @@ namespace cyy::algorithm {
               continue;
             }
             if (!dict.data_info.count(key)) {
-              dict.erase_data(key);
+              dict.backend.erase_data(key);
             }
           } catch (const std::exception &e) {
             LOG_ERROR("torch::save {} failed,drop it:{}", key, e.what());
@@ -366,11 +389,8 @@ namespace cyy::algorithm {
     };
 
   protected:
-    virtual T load_data_from_disk(const std::string &key) = 0;
-    virtual void clear_data() = 0;
-    virtual void erase_data(const std::string &key) = 0;
-    virtual void save_data(const std::string &key, T value) = 0;
-  protected:
+    storage_backend<T> backend;
+  private:
     enum class data_state : int {
       IN_MEMORY = 0,
       IN_MEMORY_NEW_DATA,
@@ -384,7 +404,6 @@ namespace cyy::algorithm {
     std::unordered_map<std::string, data_state> data_info;
     mutable std::recursive_mutex data_mutex;
 
-  private:
 
 
     bool change_state(const std::string &key, data_state old_state,
