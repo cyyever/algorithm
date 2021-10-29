@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <utility>
 #include <thread>
+#include <memory>
 
 #include <cyy/naive_lib/log/log.hpp>
 #include <cyy/naive_lib/util/runnable.hpp>
@@ -28,10 +29,10 @@ namespace cyy::algorithm {
     };
   template <typename T> class cache{
   public:
-    cache(storage_backend<T> backend_):backend(std::move(backend_)) {
+    cache(std::unique_ptr<storage_backend<T>> backend_):backend(std::move(backend_)) {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
 
-        for (const auto key : backend.load_keys()) {
+        for (const auto key : backend->load_keys()) {
             data_info[key] = data_state::IN_DISK;
             LOG_DEBUG("load key {}", key);
         }
@@ -92,7 +93,7 @@ namespace cyy::algorithm {
       saving_data.clear();
 
       if (!permanent) {
-        backend.clear_data();
+        backend->clear_data();
       }
     }
 
@@ -145,7 +146,7 @@ namespace cyy::algorithm {
       }
       data.erase(key);
       saving_data.erase(key);
-      backend.erase_data(key);
+      backend->erase_data(key);
     }
 
     bool contains(const std::string &key) const {
@@ -215,7 +216,7 @@ namespace cyy::algorithm {
       data_info.clear();
       data.clear();
       saving_data.clear();
-      backend.clear_data();
+      backend->clear_data();
     }
     void prefetch(const std::vector<std::string> &keys) {
       for (auto const &key : keys) {
@@ -297,7 +298,7 @@ namespace cyy::algorithm {
                 continue;
               }
             }
-            auto value =backend.load_data(key);
+            auto value =backend->load_data(key);
             {
               std::lock_guard lk(dict.data_mutex);
               if (!dict.change_state(key, data_state::LOADING,
@@ -361,7 +362,7 @@ namespace cyy::algorithm {
             }
             auto value = dict.saving_data[key];
             lk.unlock();
-            dict.backend.save_data(key, value);
+            dict.backend->save_data(key, value);
             lk.lock();
             if (dict.change_state(key, data_state::SAVING,
                                   data_state::IN_DISK)) {
@@ -374,7 +375,7 @@ namespace cyy::algorithm {
               continue;
             }
             if (!dict.data_info.count(key)) {
-              dict.backend.erase_data(key);
+              dict.backend->erase_data(key);
             }
           } catch (const std::exception &e) {
             LOG_ERROR("torch::save {} failed,drop it:{}", key, e.what());
@@ -389,7 +390,7 @@ namespace cyy::algorithm {
     };
 
   protected:
-    storage_backend<T> backend;
+    std::unique_ptr<storage_backend<T>> backend;
   private:
     enum class data_state : int {
       IN_MEMORY = 0,
