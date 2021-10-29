@@ -21,6 +21,7 @@ namespace cyy::algorithm {
   template <typename T>
     class storage_backend{
       public:
+        virtual ~storage_backend()=default;
         virtual std::vector<std::string> load_keys()=0;
         virtual T load_data(const std::string &key) = 0;
         virtual void clear_data() = 0;
@@ -298,7 +299,7 @@ namespace cyy::algorithm {
                 continue;
               }
             }
-            auto value =backend->load_data(key);
+            auto value =dict.backend->load_data(key);
             {
               std::lock_guard lk(dict.data_mutex);
               if (!dict.change_state(key, data_state::LOADING,
