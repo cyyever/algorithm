@@ -115,7 +115,7 @@ namespace cyy::algorithm {
       }
     }
 
-    for (auto it = prufer_code.begin(); it != prufer_code.end(); it++) {
+    for (auto it = prufer_code.begin(); it != prufer_code.end(); ++it) {
       auto v = *it;
       auto it2 = vertices.begin();
       edges.emplace_back(*it2, v);

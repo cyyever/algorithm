@@ -133,7 +133,7 @@ namespace cyy::algorithm {
         std::optional<indexed_edge> last_blocking_edge;
 
         // check from the end of cycle
-        for (auto it = cycle.rbegin(); it + 1 < cycle.rend(); it++) {
+        for (auto it = cycle.rbegin(); it + 1 < cycle.rend(); ++it) {
           auto u = *(it + 1);
           auto v = *it;
           auto it2 = flow.find({u, v});

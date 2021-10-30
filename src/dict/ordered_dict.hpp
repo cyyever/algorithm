@@ -64,7 +64,7 @@ namespace cyy::algorithm {
       }
       data.emplace_back(it->first, mapped_type(std::forward<Args>(args)...));
       auto it2 = data.end();
-      it2--;
+      --it2;
       it->second = it2;
       return inserted;
     }

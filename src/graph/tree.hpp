@@ -7,6 +7,7 @@
 #pragma once
 
 #include <unordered_set>
+#include <array>
 
 #include "graph.hpp"
 
@@ -129,7 +130,7 @@ namespace cyy::algorithm {
       if (u == v) {
         return v;
       }
-      std::vector<size_t> frontier{u, v};
+      std::array<size_t,2> frontier{u, v};
       std::unordered_set<size_t> parents{u, v};
       while (true) {
         for (size_t i = 0; i < frontier.size(); i++) {
