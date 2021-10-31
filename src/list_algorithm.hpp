@@ -18,7 +18,7 @@
 namespace cyy::algorithm {
 
   template <typename T>
-  std::pair<std::list<T>, std::list<T>> half_list(std::list<T> L) {
+  std::pair<std::list<T>, std::list<T>> half_cut_list(std::list<T> L) {
     auto mid = L.size() / 2;
     auto mid_it = L.begin();
     std::advance(mid_it, mid);
@@ -38,10 +38,7 @@ namespace cyy::algorithm {
       if (span_size <= 1) {
         return {std::move(l), 0};
       }
-      /* auto mid = span_size / 2; */
-      /* auto mid_it = l.begin(); */
-      /* std::advance(mid_it, mid); */
-      auto [first_half, second_half] = half_list(std::move(l));
+      auto [first_half, second_half] = half_cut_list(std::move(l));
 
       auto [sorted_first_half, count1] = self(self, std::move(first_half));
       auto [sorted_second_half, count2] = self(self, std::move(second_half));
