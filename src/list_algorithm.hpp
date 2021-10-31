@@ -46,12 +46,12 @@ namespace cyy::algorithm {
       list_type sorted_list;
       while (!sorted_first_half.empty() && !sorted_second_half.empty()) {
         if (sorted_first_half.front() <= sorted_second_half.front()) {
-          sorted_list.push_back(std::move(sorted_first_half.front()));
-          sorted_first_half.pop_front();
+          sorted_list.splice(sorted_list.end(), sorted_first_half,
+                             sorted_first_half.begin());
         } else {
           count3 += sorted_first_half.size();
-          sorted_list.push_back(std::move(sorted_second_half.front()));
-          sorted_second_half.pop_front();
+          sorted_list.splice(sorted_list.end(), sorted_second_half,
+                             sorted_second_half.begin());
         }
       }
       if (!sorted_first_half.empty()) {
