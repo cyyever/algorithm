@@ -60,7 +60,6 @@ namespace cyy::algorithm {
         }
       }
     }
-
     return {};
   }
 
