@@ -9,6 +9,7 @@
 #include <array>
 #include <unordered_set>
 
+#include "dag.hpp"
 #include "graph.hpp"
 
 namespace cyy::algorithm {
@@ -41,7 +42,9 @@ namespace cyy::algorithm {
   };
 
   template <typename vertex_type, typename weight_type = double>
-  class directed_tree_base : public directed_graph<vertex_type, weight_type> {
+  // class directed_tree_base : public directed_graph<vertex_type, weight_type>
+  // {
+  class directed_tree_base : public DAG<vertex_type, weight_type> {
   public:
     using edge_type = edge<vertex_type, weight_type>;
 
@@ -52,7 +55,7 @@ namespace cyy::algorithm {
 
     directed_tree_base(directed_graph<vertex_type, weight_type> g,
                        vertex_type root_)
-        : directed_graph<vertex_type, weight_type>(std::move(g)) {
+        : DAG<vertex_type, weight_type>(std::move(g)) {
       root = this->get_vertex_index(root_);
 #ifndef NDEUG
       /*

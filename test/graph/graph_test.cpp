@@ -37,9 +37,17 @@ TEST_CASE("graph") {
     auto order = dag.get_topological_ordering();
     REQUIRE(order);
   }
-  SUBCASE("Dijkstra search") {
+  SUBCASE("Dijkstra shortest path") {
     g.add_edge({"1", "2"});
-    auto edges = shortest_path_dijkstra(g, 0);
-    REQUIRE(edges[1] == 0);
+    auto parent = shortest_path_Dijkstra(g, 0);
+    REQUIRE(parent[1] == 0);
+  }
+  SUBCASE("Bellman-Ford search") {
+    g.add_edge({"s", "u", 2});
+    g.add_edge({"u", "w", 3});
+    g.add_edge({"w", "v", -6});
+    g.add_edge({"s", "v", 1});
+    auto parent = shortest_path_Bellman_Ford(g, 0);
+    REQUIRE(parent[3] == 2);
   }
 }

@@ -10,10 +10,10 @@
 
 namespace cyy::algorithm {
 
-  template <typename vertex_type>
-  class DAG : public directed_graph<vertex_type> {
+  template <typename vertex_type, typename weight_type = double>
+  class DAG : public directed_graph<vertex_type, weight_type> {
   public:
-    using directed_graph<vertex_type>::directed_graph;
+    using directed_graph<vertex_type, weight_type>::directed_graph;
     using edge_type = typename directed_graph<vertex_type>::edge_type;
 
     template <std::ranges::input_range U>
@@ -25,8 +25,8 @@ namespace cyy::algorithm {
       }
     }
 
-    explicit DAG(directed_graph<vertex_type> g, bool check = false)
-        : directed_graph<vertex_type>(std::move(g)) {
+    explicit DAG(directed_graph<vertex_type, weight_type> g, bool check = false)
+        : directed_graph<vertex_type, weight_type>(std::move(g)) {
       if (check && !get_topological_ordering()) {
         throw std::logic_error("not a DAG");
       }
