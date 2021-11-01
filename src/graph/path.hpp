@@ -19,6 +19,10 @@ namespace cyy::algorithm {
   template <typename vertex_type, bool directed, typename weight_type = double>
   auto shortest_path_dijkstra(
       const graph_base<vertex_type, directed, weight_type> &g, size_t s) {
+#ifndef NDEBUG
+    g.foreach_edge_with_weight(
+        [](auto const &, auto const weight) { assert(weight >= 0); });
+#endif
 
     std::vector<weight_type> distance(g.get_next_vertex_index(),
                                       std::numeric_limits<weight_type>::max());
