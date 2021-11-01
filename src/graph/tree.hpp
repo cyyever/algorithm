@@ -132,7 +132,8 @@ namespace cyy::algorithm {
       }
       std::array<size_t,2> frontier{u, v};
       std::unordered_set<size_t> parents{u, v};
-      while (true) {
+      std::optional<size_t> ancestor_opt;
+      while (!ancestor_opt) {
         for (size_t i = 0; i < frontier.size(); i++) {
           auto parent_opt = parent(frontier[i]);
           if (!parent_opt) {
@@ -141,12 +142,13 @@ namespace cyy::algorithm {
           }
           auto has_insersion = parents.emplace(*parent_opt).second;
           if (!has_insersion) {
-            return *parent_opt;
+            ancestor_opt=parent_opt;
+            break;
           }
           frontier[i] = *parent_opt;
         }
       }
-      throw std::runtime_error("shouldn't be here");
+      return *ancestor_opt;
     }
   };
 } // namespace cyy::algorithm
