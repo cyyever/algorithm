@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <algorithm>
 #include <list>
 #include <memory>

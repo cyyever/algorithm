@@ -10,6 +10,7 @@
 
 #include <map>
 #include <optional>
+#include <concepts>
 #include <ranges>
 #include <unordered_map>
 #include <vector>
