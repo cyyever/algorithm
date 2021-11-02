@@ -1,13 +1,18 @@
+/*!
+ * \file cache.hpp
+ *
+ * \brief
+ */
 #pragma once
 #include <chrono>
-#include <vector>
 #include <filesystem>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <stdexcept>
 #include <unordered_map>
 #include <utility>
-#include <memory>
+#include <vector>
 
 #include <cyy/naive_lib/log/log.hpp>
 #include <cyy/naive_lib/util/runnable.hpp>
@@ -16,32 +21,30 @@
 #include "ordered_dict.hpp"
 
 namespace cyy::algorithm {
-  template <typename T>
-    class storage_backend{
-      public:
-        virtual ~storage_backend()=default;
-        virtual std::vector<std::string> load_keys()=0;
-        virtual T load_data(const std::string &key) = 0;
-        virtual void clear_data() = 0;
-        virtual void erase_data(const std::string &key) = 0;
-        virtual void save_data(const std::string &key, T value) = 0;
-    };
-  template <typename T> class cache{
+  template <typename T> class storage_backend {
   public:
-    cache(std::unique_ptr<storage_backend<T>> backend_):backend(std::move(backend_)) {
+    virtual ~storage_backend() = default;
+    virtual std::vector<std::string> load_keys() = 0;
+    virtual T load_data(const std::string &key) = 0;
+    virtual void clear_data() = 0;
+    virtual void erase_data(const std::string &key) = 0;
+    virtual void save_data(const std::string &key, T value) = 0;
+  };
+  template <typename T> class cache {
+  public:
+    cache(std::unique_ptr<storage_backend<T>> backend_)
+        : backend(std::move(backend_)) {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
 
-        for (const auto key : backend->load_keys()) {
-            data_info[key] = data_state::IN_DISK;
-            LOG_DEBUG("load key {}", key);
-        }
-        if (data_info.empty()) {
-          LOG_WARN("no key to load");
-        } else {
-          LOG_WARN("load {} keys", data_info.size());
-        }
-
-
+      for (const auto key : backend->load_keys()) {
+        data_info[key] = data_state::IN_DISK;
+        LOG_DEBUG("load key {}", key);
+      }
+      if (data_info.empty()) {
+        LOG_WARN("no key to load");
+      } else {
+        LOG_WARN("load {} keys", data_info.size());
+      }
 
       auto cpu_num = std::jthread::hardware_concurrency();
       saving_thread_num = cpu_num;
@@ -297,7 +300,7 @@ namespace cyy::algorithm {
                 continue;
               }
             }
-            auto value =dict.backend->load_data(key);
+            auto value = dict.backend->load_data(key);
             {
               std::lock_guard lk(dict.data_mutex);
               if (!dict.change_state(key, data_state::LOADING,
@@ -390,6 +393,7 @@ namespace cyy::algorithm {
 
   protected:
     std::unique_ptr<storage_backend<T>> backend;
+
   private:
     enum class data_state : int {
       IN_MEMORY = 0,
@@ -403,8 +407,6 @@ namespace cyy::algorithm {
     };
     std::unordered_map<std::string, data_state> data_info;
     mutable std::recursive_mutex data_mutex;
-
-
 
     bool change_state(const std::string &key, data_state old_state,
                       data_state new_state) {

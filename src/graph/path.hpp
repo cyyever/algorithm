@@ -16,10 +16,14 @@
 
 namespace cyy::algorithm {
 
-  template <typename vertex_type, bool directed, typename weight_type = double>
-  auto shortest_path_dijkstra(
-      const graph_base<vertex_type, directed, weight_type> &g, size_t s) {
+  template <typename graphType>
+  auto shortest_path_Dijkstra(const graphType &g, size_t s) {
+#ifndef NDEBUG
+    g.foreach_edge_with_weight(
+        [](auto const &, auto const weight) { assert(weight >= 0); });
+#endif
 
+    using weight_type = graphType::weight_type;
     std::vector<weight_type> distance(g.get_next_vertex_index(),
                                       std::numeric_limits<weight_type>::max());
     distance[s] = 0;
@@ -43,6 +47,37 @@ namespace cyy::algorithm {
         } else {
           h.insert(v, distance[v]);
         }
+      }
+    }
+    return parent;
+  }
+  template <typename graphType>
+  auto shortest_path_Bellman_Ford(const graphType &g, size_t s) {
+    using weight_type = graphType::weight_type;
+    std::vector<weight_type> distance(g.get_next_vertex_index(),
+                                      std::numeric_limits<weight_type>::max());
+    distance[s] = 0;
+    std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
+    parent[s] = s;
+
+    auto vertex_number = g.get_vertex_number();
+    if (vertex_number == 0) {
+      return parent;
+    }
+    bool flag = false;
+    for (size_t i = 0; i + 1 < vertex_number; i++) {
+      flag = false;
+      for (auto const u : g.get_vertex_indices()) {
+        for (auto [v, weight] : g.get_adjacent_list(u)) {
+          if (distance[u] + weight < distance[v]) {
+            distance[v] = distance[u] + weight;
+            parent[v] = u;
+            flag = true;
+          }
+        }
+      }
+      if (!flag) {
+        break;
       }
     }
     return parent;

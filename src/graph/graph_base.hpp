@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <concepts>
 #include <algorithm>
+#include <concepts>
 #include <list>
 #include <memory>
 #include <ranges>
@@ -50,10 +50,12 @@ namespace std {
 } // namespace std
 
 namespace cyy::algorithm {
-  template <typename vertex_type, bool directed, typename weight_type = double>
+  template <typename vertexType, bool directed, typename weightType = double>
   class graph_base {
   public:
-    using edge_type = edge<vertex_type, weight_type>;
+    using edge_type = edge<vertexType, weightType>;
+    using vertex_type = vertexType;
+    using weight_type = weightType;
     using vertex_index_map_type = std::unordered_map<vertex_type, size_t>;
     using adjacent_matrix_type = std::vector<std::vector<weight_type>>;
     graph_base() = default;
