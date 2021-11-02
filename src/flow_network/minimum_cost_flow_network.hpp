@@ -186,7 +186,7 @@ namespace cyy::algorithm {
       return flow;
     }
 
-    bool check_flow(const flow_fun_type &flow) {
+    bool check_flow(const flow_fun_type &flow) const {
       decltype(demand) amount;
 
       graph.foreach_edge([this, &flow, &amount](auto const &e) {
@@ -197,7 +197,7 @@ namespace cyy::algorithm {
       return amount == demand;
     }
 
-    bool check_feasible_flow(const flow_fun_type &flow) {
+    bool check_feasible_flow(const flow_fun_type &flow) const {
       if (!check_flow(flow)) {
         return false;
       }
