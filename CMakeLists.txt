@@ -4,6 +4,7 @@ project(CyyAlgorithmLib LANGUAGES CXX)
 
 include(cmake/all.cmake)
 
+option(BUILD_PYTHON_BINDING "Build python binding" OFF)
 file(GLOB_RECURSE SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
 
 find_package(Boost REQUIRED)
@@ -27,6 +28,10 @@ target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::log)
 target_include_directories(
   CyyAlgorithmLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
                          $<INSTALL_INTERFACE:include/cyy/algorithm>)
+
+if(BUILD_PYTHON_BINDING)
+  add_subdirectory(python_binding)
+endif()
 
 # test
 add_subdirectory(test)
