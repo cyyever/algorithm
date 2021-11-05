@@ -3,12 +3,18 @@ import glob
 import os
 import shutil
 
-from setuptools import setup
+from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
 # A CMakeExtension needs a sourcedir instead of a file list.
 # The name must be the _single_ output extension from the CMake build.
 # If you need multiple extensions, see scikit-build.
+
+
+class CMakeExtension(Extension):
+    def __init__(self, name, sourcedir=""):
+        Extension.__init__(self, name, sources=[])
+        self.sourcedir = os.path.abspath(sourcedir)
 
 
 class CMakeBuild(build_ext):
@@ -20,7 +26,7 @@ class CMakeBuild(build_ext):
             extdir += os.path.sep
         os.makedirs(extdir, exist_ok=True)
         cmake_build_dir = os.getenv("cmake_build_dir")
-        for f in glob.glob(os.path.join(cmake_build_dir, "**", "*.so")):
+        for f in glob.glob(os.path.join(cmake_build_dir, "python_binding", "*.so")):
             shutil.copy(f, extdir)
 
 
@@ -32,7 +38,8 @@ setup(
     author="cyy",
     author_email="cyyever@outlook.com",
     description="Python binding for this C++ lib",
-    url="https://github.com/cyyever/naive_cpp_lib",
+    url="https://github.com/cyyever/algorithm",
+    ext_modules=[CMakeExtension("cmake_example")],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
     python_requires=">=3.6",
