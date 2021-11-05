@@ -20,9 +20,7 @@ class CMakeBuild(build_ext):
             extdir += os.path.sep
         os.makedirs(extdir, exist_ok=True)
         cmake_build_dir = os.getenv("cmake_build_dir")
-        for f in glob.glob(os.path.join(cmake_build_dir, "**", "*cyy_algorithm*")):
-            if not f.endswith(".so"):
-                continue
+        for f in glob.glob(os.path.join(cmake_build_dir, "**", "*.so")):
             shutil.copy(f, extdir)
 
 
