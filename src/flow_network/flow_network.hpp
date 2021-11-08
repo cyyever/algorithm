@@ -28,6 +28,7 @@ namespace cyy::algorithm {
                  vertex_type source_, vertex_type sink_,
                  const capacity_fun_type &capacities_)
         : graph(std::move(graph_)) {
+          graph.rearrange_vertices();
       source = graph.get_vertex_index(source_);
       sink = graph.get_vertex_index(sink_);
 
@@ -94,7 +95,7 @@ namespace cyy::algorithm {
         }
       }
 #ifndef NDEBUG
-      check_flow();
+      assert(check_flow());
 #endif
     }
     void max_flow_by_edmonds_karp() {
@@ -128,17 +129,24 @@ namespace cyy::algorithm {
   private:
     flow_network() = default;
     bool check_flow() {
+      graph.rearrange_vertices();
       // capacity condition
-      for (const auto &[from_index, adjacent_vertices] :
-           graph.get_adjacent_list()) {
-        for (const auto &[to_index, weight] : adjacent_vertices) {
-          if (weight > capacities.at({from_index, to_index}))
-            return false;
-        }
+      bool flag = true;
+      graph.foreach_edge_with_weight(
+          [&flag, this](auto const &indexed_edge, auto const &weight) {
+            if (weight > capacities.at(indexed_edge)) {
+              flag = false;
+            }
+          });
+      if (!flag) {
+        return false;
       }
       // conservation condition
       auto matrix = graph.get_adjacent_matrix();
       for (size_t i = 0; i < matrix.size(); i++) {
+        if(i==source || i==sink) {
+          continue;
+        }
         weight_type sum = ::ranges::accumulate(matrix[i], weight_type{});
         weight_type sum2 = 0;
         for (size_t j = 0; j < matrix.size(); j++) {
