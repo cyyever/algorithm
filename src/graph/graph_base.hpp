@@ -94,7 +94,7 @@ namespace cyy::algorithm {
     }
 
     void print_edges(std::ostream &os) const {
-      for (auto const &e : foreach_edge2()) {
+      for (auto const &e : foreach_edge()) {
         os << e.first << " -> " << e.second << std::endl;
       }
     }
@@ -144,7 +144,7 @@ namespace cyy::algorithm {
 
     auto get_next_vertex_index() const { return next_vertex_index; }
 
-    auto foreach_edge_with_weight2() const {
+    auto foreach_edge_with_weight() const {
       return ranges::v3::view::for_each(
           weighted_adjacent_list, [](const auto &p) {
             return ranges::v3::view::for_each(p.second, [&p](auto const &t) {
@@ -154,7 +154,7 @@ namespace cyy::algorithm {
           });
     }
 
-    auto foreach_edge2() const {
+    auto foreach_edge() const {
       return ranges::v3::view::for_each(
           weighted_adjacent_list, [](const auto &p) {
             return ranges::v3::view::for_each(p.second, [&p](auto const &t) {
@@ -243,7 +243,7 @@ namespace cyy::algorithm {
       for (size_t i = 0; i < next_vertex_index; i++) {
         adjacent_matrix.emplace_back(next_vertex_index, 0);
       }
-      for (auto const &[e, weight] : foreach_edge_with_weight2()) {
+      for (auto const &[e, weight] : foreach_edge_with_weight()) {
         adjacent_matrix[e.first][e.second] = weight;
         if constexpr (!directed) {
           adjacent_matrix[e.second][e.first] = weight;

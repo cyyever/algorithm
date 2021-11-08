@@ -20,7 +20,7 @@ namespace cyy::algorithm {
   auto shortest_path_Dijkstra(const graphType &g, size_t s) {
 #ifndef NDEBUG
 
-    for (auto const &[_, weight] : g.foreach_edge_with_weight2()) {
+    for (auto const &[_, weight] : g.foreach_edge_with_weight()) {
       assert(weight >= 0);
     }
 #endif

@@ -189,7 +189,7 @@ namespace cyy::algorithm {
     bool check_flow(const flow_fun_type &flow) const {
       decltype(demand) amount;
 
-      for (auto const &e : graph.foreach_edge2()) {
+      for (auto const &e : graph.foreach_edge()) {
         auto edge_flow = flow.at(e);
         amount[e.second] += edge_flow;
         amount[e.first] -= edge_flow;
@@ -203,7 +203,7 @@ namespace cyy::algorithm {
       }
       bool flag = true;
 
-      for (auto const &e : graph.foreach_edge2()) {
+      for (auto const &e : graph.foreach_edge()) {
         auto lower_capacity = lower_capacities.at(e);
         auto upper_capacity = upper_capacities.at(e);
         auto edge_flow = flow.at(e);
@@ -306,7 +306,7 @@ namespace cyy::algorithm {
             max_abs_cost * graph.get_vertex_number() + 1);
 
         auto B = demand;
-        for (auto const &e : graph.foreach_edge2()) {
+        for (auto const &e : graph.foreach_edge()) {
           B[e.first] += lower_capacities[e];
           B[e.second] -= lower_capacities[e];
         }
@@ -333,7 +333,7 @@ namespace cyy::algorithm {
       std::vector<indexed_edge> L;
       auto T = graph;
       T.clear_edges();
-      for (auto const &e : graph.foreach_edge2()) {
+      for (auto const &e : graph.foreach_edge()) {
         if (e.first == artificial_vertex_opt) {
           T.add_edge(graph.get_edge(e).reverse());
         } else if (e.second == artificial_vertex_opt) {

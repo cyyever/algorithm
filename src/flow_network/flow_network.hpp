@@ -32,7 +32,7 @@ namespace cyy::algorithm {
       source = graph.get_vertex_index(source_);
       sink = graph.get_vertex_index(sink_);
 
-      for (auto const &e : graph.foreach_edge2()) {
+      for (auto const &e : graph.foreach_edge()) {
         auto real_edge =
             std::pair{graph.get_vertex(e.first), graph.get_vertex(e.second)};
         auto capacity = capacities_.at(real_edge);
@@ -132,7 +132,7 @@ namespace cyy::algorithm {
       graph.rearrange_vertices();
       // capacity condition
       for (auto const &[indexed_edge, weight] :
-           graph.foreach_edge_with_weight2()) {
+           graph.foreach_edge_with_weight()) {
         if (weight > capacities.at(indexed_edge)) {
           return false;
         }
@@ -163,7 +163,7 @@ namespace cyy::algorithm {
       auto residual_graph = *this;
       residual_graph.graph.clear_edges();
       residual_graph.capacities.clear();
-      for (auto const &edge : graph.foreach_edge2()) {
+      for (auto const &edge : graph.foreach_edge()) {
         auto weight = graph.get_weight(edge);
         auto leftover_capacity = capacities.at(edge) - weight;
         if (leftover_capacity > 0 || weight > 0) {

@@ -26,7 +26,7 @@ namespace cyy::algorithm {
     auto get_underlying_graph() const {
       graph<vertex_type, weight_type> g;
       g.set_vertex_indices(this->vertex_indices);
-      for (auto const &e : this->foreach_edge2()) {
+      for (auto const &e : this->foreach_edge()) {
         g.add_edge(this->get_edge(e));
       }
       return g;
@@ -35,7 +35,7 @@ namespace cyy::algorithm {
     directed_graph get_transpose() const {
       directed_graph transpose = *this;
       transpose.clear_edges();
-      for (auto const &e : this->foreach_edge2()) {
+      for (auto const &e : this->foreach_edge()) {
         auto edge = this->get_edge(e).reverse();
 
         transpose.add_edge(edge);
