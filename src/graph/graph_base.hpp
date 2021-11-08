@@ -94,9 +94,9 @@ namespace cyy::algorithm {
     }
 
     void print_edges(std::ostream &os) const {
-      foreach_edge([&os](auto const &e) {
+      for (auto const &e : foreach_edge2()) {
         os << e.first << " -> " << e.second << std::endl;
-      });
+      }
     }
 
     bool has_continuous_vertices() const {
@@ -144,21 +144,6 @@ namespace cyy::algorithm {
 
     auto get_next_vertex_index() const { return next_vertex_index; }
 
-    void foreach_edge_with_weight(
-        std::function<void(indexed_edge, weight_type)> edge_callback) const {
-      for (auto const &[from_index, adjacent_vertices] :
-           weighted_adjacent_list) {
-        for (auto const &[to_index, weight] : adjacent_vertices) {
-          if constexpr (directed) {
-            edge_callback({from_index, to_index}, weight);
-          } else {
-            if (from_index <= to_index) {
-              edge_callback({from_index, to_index}, weight);
-            }
-          }
-        }
-      }
-    }
     auto foreach_edge_with_weight2() const {
       return ranges::v3::view::for_each(
           weighted_adjacent_list, [](const auto &p) {
@@ -176,21 +161,6 @@ namespace cyy::algorithm {
               return ranges::v3::yield(indexed_edge{p.first, t.first});
             });
           });
-    }
-
-    void foreach_edge(std::function<void(indexed_edge)> edge_callback) const {
-      for (auto const &[from_index, adjacent_vertices] :
-           weighted_adjacent_list) {
-        for (auto const &[to_index, weight] : adjacent_vertices) {
-          if constexpr (directed) {
-            edge_callback({from_index, to_index});
-          } else {
-            if (from_index <= to_index) {
-              edge_callback({from_index, to_index});
-            }
-          }
-        }
-      }
     }
 
     size_t add_vertex(vertex_type vertex) {
@@ -273,13 +243,12 @@ namespace cyy::algorithm {
       for (size_t i = 0; i < next_vertex_index; i++) {
         adjacent_matrix.emplace_back(next_vertex_index, 0);
       }
-      foreach_edge_with_weight([&adjacent_matrix](auto const &e, auto weight) {
+      for (auto const &[e, weight] : foreach_edge_with_weight2()) {
         adjacent_matrix[e.first][e.second] = weight;
         if constexpr (!directed) {
           adjacent_matrix[e.second][e.first] = weight;
         }
-      });
-
+      }
       return adjacent_matrix;
     }
 

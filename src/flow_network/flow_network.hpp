@@ -32,7 +32,7 @@ namespace cyy::algorithm {
       source = graph.get_vertex_index(source_);
       sink = graph.get_vertex_index(sink_);
 
-      graph.foreach_edge([this, &capacities_](auto const &e) {
+      for (auto const &e : graph.foreach_edge2()) {
         auto real_edge =
             std::pair{graph.get_vertex(e.first), graph.get_vertex(e.second)};
         auto capacity = capacities_.at(real_edge);
@@ -41,7 +41,7 @@ namespace cyy::algorithm {
           throw std::runtime_error("capacity should be non-negative");
         }
         capacities[e] = capacity;
-      });
+      }
 
       // init flow to zero
       graph.set_all_weights(0);
@@ -163,7 +163,7 @@ namespace cyy::algorithm {
       auto residual_graph = *this;
       residual_graph.graph.clear_edges();
       residual_graph.capacities.clear();
-      graph.foreach_edge([this, &residual_graph](auto const &edge) {
+      for (auto const &edge : graph.foreach_edge2()) {
         auto weight = graph.get_weight(edge);
         auto leftover_capacity = capacities.at(edge) - weight;
         if (leftover_capacity > 0 || weight > 0) {
@@ -180,7 +180,7 @@ namespace cyy::algorithm {
             residual_graph.backward_edges.insert(edge.reverse());
           }
         }
-      });
+      }
 
       return residual_graph;
     }

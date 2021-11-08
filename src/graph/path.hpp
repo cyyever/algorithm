@@ -19,8 +19,10 @@ namespace cyy::algorithm {
   template <typename graphType>
   auto shortest_path_Dijkstra(const graphType &g, size_t s) {
 #ifndef NDEBUG
-    g.foreach_edge_with_weight(
-        [](auto const &, auto const weight) { assert(weight >= 0); });
+
+    for (auto const &[_, weight] : g.foreach_edge_with_weight2()) {
+      assert(weight >= 0);
+    }
 #endif
 
     using weight_type = graphType::weight_type;

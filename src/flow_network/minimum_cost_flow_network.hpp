@@ -189,11 +189,11 @@ namespace cyy::algorithm {
     bool check_flow(const flow_fun_type &flow) const {
       decltype(demand) amount;
 
-      graph.foreach_edge([this, &flow, &amount](auto const &e) {
+      for (auto const &e : graph.foreach_edge2()) {
         auto edge_flow = flow.at(e);
         amount[e.second] += edge_flow;
         amount[e.first] -= edge_flow;
-      });
+      }
       return amount == demand;
     }
 
@@ -203,14 +203,14 @@ namespace cyy::algorithm {
       }
       bool flag = true;
 
-      graph.foreach_edge([this, &flag, &flow](auto const &e) {
+      for (auto const &e : graph.foreach_edge2()) {
         auto lower_capacity = lower_capacities.at(e);
         auto upper_capacity = upper_capacities.at(e);
         auto edge_flow = flow.at(e);
         if (edge_flow > upper_capacity || edge_flow < lower_capacity) {
           flag = false;
         }
-      });
+      }
       return flag;
     }
 
@@ -306,10 +306,10 @@ namespace cyy::algorithm {
             max_abs_cost * graph.get_vertex_number() + 1);
 
         auto B = demand;
-        graph.foreach_edge([this, &B](auto const &e) {
+        for (auto const &e : graph.foreach_edge2()) {
           B[e.first] += lower_capacities[e];
           B[e.second] -= lower_capacities[e];
-        });
+        }
         auto artificial_vertex = graph.add_vertex(artificial_vertex_name);
         artificial_vertex_opt = artificial_vertex;
         demand[artificial_vertex] = 0;
@@ -333,7 +333,7 @@ namespace cyy::algorithm {
       std::vector<indexed_edge> L;
       auto T = graph;
       T.clear_edges();
-      graph.foreach_edge([&L, &T, this](auto const &e) {
+      for (auto const &e : graph.foreach_edge2()) {
         if (e.first == artificial_vertex_opt) {
           T.add_edge(graph.get_edge(e).reverse());
         } else if (e.second == artificial_vertex_opt) {
@@ -341,7 +341,7 @@ namespace cyy::algorithm {
         } else {
           L.emplace_back(e);
         }
-      });
+      }
       // T.print_edges(std::cout);
       return {in_directed_tree<vertex_type, weight_type>(
                   std::move(T), artificial_vertex_name),
