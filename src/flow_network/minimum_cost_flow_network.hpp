@@ -166,7 +166,6 @@ namespace cyy::algorithm {
               ts.T.add_edge({graph.get_vertex(v), graph.get_vertex(u), weight});
               return false;
             });
-        // ts.T.print_edges(std::cout);
       }
       if (std::ranges::any_of(flow, [&ts](const auto &p) {
             if (p.first.first == ts.T.get_root() ||
@@ -179,10 +178,27 @@ namespace cyy::algorithm {
           })) {
         return {};
       }
-      std::erase_if(flow, [&ts](const auto &p) {
-        return p.first.first == ts.T.get_root() ||
-               p.first.second == ts.T.get_root();
+
+      assert(check_feasible_flow(flow));
+      std::erase_if(flow, [&ts, this](const auto &p) {
+        return p.first.first == artificial_vertex_opt.value() ||
+               p.first.second == artificial_vertex_opt.value();
       });
+      std::erase_if(costs, [&ts, this](const auto &p) {
+        return p.first.first == artificial_vertex_opt.value() ||
+               p.first.second == artificial_vertex_opt.value();
+      });
+      std::erase_if(lower_capacities, [&ts, this](const auto &p) {
+        return p.first.first == artificial_vertex_opt.value() ||
+               p.first.second == artificial_vertex_opt.value();
+      });
+      std::erase_if(upper_capacities, [&ts, this](const auto &p) {
+        return p.first.first == artificial_vertex_opt.value() ||
+               p.first.second == artificial_vertex_opt.value();
+      });
+      graph.remove_vertex(artificial_vertex_opt.value());
+      demand.erase(artificial_vertex_opt.value());
+      assert(is_tree_solution(flow));
       return flow;
     }
 
@@ -201,17 +217,30 @@ namespace cyy::algorithm {
       if (!check_flow(flow)) {
         return false;
       }
-      bool flag = true;
 
       for (auto const &e : graph.foreach_edge()) {
         auto lower_capacity = lower_capacities.at(e);
         auto upper_capacity = upper_capacities.at(e);
         auto edge_flow = flow.at(e);
         if (edge_flow > upper_capacity || edge_flow < lower_capacity) {
-          flag = false;
+          return false;
         }
       }
-      return flag;
+      return true;
+    }
+
+    bool is_tree_solution(const flow_fun_type &flow) const {
+      assert(check_feasible_flow(flow));
+      ::cyy::algorithm::graph<size_t, weight_type> free_edges;
+      for (auto const &e : graph.foreach_edge()) {
+        auto lower_capacity = lower_capacities.at(e);
+        auto upper_capacity = upper_capacities.at(e);
+        auto edge_flow = flow.at(e);
+        if (edge_flow > lower_capacity && edge_flow < upper_capacity) {
+          free_edges.add_edge({e.first, e.second});
+        }
+      }
+      return free_edges.is_tree();
     }
 
     struct tree_structure {
