@@ -28,7 +28,7 @@ namespace cyy::algorithm {
                  vertex_type source_, vertex_type sink_,
                  const capacity_fun_type &capacities_)
         : graph(std::move(graph_)) {
-          graph.rearrange_vertices();
+      graph.rearrange_vertices();
       source = graph.get_vertex_index(source_);
       sink = graph.get_vertex_index(sink_);
 
@@ -131,20 +131,16 @@ namespace cyy::algorithm {
     bool check_flow() {
       graph.rearrange_vertices();
       // capacity condition
-      bool flag = true;
-      graph.foreach_edge_with_weight(
-          [&flag, this](auto const &indexed_edge, auto const &weight) {
-            if (weight > capacities.at(indexed_edge)) {
-              flag = false;
-            }
-          });
-      if (!flag) {
-        return false;
+      for (auto const &[indexed_edge, weight] :
+           graph.foreach_edge_with_weight2()) {
+        if (weight > capacities.at(indexed_edge)) {
+          return false;
+        }
       }
       // conservation condition
       auto matrix = graph.get_adjacent_matrix();
       for (size_t i = 0; i < matrix.size(); i++) {
-        if(i==source || i==sink) {
+        if (i == source || i == sink) {
           continue;
         }
         weight_type sum = ::ranges::accumulate(matrix[i], weight_type{});

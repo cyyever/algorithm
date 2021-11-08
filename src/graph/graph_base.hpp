@@ -11,11 +11,11 @@
 #include <list>
 #include <memory>
 #include <ranges>
-#include <range/v3/all.hpp>
 #include <unordered_map>
 #include <vector>
 
 #include <boost/bimap.hpp>
+#include <range/v3/all.hpp>
 
 namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type = double> struct edge {
@@ -159,12 +159,21 @@ namespace cyy::algorithm {
         }
       }
     }
+    auto foreach_edge_with_weight2() const {
+      return ranges::v3::view::for_each(
+          weighted_adjacent_list, [](const auto &p) {
+            return ranges::v3::view::for_each(p.second, [&p](auto const &t) {
+              return ranges::v3::yield(
+                  std::pair(indexed_edge{p.first, t.first}, t.second));
+            });
+          });
+    }
 
     auto foreach_edge2() const {
       return ranges::v3::view::for_each(
           weighted_adjacent_list, [](const auto &p) {
             return ranges::v3::view::for_each(p.second, [&p](auto const &t) {
-              return ranges::v3::yield(indexed_edge{p.first, t});
+              return ranges::v3::yield(indexed_edge{p.first, t.first});
             });
           });
     }
