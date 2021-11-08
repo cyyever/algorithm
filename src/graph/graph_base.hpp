@@ -11,6 +11,7 @@
 #include <list>
 #include <memory>
 #include <ranges>
+#include <range/v3/all.hpp>
 #include <unordered_map>
 #include <vector>
 
@@ -157,6 +158,15 @@ namespace cyy::algorithm {
           }
         }
       }
+    }
+
+    auto foreach_edge2() const {
+      return ranges::v3::view::for_each(
+          weighted_adjacent_list, [](const auto &p) {
+            return ranges::v3::view::for_each(p.second, [&p](auto const &t) {
+              return ranges::v3::yield(indexed_edge{p.first, t});
+            });
+          });
     }
 
     void foreach_edge(std::function<void(indexed_edge)> edge_callback) const {
