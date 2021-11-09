@@ -120,7 +120,7 @@ namespace cyy::algorithm {
       data.emplace_back(std::move(*real_it));
       data.erase(real_it);
       real_it = data.end();
-      real_it--;
+      --real_it;
       data_index[real_it->first] = real_it;
       return iterator(real_it);
     }
