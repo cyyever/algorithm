@@ -19,15 +19,13 @@ namespace cyy::algorithm {
   template <typename graphType>
   auto shortest_path_Dijkstra(const graphType &g, size_t s) {
 #ifndef NDEBUG
-
     for (auto const &[_, weight] : g.foreach_edge_with_weight()) {
       assert(weight >= 0);
     }
 #endif
 
     using weight_type = graphType::weight_type;
-    std::vector<weight_type> distance(g.get_next_vertex_index(),
-                                      std::numeric_limits<weight_type>::max());
+    std::vector<std::optional<weight_type>> distance(g.get_next_vertex_index());
     distance[s] = 0;
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
     parent[s] = s;
@@ -39,15 +37,16 @@ namespace cyy::algorithm {
       h.pop();
       for (auto [v, weight] : g.get_adjacent_list(u)) {
         assert(weight >= 0);
-        if (distance[v] <= distance[u] + weight) {
+        if (distance[v].has_value() &&
+            distance[v].value() <= distance[u].value() + weight) {
           continue;
         }
         parent[v] = u;
-        distance[v] = distance[u] + weight;
+        distance[v] = distance[u].value() + weight;
         if (h.contains(v)) {
-          h.change_key(v, distance[v]);
+          h.change_key(v, distance[v].value());
         } else {
-          h.insert(v, distance[v]);
+          h.insert(v, distance[v].value());
         }
       }
     }
@@ -56,8 +55,7 @@ namespace cyy::algorithm {
   template <typename graphType>
   auto shortest_path_Bellman_Ford(const graphType &g, size_t s) {
     using weight_type = graphType::weight_type;
-    std::vector<weight_type> distance(g.get_next_vertex_index(),
-                                      std::numeric_limits<weight_type>::max());
+    std::vector<std::optional<weight_type>> distance(g.get_next_vertex_index());
     distance[s] = 0;
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
     parent[s] = s;
@@ -71,8 +69,10 @@ namespace cyy::algorithm {
       flag = false;
       for (auto const u : g.get_vertex_indices()) {
         for (auto [v, weight] : g.get_adjacent_list(u)) {
-          if (distance[u] + weight < distance[v]) {
-            distance[v] = distance[u] + weight;
+          if (distance[u].has_value() &&
+              (!distance[v].has_value() ||
+               distance[u].value() + weight < distance[v].value())) {
+            distance[v] = distance[u].value() + weight;
             parent[v] = u;
             flag = true;
           }

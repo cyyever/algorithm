@@ -22,8 +22,7 @@ namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type = double>
   auto MST_prime(const graph<vertex_type, weight_type> &g) {
 
-    std::vector<weight_type> weights(g.get_next_vertex_index(),
-                                     std::numeric_limits<weight_type>::max());
+    std::vector<std::optional<weight_type>> weights(g.get_next_vertex_index());
     std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
     graph<vertex_type> MST;
     heap<size_t, weight_type> h;
@@ -33,15 +32,15 @@ namespace cyy::algorithm {
       auto u = h.top();
       h.pop();
       for (auto [v, weight] : g.get_adjacent_list(u)) {
-        if (weight >= weights[v]) {
+        if (weights[v].has_value() && weight >= weights[v]) {
           continue;
         }
         edge[v] = u;
         weights[v] = weight;
         if (h.contains(v)) {
-          h.change_key(v, weights[v]);
+          h.change_key(v, weight);
         } else {
-          h.insert(v, weights[v]);
+          h.insert(v, weight);
         }
       }
     }
@@ -50,7 +49,7 @@ namespace cyy::algorithm {
       if (u == SIZE_MAX) {
         continue;
       }
-      MST.add_edge({g.get_vertex(u), g.get_vertex(v), weights[v]});
+      MST.add_edge({g.get_vertex(u), g.get_vertex(v), weights[v].value()});
     }
     return tree(MST, false);
   }

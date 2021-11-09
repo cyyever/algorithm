@@ -1,6 +1,6 @@
 find_package(doctest REQUIRED)
 find_package(Threads REQUIRED)
-# find_package(CyyMathLib)
+find_package(CyyMathLib)
 
 file(GLOB test_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
      ${CMAKE_CURRENT_SOURCE_DIR}/*/*.cpp)
@@ -11,7 +11,7 @@ foreach(test_source IN LISTS test_sources)
   target_link_libraries(${test_prog} PRIVATE CyyAlgorithmLib)
   if(TARGET CyyMathLib)
     target_link_libraries(${test_prog} PRIVATE CyyMathLib)
-    target_compile_definitions(${test_prog} PRIVATE HAS_CYY_MATH)
+    target_compile_definitions(${test_prog} PRIVATE CYY_MATH)
   endif()
   target_link_libraries(${test_prog} PRIVATE doctest::doctest)
   target_link_libraries(${test_prog} PRIVATE Threads::Threads)
