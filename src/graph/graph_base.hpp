@@ -67,21 +67,6 @@ namespace cyy::algorithm {
         add_edge(edge);
       }
     }
-    void
-    foreach_weight(std::function<void(weight_type)> weight_callback) const {
-      for (auto const &[from_index, adjacent_vertices] :
-           weighted_adjacent_list) {
-        for (auto const &[to_index, weight] : adjacent_vertices) {
-          if constexpr (directed) {
-            weight_callback(weight);
-          } else {
-            if (from_index <= to_index) {
-              weight_callback(weight);
-            }
-          }
-        }
-      }
-    }
     void set_vertex_indices(boost::bimap<vertex_type, size_t> new_vertices) {
       if (!weighted_adjacent_list.empty()) {
         throw std::runtime_error("this graph has some edge");
@@ -145,22 +130,38 @@ namespace cyy::algorithm {
     auto get_next_vertex_index() const { return next_vertex_index; }
 
     auto foreach_edge_with_weight() const {
-      return ranges::view::for_each(weighted_adjacent_list, [](const auto &p) {
-        return ranges::view::for_each(p.second, [&p](auto const &t) {
-          return ranges::yield(
-              std::pair(indexed_edge{p.first, t.first}, t.second));
-        });
-      });
+      if constexpr (directed) {
+        return ranges::view::for_each(
+            weighted_adjacent_list, [](const auto &p) {
+              return ranges::view::for_each(p.second, [&p](auto const &t) {
+                return ranges::yield(
+                    std::pair(indexed_edge{p.first, t.first}, t.second));
+              });
+            });
+      } else {
+
+        return ranges::view::for_each(
+            weighted_adjacent_list, [](const auto &p) {
+              return p.second |
+                     ranges::view::filter(
+                         [&p](const std::pair<size_t, weight_type> &e) -> bool {
+                           return e.first > p.first;
+                         }) |
+                     ranges::view::for_each([&p](auto const &t) {
+                       return ranges::yield(
+                           std::pair(indexed_edge{p.first, t.first}, t.second));
+                     });
+            });
+      }
     }
 
     auto foreach_edge() const {
-      return ranges::view::for_each(weighted_adjacent_list, [](const auto &p) {
-        return ranges::view::for_each(p.second, [&p](auto const &t) {
-          return ranges::yield(indexed_edge{p.first, t.first});
-        });
-      });
+      return foreach_edge_with_weight() | ranges::view::keys;
     }
 
+    auto foreach_weight() const {
+      return foreach_edge_with_weight() | ranges::view::values;
+    }
     size_t add_vertex(vertex_type vertex) {
       auto it = vertex_indices.left.find(vertex);
       if (it != vertex_indices.left.end()) {
@@ -195,15 +196,11 @@ namespace cyy::algorithm {
       if (!add_directed_edge(e)) {
         return;
       }
-      edge_num++;
       if constexpr (!directed) {
         add_directed_edge(e.reverse());
       }
     }
-    void clear_edges() {
-      weighted_adjacent_list.clear();
-      edge_num = 0;
-    }
+    void clear_edges() { weighted_adjacent_list.clear(); }
     void remove_vertex(size_t vertex_index) {
       weighted_adjacent_list.erase(vertex_index);
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
@@ -220,7 +217,6 @@ namespace cyy::algorithm {
       if (!remove_directed_edge(e)) {
         return false;
       }
-      edge_num--;
       if constexpr (!directed) {
         remove_directed_edge(e.reverse());
       }
@@ -262,7 +258,13 @@ namespace cyy::algorithm {
              });
     }
     size_t get_vertex_number() const { return vertex_indices.size(); }
-    size_t get_edge_number() const { return edge_num; }
+    size_t get_edge_number() const {
+      size_t cnt = 0;
+      for (auto const &_ : foreach_edge()) {
+        cnt++;
+      }
+      return cnt;
+    }
     const vertex_type &get_vertex(size_t index) const {
       return vertex_indices.right.at(index);
     }
@@ -409,7 +411,6 @@ namespace cyy::algorithm {
     }
 
   protected:
-    size_t edge_num = 0;
     std::unordered_map<size_t, std::list<std::pair<size_t, weight_type>>>
         weighted_adjacent_list;
     boost::bimap<vertex_type, size_t> vertex_indices;

@@ -212,6 +212,7 @@ namespace cyy::algorithm {
 
     bool check_flow(const flow_fun_type &flow) const {
       decltype(demand) amount;
+      assert(flow.size() == graph.get_edge_number());
 
       for (auto const &e : graph.foreach_edge()) {
         auto edge_flow = flow.at(e);
@@ -379,7 +380,7 @@ namespace cyy::algorithm {
           L.emplace_back(e);
         }
       }
-      // T.print_edges(std::cout);
+      /* T.print_edges(std::cout); */
       return {in_directed_tree<vertex_type, weight_type>(
                   std::move(T), artificial_vertex_name),
               std::move(L),
