@@ -14,11 +14,11 @@ find_package(CyyNaiveLib REQUIRED)
 
 add_library(CyyAlgorithmLib ${SOURCE})
 
+find_package(range-v3 REQUIRED)
+target_link_libraries(CyyAlgorithmLib PUBLIC range-v3::range-v3)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   find_package(libcxx REQUIRED)
   target_link_libraries(CyyAlgorithmLib PUBLIC libcxx::libcxx)
-  find_package(range-v3 REQUIRED)
-  target_link_libraries(CyyAlgorithmLib PUBLIC range-v3::range-v3)
 endif()
 
 target_link_libraries(CyyAlgorithmLib PUBLIC Boost::headers)

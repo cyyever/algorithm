@@ -10,9 +10,9 @@
 #include <memory>
 #include <numeric>
 #include <optional>
+#include <ranges>
 #include <utility>
 #include <vector>
-#include <ranges>
 
 #include "graph/tree.hpp"
 #include "hash.hpp"
@@ -40,7 +40,6 @@ namespace cyy::algorithm {
         lower_capacities[indexed_e] = lower_capacity;
         upper_capacities[indexed_e] = upper_capacity;
         costs[indexed_e] = cost;
-        // assert(costs.contains({4,5}) || costs.contains({5,4}));
       }
       weight_type total_demand = 0;
       for (auto const &[_, d] : demand_) {
@@ -106,28 +105,36 @@ namespace cyy::algorithm {
           auto path = ts.T.get_path(violating_edge.first, ancestor);
           cycle.insert(cycle.end(), path.begin(), path.end());
         }
-        weight_type delta = std::numeric_limits<weight_type>::max();
+        std::optional<weight_type> delta_opt;
         for (size_t i = 0; i + 1 < cycle.size(); i++) {
           auto it = flow.find({cycle[i], cycle[i + 1]});
           if (it != flow.end()) {
-            delta =
-                std::min(delta, upper_capacities.at(it->first) - it->second);
+            auto delta = upper_capacities.at(it->first) - it->second;
+            if (!delta_opt.has_value()) {
+              delta_opt = delta;
+            } else {
+              delta_opt = std::min(delta_opt.value(), delta);
+            }
           } else {
             it = flow.find({cycle[i + 1], cycle[i]});
             assert(it != flow.end());
-            delta =
-                std::min(delta, it->second - lower_capacities.at(it->first));
+            auto delta = it->second - lower_capacities.at(it->first);
+            if (!delta_opt.has_value()) {
+              delta_opt = delta;
+            } else {
+              delta_opt = std::min(delta_opt.value(), delta);
+            }
           }
         }
 
         for (size_t i = 0; i + 1 < cycle.size(); i++) {
           auto it = flow.find({cycle[i], cycle[i + 1]});
           if (it != flow.end()) {
-            it->second += delta;
+            it->second += *delta_opt;
           } else {
             it = flow.find({cycle[i + 1], cycle[i]});
             assert(it != flow.end());
-            it->second -= delta;
+            it->second -= *delta_opt;
           }
         }
 

@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <numeric>
 #include <optional>
 #include <unordered_set>
 #include <utility>
@@ -68,15 +67,21 @@ namespace cyy::algorithm {
         if (path.empty()) {
           break;
         }
-        weight_type bottleneck = std::numeric_limits<weight_type>::max();
+        std::optional<weight_type> bottleneck_opt;
         for (size_t i = 0; i + 1 < path.size(); i++) {
           indexed_edge e{path[i], path[i + 1]};
-          bottleneck = std::min(bottleneck, residual_graph.capacities[e]);
+          if (!bottleneck_opt.has_value()) {
+            bottleneck_opt = residual_graph.capacities[e];
+          } else {
+            bottleneck_opt =
+                std::min(*bottleneck_opt, residual_graph.capacities[e]);
+          }
         }
         for (size_t i = 0; i + 1 < path.size(); i++) {
           indexed_edge e{path[i], path[i + 1]};
           if (residual_graph.is_backward_edge(e)) {
-            auto new_weight = graph.get_weight(e.reverse()) - bottleneck;
+            auto new_weight =
+                graph.get_weight(e.reverse()) - bottleneck_opt.value();
             graph.set_weight(e.reverse(), new_weight);
             if (new_weight == 0) {
               residual_graph.remove_edge(e);
@@ -84,12 +89,12 @@ namespace cyy::algorithm {
               residual_graph.capacities[e] = new_weight;
             }
           } else {
-            auto new_weight = graph.get_weight(e) + bottleneck;
+            auto new_weight = graph.get_weight(e) + bottleneck_opt.value();
             graph.set_weight(e, new_weight);
             if (capacities[e] == new_weight) {
               residual_graph.remove_edge(e);
             } else {
-              residual_graph.capacities[e] -= bottleneck;
+              residual_graph.capacities[e] -= bottleneck_opt.value();
             }
           }
         }

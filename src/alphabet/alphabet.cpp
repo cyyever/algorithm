@@ -23,7 +23,7 @@ namespace cyy::algorithm {
     if (name_.empty()) {
       throw exception::empty_alphabet_name("");
     }
-    name = std::move(name_);
+    name = name_;
   }
 
   symbol_type ALPHABET::get_max_symbol() const {
@@ -66,7 +66,7 @@ namespace cyy::algorithm {
       return;
     }
 
-    for (auto alphabet : std::initializer_list<ALPHABET_ptr>{
+    for (const auto &alphabet : std::initializer_list<ALPHABET_ptr>{
              std::make_shared<common_tokens>(), std::make_shared<ASCII>(),
              std::make_shared<printable_ASCII>(),
              std::make_shared<set_alphabet>(symbol_set_type{'a', 'b'},
