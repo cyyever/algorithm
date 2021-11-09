@@ -12,6 +12,7 @@
 #include <optional>
 #include <utility>
 #include <vector>
+#include <ranges>
 
 #include "graph/tree.hpp"
 #include "hash.hpp"
@@ -158,7 +159,7 @@ namespace cyy::algorithm {
 
         auto underlying_graph = ts.T.get_underlying_graph();
         underlying_graph.add_edge(graph.get_edge(violating_edge));
-        underlying_graph.remove_edge(*last_blocking_edge);
+        underlying_graph.remove_edge(last_blocking_edge.value());
         ts.T.clear_edges();
         underlying_graph.breadth_first_search(
             ts.T.get_root(),
