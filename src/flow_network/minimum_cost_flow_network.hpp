@@ -326,6 +326,11 @@ namespace cyy::algorithm {
       assert(potential.size() == demand.size());
       for (const auto &[e, cost] : costs) {
         reduced_costs[e] = cost + potential[e.first] - potential[e.second];
+#ifdef NDEBUG
+        if (T.has_edge(e) || T.has_edge(e.reverse())) {
+          assert(reduced_costs[e] == 0);
+        }
+#endif
       }
     }
 

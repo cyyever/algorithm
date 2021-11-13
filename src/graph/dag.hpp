@@ -32,7 +32,10 @@ namespace cyy::algorithm {
       }
     }
 
-    std::optional<std::vector<size_t>> get_topological_ordering() const {
+    const std::optional<std::vector<size_t>> &get_topological_ordering() const {
+      if (topological_ordering.has_value()) {
+        return topological_ordering;
+      }
       // Time Complexity is O(m+n)
       std::vector<size_t> order;
       order.reserve(this->get_vertex_number());
@@ -55,12 +58,15 @@ namespace cyy::algorithm {
           }
         }
       }
-      // Not a DAG
-      if (order.size() != this->get_vertex_number()) {
-        return {};
+      // is a DAG
+      if (order.size() == this->get_vertex_number()) {
+        topological_ordering = order;
       }
-      return {order};
+      return topological_ordering;
     }
+
+  private:
+    mutable std::optional<std::vector<size_t>> topological_ordering;
   };
 
 } // namespace cyy::algorithm
