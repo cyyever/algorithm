@@ -19,6 +19,9 @@
 namespace cyy::algorithm {
   template <typename vertex_type = size_t, typename weight_type = double>
   class flow_network {
+  private:
+    enum class s_t_path_type { random = 0, shortest };
+
   public:
     using edge_type = edge<vertex_type, weight_type>;
     using capacity_fun_type =
@@ -26,10 +29,9 @@ namespace cyy::algorithm {
     flow_network(directed_graph<vertex_type, weight_type> graph_,
                  vertex_type source_, vertex_type sink_,
                  const capacity_fun_type &capacities_)
-        : graph(std::move(graph_)) {
+        : graph(std::move(graph_)), source(graph.get_vertex_index(source_)),
+          sink(graph.get_vertex_index(sink_)) {
       graph.rearrange_vertices();
-      source = graph.get_vertex_index(source_);
-      sink = graph.get_vertex_index(sink_);
 
       for (auto const &e : graph.foreach_edge()) {
         auto real_edge =
@@ -46,24 +48,25 @@ namespace cyy::algorithm {
       graph.set_all_weights(0);
     }
     weight_type get_flow_value() const {
-      weight_type source_flow = 0;
-      for (auto const &[_, edge_flow] : graph.get_adjacent_list(source)) {
-        source_flow += edge_flow;
-      }
-      return source_flow;
+      return ::ranges::accumulate(graph.get_adjacent_list(source) |
+                                      ranges::views::values,
+                                  weight_type{});
     }
 
     // may not terminate when there is a real capacity.
     void max_flow_by_ford_fulkerson(
-        std::optional<std::function<std::vector<size_t>()>> get_s_t_path_fun =
-            {}) {
-      if (!get_s_t_path_fun.has_value()) {
-        get_s_t_path_fun = std::bind(
-            &flow_network<vertex_type, weight_type>::get_s_t_path, this);
-      }
+        s_t_path_type path_type = s_t_path_type::random) {
       auto residual_graph = get_residual_graph();
       while (true) {
-        auto path = residual_graph.get_s_t_path();
+        std::vector<size_t> path;
+        switch (path_type) {
+          case s_t_path_type::random:
+            path = residual_graph.get_s_t_path();
+            break;
+          case s_t_path_type::shortest:
+            path = residual_graph.get_shortest_s_t_path();
+            break;
+        }
         if (path.empty()) {
           break;
         }
@@ -104,8 +107,7 @@ namespace cyy::algorithm {
 #endif
     }
     void max_flow_by_edmonds_karp() {
-      return max_flow_by_ford_fulkerson(
-          std::bind(&flow_network::get_shortest_s_t_path, this));
+      return max_flow_by_ford_fulkerson(s_t_path_type::shortest);
     }
 
     std::pair<std::set<size_t>, std::set<size_t>>
@@ -239,8 +241,8 @@ namespace cyy::algorithm {
 
   private:
     directed_graph<vertex_type, weight_type> graph;
-    size_t source;
-    size_t sink;
+    size_t source{};
+    size_t sink{};
     std::unordered_map<indexed_edge, weight_type> capacities;
     std::unordered_set<indexed_edge> backward_edges;
   };
