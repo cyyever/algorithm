@@ -188,19 +188,19 @@ namespace cyy::algorithm {
       }
 
       assert(check_feasible_flow(flow));
-      std::erase_if(flow, [&ts, this](const auto &p) {
+      std::erase_if(flow, [this](const auto &p) {
         return p.first.first == artificial_vertex_opt.value() ||
                p.first.second == artificial_vertex_opt.value();
       });
-      std::erase_if(costs, [&ts, this](const auto &p) {
+      std::erase_if(costs, [this](const auto &p) {
         return p.first.first == artificial_vertex_opt.value() ||
                p.first.second == artificial_vertex_opt.value();
       });
-      std::erase_if(lower_capacities, [&ts, this](const auto &p) {
+      std::erase_if(lower_capacities, [this](const auto &p) {
         return p.first.first == artificial_vertex_opt.value() ||
                p.first.second == artificial_vertex_opt.value();
       });
-      std::erase_if(upper_capacities, [&ts, this](const auto &p) {
+      std::erase_if(upper_capacities, [this](const auto &p) {
         return p.first.first == artificial_vertex_opt.value() ||
                p.first.second == artificial_vertex_opt.value();
       });
