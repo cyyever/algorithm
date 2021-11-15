@@ -131,23 +131,23 @@ namespace cyy::algorithm {
 
     auto foreach_edge_with_weight() const {
       if constexpr (directed) {
-        return ranges::view::for_each(
+        return ranges::views::for_each(
             weighted_adjacent_list, [](const auto &p) {
-              return ranges::view::for_each(p.second, [&p](auto const &t) {
+              return ranges::views::for_each(p.second, [&p](auto const &t) {
                 return ranges::yield(
                     std::pair(indexed_edge{p.first, t.first}, t.second));
               });
             });
       } else {
 
-        return ranges::view::for_each(
+        return ranges::views::for_each(
             weighted_adjacent_list, [](const auto &p) {
               return p.second |
-                     ranges::view::filter(
+                     ranges::views::filter(
                          [&p](const std::pair<size_t, weight_type> &e) -> bool {
                            return e.first > p.first;
                          }) |
-                     ranges::view::for_each([&p](auto const &t) {
+                     ranges::views::for_each([&p](auto const &t) {
                        return ranges::yield(
                            std::pair(indexed_edge{p.first, t.first}, t.second));
                      });
@@ -156,11 +156,11 @@ namespace cyy::algorithm {
     }
 
     auto foreach_edge() const {
-      return foreach_edge_with_weight() | ranges::view::keys;
+      return foreach_edge_with_weight() | ranges::views::keys;
     }
 
     auto foreach_weight() const {
-      return foreach_edge_with_weight() | ranges::view::values;
+      return foreach_edge_with_weight() | ranges::views::values;
     }
     size_t add_vertex(vertex_type vertex) {
       auto it = vertex_indices.left.find(vertex);
