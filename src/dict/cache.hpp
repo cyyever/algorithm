@@ -278,7 +278,7 @@ namespace cyy::algorithm {
     class fetch_thread final : public cyy::naive_lib::runnable {
     public:
       fetch_thread(cache &dict_) : dict(dict_) {}
-      ~fetch_thread() override { stop(); }
+      /* ~fetch_thread() override { stop(); } */
 
     private:
       void run() override {
@@ -331,7 +331,7 @@ namespace cyy::algorithm {
     class save_thread final : public cyy::naive_lib::runnable {
     public:
       explicit save_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {}
-      ~save_thread() override { stop(); }
+      /* ~save_thread() override { stop(); } */
 
     private:
       void run() override {
