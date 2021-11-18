@@ -259,7 +259,7 @@ namespace cyy::algorithm {
     }
     size_t get_vertex_number() const { return vertex_indices.size(); }
     size_t get_edge_number() const {
-      return ranges::distance(foreach_edge());
+      return static_cast<size_t>(ranges::distance(foreach_edge()));
     }
     const vertex_type &get_vertex(size_t index) const {
       return vertex_indices.right.at(index);
