@@ -358,7 +358,7 @@ namespace cyy::algorithm {
     bool is_connected() const {
       size_t tree_edge_num = 0;
       depth_first_search(
-          get_vertex_indices()[0],
+          *get_vertex_indices().begin(),
           [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number();
     }
