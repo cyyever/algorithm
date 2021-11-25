@@ -10,6 +10,82 @@
 #include <unordered_map>
 #include <vector>
 namespace cyy::algorithm {
+
+  template <typename data_type, class compare = std::less<data_type>>
+  class simple_heap {
+  public:
+    simple_heap() = default;
+    void reserve(size_t n) { items.reserve(n); }
+    const data_type &top() const {
+      assert(!empty());
+      return items[0];
+    }
+    size_t size() const { return items.size(); }
+    void pop() {
+      if (items.empty()) {
+        return;
+      }
+      if (items.size() == 1) {
+        items.clear();
+        return;
+      }
+      std::swap(items[0], items.back());
+      items.pop_back();
+      heapify_down(0);
+    }
+    void change_data(size_t idx, data_type data) {
+      if (idx >= items.size()) {
+        throw std::invalid_argument("not data");
+      }
+
+      items[idx] = std::move(data);
+      auto new_idx = heapify_up(idx);
+      if (idx != new_idx) {
+        return;
+      }
+      heapify_down(idx);
+    }
+    bool empty() const { return items.empty(); }
+
+    void insert(data_type data) {
+      items.emplace_back(std::move(data));
+      heapify_up(items.size() - 1);
+    }
+
+  private:
+    size_t heapify_up(size_t i) {
+      if (i > 0) {
+        auto parent_idx = (i + 1) / 2 - 1;
+        if (compare{}(items[i], items[parent_idx])) {
+          std::swap(items[i], items[parent_idx]);
+          return heapify_up(parent_idx);
+        }
+      }
+      return i;
+    }
+    void heapify_down(size_t i) {
+      auto left_child_index = 2 * (i + 1) - 1;
+      auto n = items.size();
+      if (left_child_index >= n) {
+        return;
+      }
+      auto min_child_index = left_child_index;
+      auto right_child_index = left_child_index + 1;
+      if (right_child_index < n) {
+        if (compare{}(items[right_child_index], items[left_child_index])) {
+          min_child_index = right_child_index;
+        }
+      }
+      if (!compare{}(items[i], items[min_child_index])) {
+        std::swap(items[i], items[min_child_index]);
+        heapify_down(min_child_index);
+      }
+    }
+
+  private:
+    std::vector<data_type> items;
+  };
+
   template <typename data_type, typename key_type = data_type,
             class compare = std::less<key_type>>
   class heap {
