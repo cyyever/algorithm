@@ -40,6 +40,12 @@ TEST_CASE("heap") {
     h.change_key(1, 100);
     REQUIRE_EQ(h.top(), 5);
   }
+  SUBCASE("change data") {
+    h.insert(5, 5);
+    REQUIRE_EQ(h.top(), 5);
+    h.change_data(5, 1);
+    REQUIRE_EQ(h.top(), 1);
+  }
 }
 
 TEST_CASE("max_heap") {

@@ -44,14 +44,9 @@ namespace cyy::algorithm {
 
       items.pop_back();
       heapify_down(0);
-      return;
     }
     void change_key(const data_type &data, key_type key) {
-      auto it = position.find(data);
-      if (it == position.end()) {
-        return;
-      }
-      auto idx = it->second;
+      auto idx = position.at(data);
       assert(data == items[idx].data);
       items[idx].key = std::move(key);
       auto new_idx = heapify_up(idx);
@@ -59,6 +54,27 @@ namespace cyy::algorithm {
         return;
       }
       heapify_down(idx);
+    }
+    void change_data(const data_type &old_data, data_type data, key_type key) {
+      auto it = position.find(old_data);
+      if (it == position.end()) {
+        throw std::invalid_argument("not data");
+      }
+      auto idx = it->second;
+      position.erase(it);
+
+      items[idx].data = data;
+      items[idx].key = std::move(key);
+      position.emplace(std::move(data), idx);
+      auto new_idx = heapify_up(idx);
+      if (idx != new_idx) {
+        return;
+      }
+      heapify_down(idx);
+    }
+    template <typename = std::is_same<data_type, key_type>>
+    void change_data(const data_type &old_data, data_type data) {
+      change_data(old_data, data, data);
     }
     bool empty() const { return items.empty(); }
     bool contains(const data_type &data) const {
@@ -111,7 +127,6 @@ namespace cyy::algorithm {
         std::swap(items[i], items[min_child_index]);
         heapify_down(min_child_index);
       }
-      return;
     }
 
   private:
