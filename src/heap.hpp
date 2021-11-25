@@ -17,7 +17,7 @@ namespace cyy::algorithm {
     heap() = default;
     void reserve(size_t n) {
       items.reserve(n);
-      items.reserve(n);
+      position.reserve(n);
     }
     const key_type &top_key() const {
       assert(!empty());
