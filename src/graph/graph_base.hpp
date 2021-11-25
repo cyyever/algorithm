@@ -185,7 +185,7 @@ namespace cyy::algorithm {
     indexed_edge get_edge(const edge_type &edge) const {
       return {get_vertex_index(edge.first), get_vertex_index(edge.second)};
     }
-    bool has_edge(const indexed_edge &e) {
+    bool has_edge(const indexed_edge &e) const {
       auto const &l = get_adjacent_list(e.first);
       return std::ranges::find_if(l, [&e](auto const &p) {
                return p.first == e.second;
@@ -250,6 +250,7 @@ namespace cyy::algorithm {
       return std::views::all(vertex_indices.right) |
              std::views::transform([](auto const &it) { return it.first; });
     }
+
     auto get_vertices_and_indices() const {
       return std::views::all(vertex_indices.left) |
              std::views::transform([](auto const &it) {

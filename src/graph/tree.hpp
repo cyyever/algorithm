@@ -27,8 +27,8 @@ namespace cyy::algorithm {
         throw std::logic_error("not a tree");
       }
     }
-    explicit tree(graph<vertex_type> g, bool check = true)
-        : graph<vertex_type>(std::move(g)) {
+    explicit tree(graph<vertex_type, weight_type> g, bool check = true)
+        : graph<vertex_type, weight_type>(std::move(g)) {
       if (check && !this->is_tree()) {
         throw std::logic_error("not a tree");
       }
@@ -36,6 +36,21 @@ namespace cyy::algorithm {
     size_t get_root() const { return root.value(); }
     void set_root(vertex_type root_) { root = this->get_vertex_index(root_); }
     void set_root_by_index(size_t root_) { root = root_; }
+    size_t get_adjacent_vertex(size_t u) const {
+      return this->get_adjacent_list(u).begin()->first;
+    }
+
+    std::unordered_set<size_t> get_leaves() const {
+      std::unordered_set<size_t> leaves;
+      leaves.reserve(this->get_vertex_number());
+      this->breadth_first_search(this->root.value(),
+                                 [&leaves](auto u, auto v, auto weight) {
+                                   leaves.erase(u);
+                                   leaves.insert(v);
+                                   return false;
+                                 });
+      return leaves;
+    }
 
   protected:
     std::optional<size_t> root;
@@ -45,6 +60,7 @@ namespace cyy::algorithm {
   class directed_tree_base : public DAG<vertex_type, weight_type> {
   public:
     using edge_type = edge<vertex_type, weight_type>;
+    directed_tree_base() = default;
 
     template <std::ranges::input_range U>
     requires std::same_as<edge_type, std::ranges::range_value_t<U>>
@@ -96,14 +112,17 @@ namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type = double>
   class in_directed_tree : public directed_tree_base<vertex_type, weight_type> {
   public:
-    using edge_type = tree<vertex_type>::edge_type;
     using directed_tree_base<vertex_type, weight_type>::directed_tree_base;
 
-    in_directed_tree(tree<vertex_type, weight_type> T) {
+    in_directed_tree(const tree<vertex_type, weight_type> &T) {
       this->root = T.get_root();
-      this->vertex_indices = T.vertex_indices;
+      for (auto [v, idx] : T.get_vertices_and_indices()) {
+        this->vertex_indices.insert({std::move(v), idx});
+      }
+
       T.breadth_first_search(this->root, [this](auto u, auto v, auto weight) {
         this->add_edge({this->get_vertex(v), this->get_vertex(u), weight});
+        return false;
       });
     }
 

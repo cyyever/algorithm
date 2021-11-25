@@ -67,7 +67,6 @@ namespace cyy::algorithm {
       auto ts = get_strongly_feasible_tree_structure();
       flow = determin_flow(ts);
       while (true) {
-        assert(ts.T.get_underlying_graph().is_tree());
         determin_potential(ts);
         bool forward_direction = true;
         indexed_edge violating_edge;
@@ -91,18 +90,19 @@ namespace cyy::algorithm {
         }
         assert(costs.contains(violating_edge));
         // create cycle
+        in_directed_tree in_T(ts.T);
         auto ancestor =
-            ts.T.nearest_ancestor(violating_edge.first, violating_edge.second);
+            in_T.nearest_ancestor(violating_edge.first, violating_edge.second);
         std::vector<size_t> cycle;
         if (forward_direction) {
-          cycle = ts.T.get_path(violating_edge.first, ancestor);
+          cycle = in_T.get_path(violating_edge.first, ancestor);
           std::ranges::reverse(cycle);
-          auto path = ts.T.get_path(violating_edge.second, ancestor);
+          auto path = in_T.get_path(violating_edge.second, ancestor);
           cycle.insert(cycle.end(), path.begin(), path.end());
         } else {
-          cycle = ts.T.get_path(violating_edge.second, ancestor);
+          cycle = in_T.get_path(violating_edge.second, ancestor);
           std::ranges::reverse(cycle);
-          auto path = ts.T.get_path(violating_edge.first, ancestor);
+          auto path = in_T.get_path(violating_edge.first, ancestor);
           cycle.insert(cycle.end(), path.begin(), path.end());
         }
         std::optional<weight_type> delta_opt;
@@ -164,16 +164,8 @@ namespace cyy::algorithm {
         assert(last_blocking_edge.has_value());
         assert(costs.contains(violating_edge));
 
-        auto underlying_graph = ts.T.get_underlying_graph();
-        underlying_graph.add_edge(graph.get_edge(violating_edge));
-        underlying_graph.remove_edge(last_blocking_edge.value());
-        ts.T.clear_edges();
-        underlying_graph.breadth_first_search(
-            ts.T.get_root(),
-            [&ts, this](size_t u, size_t v, weight_type weight) {
-              ts.T.add_edge({graph.get_vertex(v), graph.get_vertex(u), weight});
-              return false;
-            });
+        ts.T.remove_edge(last_blocking_edge.value());
+        ts.T.add_edge(graph.get_edge(violating_edge));
       }
       if (std::ranges::any_of(flow, [&ts](const auto &p) {
             if (p.first.first == ts.T.get_root() ||
@@ -253,7 +245,7 @@ namespace cyy::algorithm {
     }
 
     struct tree_structure {
-      in_directed_tree<vertex_type, weight_type> T;
+      tree<vertex_type, weight_type> T;
       std::vector<indexed_edge> L;
       std::vector<indexed_edge> U;
     };
@@ -262,6 +254,8 @@ namespace cyy::algorithm {
     minimum_cost_flow_network() = default;
 
     flow_fun_type determin_flow(const tree_structure &ts) {
+      assert(ts.T.get_edge_number() + ts.L.size() + ts.U.size() ==
+             costs.size());
       flow_fun_type flow;
       for (auto const &e : ts.U) {
         flow[e] = upper_capacities[e];
@@ -283,22 +277,21 @@ namespace cyy::algorithm {
       while (!leaves.empty()) {
         decltype(leaves) next_leaves;
         for (auto &leaf : leaves) {
-          auto parent_opt = ts.T.parent(leaf);
-          if (!parent_opt) {
-            continue;
-          }
-
-          auto parent = *parent_opt;
-          if (costs.count({leaf, parent})) {
+          auto adjacent_vertex = ts.T.get_adjacent_vertex(leaf);
+          if (costs.contains({leaf, adjacent_vertex})) {
             auto edge_flow = remain_demand[leaf] - demand[leaf];
-            flow[{leaf, parent}] = edge_flow;
-            remain_demand[parent] += edge_flow;
+            flow[{leaf, adjacent_vertex}] = edge_flow;
+            remain_demand[adjacent_vertex] += edge_flow;
           } else {
+            assert(costs.contains({adjacent_vertex, leaf}));
+            assert(!flow.contains({adjacent_vertex, leaf}));
             auto edge_flow = demand[leaf] - remain_demand[leaf];
-            flow[{parent, leaf}] = edge_flow;
-            remain_demand[parent] -= edge_flow;
+            flow[{adjacent_vertex, leaf}] = edge_flow;
+            remain_demand[adjacent_vertex] -= edge_flow;
           }
-          next_leaves.push_back(parent);
+          if (adjacent_vertex != ts.T.get_root()) {
+            next_leaves.insert(adjacent_vertex);
+          }
         }
         leaves = std::move(next_leaves);
       }
@@ -308,11 +301,10 @@ namespace cyy::algorithm {
       return flow;
     }
     void determin_potential(const tree_structure &ts) {
-      auto T = ts.T.get_transpose();
-      auto root = T.get_root();
+      auto root = ts.T.get_root();
       potential[root] = 0;
 
-      T.breadth_first_search(root, [this](size_t u, size_t v, weight_type) {
+      ts.T.breadth_first_search(root, [this](size_t u, size_t v, weight_type) {
         auto it = costs.find({u, v});
         if (it != costs.end()) {
           potential[v] = potential[u] + it->second;
@@ -327,7 +319,7 @@ namespace cyy::algorithm {
       for (const auto &[e, cost] : costs) {
         reduced_costs[e] = cost + potential[e.first] - potential[e.second];
 #ifdef NDEBUG
-        if (T.has_edge(e) || T.has_edge(e.reverse())) {
+        if (ts.T.has_edge(e)) {
           assert(reduced_costs[e] == 0);
         }
 #endif
@@ -374,22 +366,18 @@ namespace cyy::algorithm {
         }
       }
       std::vector<indexed_edge> L;
-      auto T = graph;
-      T.clear_edges();
+      tree<vertex_type, weight_type> T(graph.get_underlying_graph(), false);
       for (auto const &e : graph.foreach_edge()) {
-        if (e.first == artificial_vertex_opt) {
-          T.add_edge(graph.get_edge(e).reverse());
-        } else if (e.second == artificial_vertex_opt) {
-          T.add_edge(graph.get_edge(e));
-        } else {
+        if (e.first != artificial_vertex_opt &&
+            e.second != artificial_vertex_opt) {
+          T.remove_edge(e);
           L.emplace_back(e);
         }
       }
+      T.set_root(artificial_vertex_name);
+      assert(T.get_edge_number() + L.size() == graph.get_edge_number());
       /* T.print_edges(std::cout); */
-      return {in_directed_tree<vertex_type, weight_type>(
-                  std::move(T), artificial_vertex_name),
-              std::move(L),
-              {}};
+      return {std::move(T), std::move(L), {}};
     }
 
   private:
