@@ -85,6 +85,8 @@ namespace cyy::algorithm {
   private:
     std::vector<data_type> items;
   };
+  template <typename data_type>
+  using simple_max_heap = simple_heap<data_type, std::greater<data_type>>;
 
   template <typename data_type, typename key_type = data_type,
             class compare = std::less<key_type>>
