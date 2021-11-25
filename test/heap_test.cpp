@@ -47,8 +47,8 @@ TEST_CASE("max_heap") {
   REQUIRE(h.empty());
 
   SUBCASE("top") {
-    h.insert(5, 5);
-    h.insert(1, 1);
+    h.insert(5);
+    h.insert(1);
     REQUIRE_EQ(h.top(), 5);
   }
 }

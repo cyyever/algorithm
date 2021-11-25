@@ -64,6 +64,10 @@ namespace cyy::algorithm {
     bool contains(const data_type &data) const {
       return position.contains(data);
     }
+    template <typename = std::is_same<data_type, key_type>>
+    void insert(data_type data) {
+      insert(data, data);
+    }
 
     void insert(data_type data, key_type key) {
       auto [it, has_insertion] = position.try_emplace(data, SIZE_MAX);
