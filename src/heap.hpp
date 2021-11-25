@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <vector>
 namespace cyy::algorithm {
-  template <typename data_type, typename key_type,
+  template <typename data_type, typename key_type = data_type,
             class compare = std::less<key_type>>
   class heap {
   public:
@@ -118,4 +118,6 @@ namespace cyy::algorithm {
     std::vector<item> items;
     std::unordered_map<data_type, size_t> position;
   };
+  template <typename data_type, typename key_type = data_type>
+  using max_heap = heap<data_type, key_type, std::greater<key_type>>;
 } // namespace cyy::algorithm

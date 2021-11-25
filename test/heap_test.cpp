@@ -41,3 +41,14 @@ TEST_CASE("heap") {
     REQUIRE_EQ(h.top(), 5);
   }
 }
+
+TEST_CASE("max_heap") {
+  cyy::algorithm::max_heap<int, int> h;
+  REQUIRE(h.empty());
+
+  SUBCASE("top") {
+    h.insert(5, 5);
+    h.insert(1, 1);
+    REQUIRE_EQ(h.top(), 5);
+  }
+}
