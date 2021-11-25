@@ -21,7 +21,8 @@ inline void define_heap(py::module_ &m) {
       .def("empty", &heap_type::empty, py::call_guard<py::gil_scoped_release>())
       .def("contains", &heap_type::contains,
            py::call_guard<py::gil_scoped_release>())
-      .def("insert", &heap_type::insert,
+      .def("insert",
+           py::overload_cast<py::object, py::object>(&heap_type::insert),
            py::call_guard<py::gil_scoped_release>())
       .def("change_key", &heap_type::change_key,
            py::call_guard<py::gil_scoped_release>())

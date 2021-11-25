@@ -33,7 +33,7 @@ namespace cyy::algorithm {
         throw std::logic_error("not a tree");
       }
     }
-
+    size_t get_root() const { return root.value(); }
     void set_root(vertex_type root_) { root = this->get_vertex_index(root_); }
     void set_root_by_index(size_t root_) { root = root_; }
 
@@ -42,8 +42,6 @@ namespace cyy::algorithm {
   };
 
   template <typename vertex_type, typename weight_type = double>
-  // class directed_tree_base : public directed_graph<vertex_type, weight_type>
-  // {
   class directed_tree_base : public DAG<vertex_type, weight_type> {
   public:
     using edge_type = edge<vertex_type, weight_type>;
@@ -57,15 +55,7 @@ namespace cyy::algorithm {
                        vertex_type root_)
         : DAG<vertex_type, weight_type>(std::move(g)) {
       root = this->get_vertex_index(root_);
-#ifndef NDEUG
-      /*
-      if (!this->is_tree(root)) {
-        throw std::logic_error("not a tree");
-      }
-      */
-#endif
     }
-
     // get a path from root to u
     std::vector<size_t> get_path(size_t u) const { return get_path(root, u); }
 
@@ -94,6 +84,13 @@ namespace cyy::algorithm {
   class directed_tree : public directed_tree_base<vertex_type, weight_type> {
   public:
     using directed_tree_base<vertex_type, weight_type>::directed_tree_base;
+    directed_tree(tree<vertex_type, weight_type> T) {
+      this->root = T.get_root();
+      this->vertex_indices = T.vertex_indices;
+      T.breadth_first_search(this->root, [this](auto u, auto v, auto weight) {
+        this->add_edge({this->get_vertex(u), this->get_vertex(v), weight});
+      });
+    }
   };
 
   template <typename vertex_type, typename weight_type = double>
@@ -101,6 +98,14 @@ namespace cyy::algorithm {
   public:
     using edge_type = tree<vertex_type>::edge_type;
     using directed_tree_base<vertex_type, weight_type>::directed_tree_base;
+
+    in_directed_tree(tree<vertex_type, weight_type> T) {
+      this->root = T.get_root();
+      this->vertex_indices = T.vertex_indices;
+      T.breadth_first_search(this->root, [this](auto u, auto v, auto weight) {
+        this->add_edge({this->get_vertex(v), this->get_vertex(u), weight});
+      });
+    }
 
     auto get_transpose() const {
       return directed_tree<vertex_type, weight_type>(
@@ -154,4 +159,5 @@ namespace cyy::algorithm {
       return *ancestor_opt;
     }
   };
+
 } // namespace cyy::algorithm
