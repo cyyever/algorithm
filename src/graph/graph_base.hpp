@@ -192,6 +192,9 @@ namespace cyy::algorithm {
              }) != l.end();
     }
 
+    bool has_vertex_index(size_t vertex_index) const {
+      return vertex_indices.right.find(vertex_index)!=vertex_indices.right.end();
+    }
     void add_edge(const edge_type &e) {
       if (!add_directed_edge(e)) {
         return;
@@ -291,6 +294,7 @@ namespace cyy::algorithm {
     void breadth_first_search(
         size_t s,
         std::function<bool(size_t, size_t, weight_type)> edge_fun) const {
+      assert(has_vertex_index(s));
       std::vector<bool> discovered(get_next_vertex_index(), false);
       discovered[s] = true;
       std::list<size_t> queue{s};
@@ -314,6 +318,7 @@ namespace cyy::algorithm {
 
     void recursive_depth_first_search(
         size_t s, std::function<bool(size_t, size_t)> after_edge_fun) const {
+      assert(has_vertex_index(s));
 
       std::vector<bool> explored(get_next_vertex_index(), false);
       auto search_fun = [&](auto &&self, size_t u) {
@@ -335,6 +340,7 @@ namespace cyy::algorithm {
     void depth_first_search(
         size_t s,
         std::function<void(size_t, size_t, weight_type)> edge_fun) const {
+      assert(has_vertex_index(s));
       std::vector<bool> explored(get_next_vertex_index(), false);
       std::vector<std::pair<size_t, weight_type>> stack{{s, 0}};
       std::vector<size_t> parent(get_next_vertex_index(), 0);
@@ -357,6 +363,10 @@ namespace cyy::algorithm {
     }
 
     bool is_connected() const {
+      // empty graph
+      if (vertex_indices.empty()) {
+        return false;
+      }
       size_t tree_edge_num = 0;
       depth_first_search(
           *get_vertex_indices().begin(),
