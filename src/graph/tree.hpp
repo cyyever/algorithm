@@ -44,7 +44,7 @@ namespace cyy::algorithm {
       std::unordered_set<size_t> leaves;
       leaves.reserve(this->get_vertex_number());
       this->breadth_first_search(this->root.value(),
-                                 [&leaves](auto u, auto v, auto weight) {
+                                 [&leaves](auto u, auto v, auto) {
                                    leaves.erase(u);
                                    leaves.insert(v);
                                    return false;
