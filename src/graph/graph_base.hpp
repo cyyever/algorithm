@@ -365,6 +365,10 @@ namespace cyy::algorithm {
     }
 
     bool is_tree(size_t root = SIZE_MAX) const {
+      // empty graph
+      if (vertex_indices.empty()) {
+        return false;
+      }
       size_t tree_edge_num = 0;
       if (root == SIZE_MAX) {
         root = *get_vertex_indices().begin();
