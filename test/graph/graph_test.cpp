@@ -1,8 +1,7 @@
 /*!
- * \file container_test.cpp
+ * \file graph_test.cpp
  *
- * \brief 测试container相关函数
- * \author cyy
+ * \brief
  */
 
 #include <string>
@@ -10,7 +9,6 @@
 #include <doctest/doctest.h>
 
 #include "graph/dag.hpp"
-#include "graph/graph.hpp"
 #include "graph/path.hpp"
 
 using namespace cyy::algorithm;

@@ -193,7 +193,8 @@ namespace cyy::algorithm {
     }
 
     bool has_vertex_index(size_t vertex_index) const {
-      return vertex_indices.right.find(vertex_index)!=vertex_indices.right.end();
+      return vertex_indices.right.find(vertex_index) !=
+             vertex_indices.right.end();
     }
     void add_edge(const edge_type &e) {
       if (!add_directed_edge(e)) {
