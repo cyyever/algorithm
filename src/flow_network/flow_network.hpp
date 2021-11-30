@@ -150,7 +150,6 @@ namespace cyy::algorithm {
   private:
     flow_network() = default;
     bool check_flow() const {
-      graph.rearrange_vertices();
       // capacity condition
       for (auto const &[indexed_edge, weight] :
            graph.foreach_edge_with_weight()) {

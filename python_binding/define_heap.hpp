@@ -16,7 +16,8 @@ inline void define_heap(py::module_ &m) {
       .def(py::init<>())
       .def("top_key", &heap_type::top_key,
            py::call_guard<py::gil_scoped_release>())
-      .def("top", &heap_type::top, py::call_guard<py::gil_scoped_release>())
+      .def("top_data", &heap_type::top_data,
+           py::call_guard<py::gil_scoped_release>())
       .def("size", &heap_type::size, py::call_guard<py::gil_scoped_release>())
       .def("empty", &heap_type::empty, py::call_guard<py::gil_scoped_release>())
       .def("contains", &heap_type::contains,

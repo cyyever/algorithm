@@ -70,12 +70,12 @@ TEST_CASE("complex flow network") {
     cyy::algorithm::flow_network<std::string, weight_type> network(capacities,
                                                                    "s", "t");
     network.max_flow_by_ford_fulkerson();
-    REQUIRE_EQ(network.get_flow_value(), 2*M+1);
+    REQUIRE_EQ(network.get_flow_value(), 2 * M + 1);
   }
   SUBCASE("max flow edmonds karp") {
     cyy::algorithm::flow_network<std::string, weight_type> network(capacities,
                                                                    "s", "t");
     network.max_flow_by_edmonds_karp();
-    REQUIRE_EQ(network.get_flow_value(), 2*M+1);
+    REQUIRE_EQ(network.get_flow_value(), 2 * M + 1);
   }
 }
