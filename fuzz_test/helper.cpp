@@ -20,12 +20,12 @@ generate_graph(std::span<uint8_t> &data) {
 cyy::algorithm::flow_network<uint8_t>
 generate_flow_network(std::span<uint8_t> &data) {
   auto g = generate_graph(data);
-  size_t source = SIZE_MAX;
-  size_t sink = SIZE_MAX;
+  uint8_t source = UINT8_MAX;
+  uint8_t sink = UINT8_MAX;
   for (auto idx : g.get_vertex_indices()) {
-    if (source == SIZE_MAX) {
+    if (source == UINT8_MAX) {
       source = idx;
-    } else if (sink == SIZE_MAX) {
+    } else if (sink == UINT8_MAX) {
       sink = idx;
     }
   }
