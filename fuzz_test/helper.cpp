@@ -11,7 +11,7 @@ cyy::algorithm::directed_graph<uint8_t>
 generate_graph(std::span<const uint8_t> &data) {
   cyy::algorithm::directed_graph<uint8_t> g;
   while (data.size() >= 3) {
-    g.add_edge({data[0], data[1], data[3]});
+    g.add_edge({data[0], data[1], static_cast<decltype(g)::weight_type>( data[3])});
     data = data.subspan(3);
   }
   return g;
