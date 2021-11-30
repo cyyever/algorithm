@@ -61,9 +61,11 @@ namespace cyy::algorithm {
       auto transpose = A.transpose();
       auto D = transpose.fullPivLu().image(transpose).transpose();
 #ifdef NDEBUG
-      for (auto row : D.rowwise()) {
+#ifndef _MSC_VER
+      for (auto const &row : D.rowwise()) {
         assert(std::ranges::count(A.rowwise(), row) > 0);
       }
+#endif
 #endif
       return D;
     }
