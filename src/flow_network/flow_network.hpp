@@ -64,6 +64,7 @@ namespace cyy::algorithm {
     void max_flow_by_ford_fulkerson() {
       auto residual_graph = get_residual_graph();
       while (true) {
+      residual_graph = get_residual_graph();
         std::vector<size_t> path;
         if constexpr (path_type == s_t_path_type::shortest) {
           path = convert_parent_list_to_path(
