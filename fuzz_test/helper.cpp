@@ -22,11 +22,11 @@ generate_flow_network(std::span<uint8_t> &data) {
   auto g = generate_graph(data);
   uint8_t source = UINT8_MAX;
   uint8_t sink = UINT8_MAX;
-  for (auto idx : g.get_vertex_indices()) {
+  for (auto v : g.get_vertices()) {
     if (source == UINT8_MAX) {
-      source = idx;
+      source = v;
     } else if (sink == UINT8_MAX) {
-      sink = idx;
+      sink = v;
     }
   }
   cyy::algorithm::flow_network<uint8_t>::capacity_fun_type capacities;

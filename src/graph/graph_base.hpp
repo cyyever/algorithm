@@ -259,6 +259,11 @@ namespace cyy::algorithm {
                                    [](auto const &it) { return it.first; });
     }
 
+    auto get_vertices() const {
+      return std::views::transform(vertex_indices.left,
+                                   [](auto const &it) { return it.first; });
+    }
+
     auto get_vertices_and_indices() const {
       return std::views::transform(vertex_indices.left, [](auto const &it) {
         return std::pair<const vertex_type &, size_t>{it.first, it.second};
