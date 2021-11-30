@@ -56,21 +56,18 @@ namespace cyy::algorithm {
 
     void max_flow() { max_flow_by_edmonds_karp(); }
     void max_flow_by_edmonds_karp() {
-      max_flow_by_ford_fulkerson(s_t_path_type::shortest);
+      max_flow_by_ford_fulkerson<s_t_path_type::shortest>();
     }
     // may not terminate when there is a real capacity.
-    void max_flow_by_ford_fulkerson(
-        s_t_path_type path_type = s_t_path_type::random) {
+    template <s_t_path_type path_type = s_t_path_type::random>
+    void max_flow_by_ford_fulkerson() {
       auto residual_graph = get_residual_graph();
       while (true) {
         std::vector<size_t> path;
-        switch (path_type) {
-          case s_t_path_type::random:
-            path = residual_graph.get_s_t_path();
-            break;
-          case s_t_path_type::shortest:
-            path = residual_graph.get_shortest_s_t_path();
-            break;
+        if constexpr (path_type == s_t_path_type::shortest) {
+          path = residual_graph.get_shortest_s_t_path();
+        } else {
+          path = residual_graph.get_s_t_path();
         }
         if (path.empty()) {
           break;
