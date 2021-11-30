@@ -19,15 +19,15 @@ namespace cyy::algorithm {
     auto huffman_code_fun = [&h](auto &&self) {
       std::unordered_map<symbol_type, std::string> code;
       if (h.size() == 1) {
-        auto symbol = h.top();
+        auto symbol = h.top_data();
         code[symbol] = "0";
         return code;
       }
       auto frequency1 = h.top_key();
-      auto symbol1 = h.top();
+      auto symbol1 = h.top_data();
       h.pop();
       auto frequency2 = h.top_key();
-      auto symbol2 = h.top();
+      auto symbol2 = h.top_data();
       if (h.size() == 1) {
         code[symbol1] = "0";
         code[symbol2] = "1";

@@ -6,7 +6,6 @@
 
 #pragma once
 #include <cassert>
-#include <iostream>
 #include <unordered_map>
 #include <vector>
 namespace cyy::algorithm {
@@ -101,7 +100,7 @@ namespace cyy::algorithm {
       assert(!empty());
       return items[0].key;
     }
-    const data_type &top() const {
+    const data_type &top_data() const {
       assert(!empty());
       return items[0].data;
     }

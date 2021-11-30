@@ -29,7 +29,7 @@ namespace cyy::algorithm {
     auto s = *g.get_vertex_indices().begin();
     h.insert(s, 0);
     while (!h.empty()) {
-      auto u = h.top();
+      auto u = h.top_data();
       h.pop();
       for (auto [v, weight] : g.get_adjacent_list(u)) {
         if (weights[v].has_value() && weight >= weights[v]) {
