@@ -8,7 +8,7 @@
 #include "helper.hpp"
 
 cyy::algorithm::directed_graph<uint8_t>
-generate_graph(std::span<uint8_t> &data) {
+generate_graph(std::span<const uint8_t> &data) {
   cyy::algorithm::directed_graph<uint8_t> g;
   while (data.size() >= 2) {
     g.add_edge({data[0], data[1]});
@@ -18,7 +18,7 @@ generate_graph(std::span<uint8_t> &data) {
 }
 
 cyy::algorithm::flow_network<uint8_t>
-generate_flow_network(std::span<uint8_t> &data) {
+generate_flow_network(std::span<const uint8_t> &data) {
   auto g = generate_graph(data);
   uint8_t source = UINT8_MAX;
   uint8_t sink = UINT8_MAX;
