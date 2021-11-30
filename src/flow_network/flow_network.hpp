@@ -87,12 +87,17 @@ namespace cyy::algorithm {
                 std::min(*bottleneck_opt, residual_graph.capacities[e]);
           }
         }
+        assert(*bottleneck_opt > 0);
         for (size_t i = 0; i + 1 < path.size(); i++) {
           indexed_edge e{path[i], path[i + 1]};
           if (residual_graph.is_backward_edge(e)) {
             auto new_weight =
                 graph.get_weight(e.reverse()) - bottleneck_opt.value();
             graph.set_weight(e.reverse(), new_weight);
+            residual_graph.graph.add_edge(graph.get_edge(e).reverse());
+            auto leftover_capacity = capacities.at(e.reverse()) - new_weight;
+            assert(leftover_capacity > 0);
+            residual_graph.capacities[e.reverse()] = leftover_capacity;
             if (new_weight == 0) {
               residual_graph.remove_edge(e);
             } else {
@@ -101,6 +106,10 @@ namespace cyy::algorithm {
           } else {
             auto new_weight = graph.get_weight(e) + bottleneck_opt.value();
             graph.set_weight(e, new_weight);
+            assert(new_weight > 0);
+            residual_graph.graph.add_edge(graph.get_edge(e).reverse());
+            residual_graph.capacities[e.reverse()] = new_weight;
+            residual_graph.backward_edges.insert(e.reverse());
             if (capacities[e] == new_weight) {
               residual_graph.remove_edge(e);
             } else {
