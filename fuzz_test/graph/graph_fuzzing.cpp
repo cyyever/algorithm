@@ -8,7 +8,7 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   try {
-    std::span<uint8_t> data_span{Data, Size};
+    std::span<uint8_t> data_span{std::begin(Data), Size};
     auto dg = generate_graph(data_span);
     auto g = dg.get_underlying_graph();
     g.is_tree();
