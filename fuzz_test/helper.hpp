@@ -9,4 +9,5 @@
 
 #include "graph/graph.hpp"
 
-cyy::algorithm::directed_graph<uint8_t> fuzzing_graph(const uint8_t *Data, size_t Size);
+cyy::algorithm::directed_graph<uint8_t> fuzzing_graph(const uint8_t *Data,
+                                                      size_t Size);

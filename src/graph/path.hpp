@@ -19,6 +19,7 @@ namespace cyy::algorithm {
   template <typename graphType>
   auto shortest_path_Dijkstra(const graphType &g, size_t s) {
 #ifndef NDEBUG
+    assert(g.has_vertex_index(s));
     for (auto const &[_, weight] : g.foreach_edge_with_weight()) {
       assert(weight >= 0);
     }
@@ -54,6 +55,9 @@ namespace cyy::algorithm {
   }
   template <typename graphType>
   auto shortest_path_Bellman_Ford(const graphType &g, size_t s) {
+#ifndef NDEBUG
+    assert(g.has_vertex_index(s));
+#endif
     using weight_type = graphType::weight_type;
     std::vector<std::optional<weight_type>> distance(g.get_next_vertex_index());
     distance[s] = 0;
