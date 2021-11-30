@@ -30,8 +30,8 @@ generate_flow_network(std::span<uint8_t> &data) {
     }
   }
   cyy::algorithm::flow_network<uint8_t>::capacity_fun_type capacities;
-  for(auto e:g.foreach_edge()) {
+  for (auto e : g.foreach_edge()) {
     capacities.emplace_back(g.get_edge(e));
   }
-  return cyy::algorithm::flow_network<uint8_t>(capacities,source,sink);
+  return cyy::algorithm::flow_network<uint8_t>(capacities, source, sink);
 }
