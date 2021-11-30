@@ -7,8 +7,10 @@
 #include <string>
 
 #ifdef CYY_MATH
-#include <cyy/math/integer.hpp>
+#include <cyy/math/all.hpp>
 #endif
+#include <cmath>
+
 #include <doctest/doctest.h>
 
 #include "flow_network/flow_network.hpp"
@@ -21,12 +23,6 @@ TEST_CASE("flow network") {
 #else
   using weight_type = int;
 #endif
-  cyy::algorithm::directed_graph<std::string, weight_type> g;
-  g.add_edge({"s", "u"});
-  g.add_edge({"s", "v"});
-  g.add_edge({"u", "v"});
-  g.add_edge({"u", "t"});
-  g.add_edge({"v", "t"});
   cyy::algorithm::flow_network<std::string, weight_type>::capacity_fun_type
       capacities;
   capacities.emplace_back("s", "u", 20);
@@ -51,5 +47,35 @@ TEST_CASE("flow network") {
     cyy::algorithm::flow_network<std::string, weight_type> network(capacities,
                                                                    "s", "t");
     auto [s_set, t_set] = network.get_minimum_capacity_s_t_cut();
+  }
+}
+
+TEST_CASE("complex flow network") {
+  using weight_type = double;
+  weight_type M = 2;
+  weight_type r = (sqrt(5) - 1) / 2;
+  cyy::algorithm::flow_network<std::string, weight_type>::capacity_fun_type
+      capacities;
+  capacities.emplace_back("s", "a", M);
+  capacities.emplace_back("s", "b", M);
+  capacities.emplace_back("s", "d", M);
+  capacities.emplace_back("b", "a", 1);
+  capacities.emplace_back("b", "c", 1);
+  capacities.emplace_back("d", "c", r);
+  capacities.emplace_back("a", "t", M);
+  capacities.emplace_back("c", "t", M);
+  capacities.emplace_back("d", "t", M);
+
+  SUBCASE("max flow ford fulkerson") {
+    cyy::algorithm::flow_network<std::string, weight_type> network(capacities,
+                                                                   "s", "t");
+    network.max_flow_by_ford_fulkerson();
+    REQUIRE_EQ(network.get_flow_value(), 2*M+1);
+  }
+  SUBCASE("max flow edmonds karp") {
+    cyy::algorithm::flow_network<std::string, weight_type> network(capacities,
+                                                                   "s", "t");
+    network.max_flow_by_edmonds_karp();
+    REQUIRE_EQ(network.get_flow_value(), 2*M+1);
   }
 }
