@@ -6,6 +6,7 @@
 
 #pragma once
 #include <cassert>
+#include <stdexcept>
 #include <unordered_map>
 #include <vector>
 namespace cyy::algorithm {
