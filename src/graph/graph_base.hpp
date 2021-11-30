@@ -51,7 +51,7 @@ namespace std {
 } // namespace std
 
 namespace cyy::algorithm {
-  template <typename vertexType, bool directed, typename weightType = double>
+  template <typename vertexType, bool directed, typename weightType>
   class graph_base {
   public:
     using edge_type = edge<vertexType, weightType>;

@@ -26,7 +26,7 @@ generate_graph(std::span<const uint8_t> &data) {
 template <typename weight_type = double>
 cyy::algorithm::flow_network<uint8_t, weight_type>
 generate_flow_network(std::span<const uint8_t> &data) {
-  auto g = generate_graph(data);
+  auto g = generate_graph<weight_type>(data);
   uint8_t source = UINT8_MAX;
   uint8_t sink = UINT8_MAX;
   for (auto v : g.get_vertices()) {
