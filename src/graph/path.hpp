@@ -15,7 +15,7 @@
 #include "heap.hpp"
 
 namespace cyy::algorithm {
- inline std::vector<size_t>
+  inline std::vector<size_t>
   convert_parent_list_to_path(const std::vector<size_t> &parent, size_t source,
                               size_t sink) {
     std::vector<size_t> path;
@@ -31,6 +31,24 @@ namespace cyy::algorithm {
     path.push_back(source);
     std::ranges::reverse(path);
     return path;
+  }
+
+  template <typename graphType>
+  auto shortest_path_by_edge_number(const graphType &g, size_t s) {
+#ifndef NDEBUG
+    assert(g.has_vertex_index(s));
+#endif
+    if (!g.has_vertex_index(s)) {
+      return std::vector<size_t>();
+    }
+    std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
+    parent[s] = s;
+    g.breadth_first_search(s, [&parent](auto u, auto v, auto) {
+      parent[v] = u;
+      return false;
+    });
+
+    return parent;
   }
 
   template <typename graphType>

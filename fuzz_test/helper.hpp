@@ -12,8 +12,35 @@
 #include "flow_network/flow_network.hpp"
 #include "graph/graph.hpp"
 
-cyy::algorithm::directed_graph<uint8_t>
-generate_graph(std::span<const uint8_t> &data);
+template <typename weight_type = double>
+cyy::algorithm::directed_graph<uint8_t, weight_type>
+generate_graph(std::span<const uint8_t> &data) {
+  cyy::algorithm::directed_graph<uint8_t, weight_type> g;
+  while (data.size() >= 3) {
+    g.add_edge({data[0], data[1], static_cast<weight_type>(data[2])});
+    data = data.subspan(3);
+  }
+  return g;
+}
 
-cyy::algorithm::flow_network<uint8_t>
-generate_flow_network(std::span<const uint8_t> &data);
+template <typename weight_type = double>
+cyy::algorithm::flow_network<uint8_t, weight_type>
+generate_flow_network(std::span<const uint8_t> &data) {
+  auto g = generate_graph(data);
+  uint8_t source = UINT8_MAX;
+  uint8_t sink = UINT8_MAX;
+  for (auto v : g.get_vertices()) {
+    if (source == UINT8_MAX) {
+      source = v;
+    } else if (sink == UINT8_MAX) {
+      sink = v;
+    }
+  }
+  cyy::algorithm::flow_network<uint8_t, weight_type>::capacity_fun_type
+      capacities;
+  for (auto e : g.foreach_edge()) {
+    capacities.emplace_back(g.get_edge(e));
+  }
+  return cyy::algorithm::flow_network<uint8_t, weight_type>(capacities, source,
+                                                            sink);
+}

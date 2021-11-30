@@ -67,8 +67,8 @@ namespace cyy::algorithm {
         std::vector<size_t> path;
         if constexpr (path_type == s_t_path_type::shortest) {
           path = convert_parent_list_to_path(
-              shortest_path_Dijkstra(residual_graph.graph,
-                                     residual_graph.source),
+              shortest_path_by_edge_number(residual_graph.graph,
+                                           residual_graph.source),
               residual_graph.source, residual_graph.sink);
         } else {
           path = get_path(residual_graph.graph, residual_graph.source,
