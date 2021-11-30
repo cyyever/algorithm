@@ -15,7 +15,7 @@
 #include "heap.hpp"
 
 namespace cyy::algorithm {
-  std::vector<size_t>
+ inline std::vector<size_t>
   convert_parent_list_to_path(const std::vector<size_t> &parent, size_t source,
                               size_t sink) {
     std::vector<size_t> path;
