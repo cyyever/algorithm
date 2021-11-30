@@ -15,6 +15,23 @@
 #include "heap.hpp"
 
 namespace cyy::algorithm {
+  std::vector<size_t>
+  convert_parent_list_to_path(const std::vector<size_t> &parent, size_t source,
+                              size_t sink) {
+    std::vector<size_t> path;
+    path.reserve(parent.size());
+    auto vertex = sink;
+    while (vertex != source) {
+      if (vertex == SIZE_MAX) {
+        return {};
+      }
+      path.push_back(vertex);
+      vertex = parent[vertex];
+    }
+    path.push_back(source);
+    std::ranges::reverse(path);
+    return path;
+  }
 
   template <typename graphType>
   auto shortest_path_Dijkstra(const graphType &g, size_t s) {
@@ -94,4 +111,14 @@ namespace cyy::algorithm {
     return parent;
   }
 
+  template <typename graphType>
+  std::vector<size_t> get_path(const graphType &g, size_t source,
+                               size_t target) {
+    std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
+    g.recursive_depth_first_search(source, [&parent, &target](auto u, auto v) {
+      parent[v] = u;
+      return v == target;
+    });
+    return convert_parent_list_to_path(parent, source, target);
+  }
 } // namespace cyy::algorithm

@@ -15,6 +15,7 @@
 #include <range/v3/all.hpp>
 
 #include "graph/graph.hpp"
+#include "graph/path.hpp"
 #include "hash.hpp"
 namespace cyy::algorithm {
   template <typename vertex_type = size_t, typename weight_type = double>
@@ -65,9 +66,13 @@ namespace cyy::algorithm {
       while (true) {
         std::vector<size_t> path;
         if constexpr (path_type == s_t_path_type::shortest) {
-          path = residual_graph.get_shortest_s_t_path();
+          path = convert_parent_list_to_path(
+              shortest_path_Dijkstra(residual_graph.graph,
+                                     residual_graph.source),
+              residual_graph.source, residual_graph.sink);
         } else {
-          path = residual_graph.get_s_t_path();
+          path = get_path(residual_graph.graph, residual_graph.source,
+                          residual_graph.sink);
         }
         if (path.empty()) {
           break;
@@ -175,7 +180,7 @@ namespace cyy::algorithm {
         if (leftover_capacity > 0 || weight > 0) {
           auto first_vertex = graph.get_vertex(edge.first);
           auto second_vertex = graph.get_vertex(edge.second);
-          auto new_edge = edge_type{first_vertex, second_vertex, 0};
+          auto new_edge = edge_type{first_vertex, second_vertex, weight_type{}};
           if (leftover_capacity > 0) {
             residual_graph.graph.add_edge(new_edge);
             residual_graph.capacities[edge] = leftover_capacity;
@@ -190,25 +195,6 @@ namespace cyy::algorithm {
 
       return residual_graph;
     }
-    std::vector<size_t> get_shortest_s_t_path() const {
-      std::vector<size_t> parent(graph.get_next_vertex_index(),
-                                 graph.get_next_vertex_index());
-      graph.breadth_first_search(source, [&parent, this](auto u, auto v, auto) {
-        parent[v] = u;
-        return v == sink;
-      });
-      return convert_parents_to_path(parent);
-    }
-    std::vector<size_t> get_s_t_path() const {
-      std::vector<size_t> parent(graph.get_next_vertex_index(),
-                                 graph.get_next_vertex_index());
-      graph.recursive_depth_first_search(source,
-                                         [&parent, this](auto u, auto v) {
-                                           parent[v] = u;
-                                           return v == sink;
-                                         });
-      return convert_parents_to_path(parent);
-    }
 
     bool is_backward_edge(const indexed_edge &e) const {
       return backward_edges.contains(e);
@@ -218,24 +204,6 @@ namespace cyy::algorithm {
       graph.remove_edge(e);
       capacities.erase(e);
       backward_edges.erase(e);
-    }
-
-  private:
-    std::vector<size_t>
-    convert_parents_to_path(const std::vector<size_t> &parent) const {
-      std::vector<size_t> path;
-      path.reserve(graph.get_next_vertex_index());
-      auto vertex = sink;
-      while (vertex != source) {
-        if (vertex == graph.get_next_vertex_index()) {
-          return {};
-        }
-        path.push_back(vertex);
-        vertex = parent[vertex];
-      }
-      path.push_back(source);
-      std::ranges::reverse(path);
-      return path;
     }
 
   private:
