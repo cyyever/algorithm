@@ -6,6 +6,7 @@
 #include "graph/dag.hpp"
 #include "graph/path.hpp"
 
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   try {
     std::span<const uint8_t> data_span(Data, Size);
