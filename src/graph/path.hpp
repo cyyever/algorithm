@@ -24,8 +24,10 @@ namespace cyy::algorithm {
       assert(weight >= 0);
     }
 #endif
-
-    using weight_type = graphType::weight_type;
+    if (!g.has_vertex_index(s)) {
+      return std::vector<size_t>();
+    }
+    using weight_type = typename graphType::weight_type;
     std::vector<std::optional<weight_type>> distance(g.get_next_vertex_index());
     distance[s] = 0;
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
@@ -58,7 +60,10 @@ namespace cyy::algorithm {
 #ifndef NDEBUG
     assert(g.has_vertex_index(s));
 #endif
-    using weight_type = graphType::weight_type;
+    if (!g.has_vertex_index(s)) {
+      return std::vector<size_t>();
+    }
+    using weight_type = typename graphType::weight_type;
     std::vector<std::optional<weight_type>> distance(g.get_next_vertex_index());
     distance[s] = 0;
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);

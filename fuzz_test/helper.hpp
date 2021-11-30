@@ -7,7 +7,13 @@
  */
 #pragma once
 
+#include <span>
+
+#include "flow_network/flow_network.hpp"
 #include "graph/graph.hpp"
 
-cyy::algorithm::directed_graph<uint8_t> fuzzing_graph(const uint8_t *Data,
-                                                      size_t Size);
+cyy::algorithm::directed_graph<uint8_t>
+generate_graph(std::span<uint8_t> &data);
+
+cyy::algorithm::flow_network<uint8_t>
+generate_flow_network(std::span<uint8_t> &data);

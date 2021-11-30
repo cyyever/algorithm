@@ -24,25 +24,26 @@ namespace cyy::algorithm {
 
   public:
     using edge_type = edge<vertex_type, weight_type>;
-    using capacity_fun_type =
-        std::unordered_map<std::pair<vertex_type, vertex_type>, weight_type>;
-    flow_network(directed_graph<vertex_type, weight_type> graph_,
-                 vertex_type source_, vertex_type sink_,
-                 const capacity_fun_type &capacities_)
-        : graph(std::move(graph_)), source(graph.get_vertex_index(source_)),
-          sink(graph.get_vertex_index(sink_)) {
-      graph.rearrange_vertices();
+    using capacity_fun_type = std::vector<edge_type>;
+    flow_network(const capacity_fun_type &capacities_, vertex_type source_,
+                 vertex_type sink_) {
+      for (auto const &e : capacities_) {
+        graph.add_edge(e);
 
-      for (auto const &e : graph.foreach_edge()) {
-        auto real_edge =
-            std::pair{graph.get_vertex(e.first), graph.get_vertex(e.second)};
-        auto capacity = capacities_.at(real_edge);
-
+        auto capacity = e.weight;
         if (capacity < 0) {
           throw std::runtime_error("capacity should be non-negative");
         }
-        capacities[e] = capacity;
+        capacities[graph.get_edge(e)] = capacity;
       }
+      if (!graph.has_vertex(source_)) {
+        throw std::runtime_error("source is not in graph");
+      }
+      source = graph.get_vertex_index(source_);
+      if (!graph.has_vertex(sink_)) {
+        throw std::runtime_error("sink is not in graph");
+      }
+      sink = graph.get_vertex_index(sink_);
 
       // init flow to zero
       graph.set_all_weights(0);

@@ -77,6 +77,7 @@ namespace cyy::algorithm {
         next_vertex_index = std::max(next_vertex_index, idx + 1);
       }
     }
+    bool empty() const { return vertex_indices.empty(); }
 
     void print_edges(std::ostream &os) const {
       for (auto const &e : foreach_edge()) {
@@ -192,6 +193,9 @@ namespace cyy::algorithm {
              }) != l.end();
     }
 
+    bool has_vertex(const vertex_type &vertex) const {
+      return vertex_indices.left.find(vertex) != vertex_indices.left.end();
+    }
     bool has_vertex_index(size_t vertex_index) const {
       return vertex_indices.right.find(vertex_index) !=
              vertex_indices.right.end();
@@ -251,16 +255,14 @@ namespace cyy::algorithm {
     }
 
     auto get_vertex_indices() const {
-      return std::views::all(vertex_indices.right) |
-             std::views::transform([](auto const &it) { return it.first; });
+      return std::views::transform(vertex_indices.right,
+                                   [](auto const &it) { return it.first; });
     }
 
     auto get_vertices_and_indices() const {
-      return std::views::all(vertex_indices.left) |
-             std::views::transform([](auto const &it) {
-               return std::pair<const vertex_type &, size_t>{it.first,
-                                                             it.second};
-             });
+      return std::views::transform(vertex_indices.left, [](auto const &it) {
+        return std::pair<const vertex_type &, size_t>{it.first, it.second};
+      });
     }
     size_t get_vertex_number() const { return vertex_indices.size(); }
     size_t get_edge_number() const {

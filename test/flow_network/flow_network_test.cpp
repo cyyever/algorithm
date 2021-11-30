@@ -29,27 +29,27 @@ TEST_CASE("flow network") {
   g.add_edge({"v", "t"});
   cyy::algorithm::flow_network<std::string, weight_type>::capacity_fun_type
       capacities;
-  capacities[{"s", "u"}] = 20;
-  capacities[{"s", "v"}] = 10;
-  capacities[{"u", "v"}] = 30;
-  capacities[{"u", "t"}] = 10;
-  capacities[{"v", "t"}] = 20;
+  capacities.emplace_back("s", "u", 20);
+  capacities.emplace_back("s", "v", 10);
+  capacities.emplace_back("u", "v", 30);
+  capacities.emplace_back("u", "t", 10);
+  capacities.emplace_back("v", "t", 20);
 
   SUBCASE("max flow") {
-    cyy::algorithm::flow_network<std::string, weight_type> network(g, "s", "t",
-                                                                   capacities);
+    cyy::algorithm::flow_network<std::string, weight_type> network(capacities,
+                                                                   "s", "t");
     network.max_flow_by_ford_fulkerson();
     REQUIRE_EQ(network.get_flow_value(), 30);
   }
   SUBCASE("max flow2") {
-    cyy::algorithm::flow_network<std::string, weight_type> network(g, "s", "t",
-                                                                   capacities);
+    cyy::algorithm::flow_network<std::string, weight_type> network(capacities,
+                                                                   "s", "t");
     network.max_flow_by_edmonds_karp();
     REQUIRE_EQ(network.get_flow_value(), 30);
   }
   SUBCASE("min cut") {
-    cyy::algorithm::flow_network<std::string, weight_type> network(g, "s", "t",
-                                                                   capacities);
+    cyy::algorithm::flow_network<std::string, weight_type> network(capacities,
+                                                                   "s", "t");
     auto [s_set, t_set] = network.get_minimum_capacity_s_t_cut();
   }
 }

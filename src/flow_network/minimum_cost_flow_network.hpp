@@ -108,22 +108,18 @@ namespace cyy::algorithm {
         std::optional<weight_type> delta_opt;
         for (size_t i = 0; i + 1 < cycle.size(); i++) {
           auto it = flow.find({cycle[i], cycle[i + 1]});
+          weight_type delta{};
           if (it != flow.end()) {
-            auto delta = upper_capacities.at(it->first) - it->second;
-            if (!delta_opt.has_value()) {
-              delta_opt = delta;
-            } else {
-              delta_opt = std::min(delta_opt.value(), delta);
-            }
+            delta = upper_capacities.at(it->first) - it->second;
           } else {
             it = flow.find({cycle[i + 1], cycle[i]});
             assert(it != flow.end());
-            auto delta = it->second - lower_capacities.at(it->first);
-            if (!delta_opt.has_value()) {
-              delta_opt = delta;
-            } else {
-              delta_opt = std::min(delta_opt.value(), delta);
-            }
+            delta = it->second - lower_capacities.at(it->first);
+          }
+          if (!delta_opt.has_value()) {
+            delta_opt = delta;
+          } else {
+            delta_opt = std::min(*delta_opt, delta);
           }
         }
 

@@ -8,7 +8,8 @@
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
   try {
-    auto dg = fuzzing_graph(Data, Size);
+    std::span data_span{Data,Size};
+    auto dg = generate_graph(data_span);
     auto g = dg.get_underlying_graph();
     g.is_tree();
     cyy::algorithm::DAG<uint8_t> dag(dg);
