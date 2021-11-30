@@ -35,13 +35,13 @@ TEST_CASE("flow network") {
   capacities.emplace_back("u", "t", 10);
   capacities.emplace_back("v", "t", 20);
 
-  SUBCASE("max flow") {
+  SUBCASE("max flow ford fulkerson") {
     cyy::algorithm::flow_network<std::string, weight_type> network(capacities,
                                                                    "s", "t");
     network.max_flow_by_ford_fulkerson();
     REQUIRE_EQ(network.get_flow_value(), 30);
   }
-  SUBCASE("max flow2") {
+  SUBCASE("max flow edmonds karp") {
     cyy::algorithm::flow_network<std::string, weight_type> network(capacities,
                                                                    "s", "t");
     network.max_flow_by_edmonds_karp();

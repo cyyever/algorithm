@@ -54,6 +54,10 @@ namespace cyy::algorithm {
                                   weight_type{});
     }
 
+    void max_flow() { max_flow_by_edmonds_karp(); }
+    void max_flow_by_edmonds_karp() {
+      max_flow_by_ford_fulkerson(s_t_path_type::shortest);
+    }
     // may not terminate when there is a real capacity.
     void max_flow_by_ford_fulkerson(
         s_t_path_type path_type = s_t_path_type::random) {
@@ -107,13 +111,10 @@ namespace cyy::algorithm {
       assert(check_flow());
 #endif
     }
-    void max_flow_by_edmonds_karp() {
-      return max_flow_by_ford_fulkerson(s_t_path_type::shortest);
-    }
 
     std::pair<std::set<size_t>, std::set<size_t>>
     get_minimum_capacity_s_t_cut() {
-      max_flow_by_ford_fulkerson();
+      max_flow();
       auto residual_graph = get_residual_graph();
       std::set<size_t> s_set;
       std::set<size_t> t_set;
