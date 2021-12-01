@@ -25,9 +25,10 @@ namespace cyy::algorithm {
     using capacity_and_cost_fun_type =
         std::unordered_map<std::pair<vertex_type, vertex_type>,
                            std::tuple<weight_type, weight_type, weight_type>>;
+    using demand_fun_type = std::unordered_map<vertex_type, weight_type>;
     minimum_cost_flow_network(
         const capacity_and_cost_fun_type &capacity_and_cost_map,
-        std::unordered_map<vertex_type, weight_type> demand_) {
+        const demand_fun_type &demand_) {
       for (const auto &[e, capacity_and_cost] : capacity_and_cost_map) {
         graph.add_edge({e.first, e.second});
         auto indexed_e = indexed_edge{graph.get_vertex_index(e.first),
@@ -163,9 +164,10 @@ namespace cyy::algorithm {
         ts.T.remove_edge(last_blocking_edge.value());
         ts.T.add_edge(graph.get_edge(violating_edge));
       }
+
+      // check if G has a feasible flow
       if (std::ranges::any_of(flow, [&ts](const auto &p) {
-            if (p.first.first == ts.T.get_root() ||
-                p.first.second == ts.T.get_root()) {
+            if (p.first.contains(ts.T.get_root())) {
               if (p.second != 0) {
                 return true;
               }
@@ -177,20 +179,16 @@ namespace cyy::algorithm {
 
       assert(check_feasible_flow(flow));
       std::erase_if(flow, [this](const auto &p) {
-        return p.first.first == artificial_vertex_opt.value() ||
-               p.first.second == artificial_vertex_opt.value();
+        return p.first.contains(artificial_vertex_opt.value());
       });
       std::erase_if(costs, [this](const auto &p) {
-        return p.first.first == artificial_vertex_opt.value() ||
-               p.first.second == artificial_vertex_opt.value();
+        return p.first.contains(artificial_vertex_opt.value());
       });
       std::erase_if(lower_capacities, [this](const auto &p) {
-        return p.first.first == artificial_vertex_opt.value() ||
-               p.first.second == artificial_vertex_opt.value();
+        return p.first.contains(artificial_vertex_opt.value());
       });
       std::erase_if(upper_capacities, [this](const auto &p) {
-        return p.first.first == artificial_vertex_opt.value() ||
-               p.first.second == artificial_vertex_opt.value();
+        return p.first.contains(artificial_vertex_opt.value());
       });
       graph.remove_vertex(artificial_vertex_opt.value());
       demand.erase(artificial_vertex_opt.value());

@@ -10,6 +10,7 @@
 #include <span>
 
 #include "flow_network/flow_network.hpp"
+#include "flow_network/minimum_cost_flow_network.hpp"
 #include "graph/graph.hpp"
 
 template <typename weight_type = double>
@@ -43,4 +44,33 @@ generate_flow_network(std::span<const uint8_t> &data) {
   }
   return cyy::algorithm::flow_network<uint8_t, weight_type>(capacities, source,
                                                             sink);
+}
+
+template <typename weight_type = double>
+cyy::algorithm::minimum_cost_flow_network<uint8_t, weight_type>
+generate_minimum_cost_flow_network(std::span<const uint8_t> &data) {
+  auto g = generate_graph<weight_type>(data);
+  typename cyy::algorithm::minimum_cost_flow_network<
+      uint8_t, weight_type>::capacity_and_cost_fun_type capacity_and_cost;
+  typename cyy::algorithm::minimum_cost_flow_network<
+      uint8_t, weight_type>::demand_fun_type demand;
+  for (auto e : g.foreach_edge()) {
+    if (data.size() >= 3) {
+      capacity_and_cost.emplace(g.get_edge(e), {data[0], data[1], data[2]});
+      data = data.subspan(3);
+    } else {
+      break;
+    }
+  }
+  for (auto v : g.get_vertices()) {
+    if (!data.empty()) {
+      demand.emplace(v, data[0]);
+      data = data.subspan(1);
+    } else {
+      break;
+    }
+  }
+
+  return cyy::algorithm::minimum_cost_flow_network<uint8_t, weight_type>(
+      capacity_and_cost, demand);
 }

@@ -46,7 +46,7 @@ namespace cyy::algorithm {
         throw std::runtime_error("sink is not in graph");
       }
       sink = graph.get_vertex_index(sink_);
-      if(source==sink) {
+      if (source == sink) {
         throw std::runtime_error("sink is the same as source");
       }
 
