@@ -20,10 +20,11 @@ namespace cyy::algorithm {
   template <typename vertex_type = size_t, typename weight_type = double>
   class minimum_cost_flow_network {
   public:
-    using edge_type = edge<weight_type>;
+    using edge_type = edge<vertex_type,weight_type>;
     using flow_fun_type = std::unordered_map<indexed_edge, weight_type>;
     using capacity_and_cost_fun_type =
-        std::unordered_map<std::pair<vertex_type, vertex_type>,
+        /* std::unordered_map<std::pair<vertex_type, vertex_type>, */
+        std::unordered_map<edge_type,
                            std::tuple<weight_type, weight_type, weight_type>>;
     using demand_fun_type = std::unordered_map<vertex_type, weight_type>;
     minimum_cost_flow_network(
@@ -321,7 +322,6 @@ namespace cyy::algorithm {
     }
 
     tree_structure get_strongly_feasible_tree_structure() {
-      static constexpr auto artificial_vertex_name = "_____artificial_vertex";
       if (!artificial_vertex_opt) {
         weight_type max_abs_cost = std::numeric_limits<weight_type>::min();
         for (auto &[_, cost] : costs) {
@@ -339,23 +339,22 @@ namespace cyy::algorithm {
           B[e.first] += lower_capacities[e];
           B[e.second] -= lower_capacities[e];
         }
-        auto artificial_vertex = graph.add_vertex(artificial_vertex_name);
-        artificial_vertex_opt = artificial_vertex;
-        demand[artificial_vertex] = 0;
+        artificial_vertex_opt=graph.add_dummy_vertex();
+        demand[*artificial_vertex_opt] = 0;
 
         for (auto [v, b] : B) {
           if (b > 0) {
             graph.add_edge(
-                {graph.get_vertex(artificial_vertex), graph.get_vertex(v)});
-            lower_capacities[{artificial_vertex, v}] = 0;
-            upper_capacities[{artificial_vertex, v}] = b + 1;
-            costs[{artificial_vertex, v}] = C;
+                {graph.get_vertex(*artificial_vertex_opt), graph.get_vertex(v)});
+            lower_capacities[{*artificial_vertex_opt, v}] = 0;
+            upper_capacities[{*artificial_vertex_opt, v}] = b + 1;
+            costs[{*artificial_vertex_opt, v}] = C;
           } else {
             graph.add_edge(
-                {graph.get_vertex(v), graph.get_vertex(artificial_vertex)});
-            lower_capacities[{v, artificial_vertex}] = 0;
-            upper_capacities[{v, artificial_vertex}] = -b + 1;
-            costs[{v, artificial_vertex}] = C;
+                {graph.get_vertex(v), graph.get_vertex(*artificial_vertex_opt)});
+            lower_capacities[{v, *artificial_vertex_opt}] = 0;
+            upper_capacities[{v, *artificial_vertex_opt}] = -b + 1;
+            costs[{v, *artificial_vertex_opt}] = C;
           }
         }
       }
@@ -368,7 +367,7 @@ namespace cyy::algorithm {
           L.emplace_back(e);
         }
       }
-      T.set_root(artificial_vertex_name);
+      T.set_root_by_index(*artificial_vertex_opt);
       assert(T.get_edge_number() + L.size() == graph.get_edge_number());
       /* T.print_edges(std::cout); */
       return {std::move(T), std::move(L), {}};

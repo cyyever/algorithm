@@ -42,7 +42,6 @@ namespace cyy::algorithm {
       if (i == 0) {
         extreme_weight = g.get_edge(e).weight;
       } else {
-
         if constexpr (minimum) {
           extreme_weight = std::min(extreme_weight, g.get_edge(e).weight);
         } else {

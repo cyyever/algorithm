@@ -1,8 +1,8 @@
 /*!
- * \file graph_fuzzing.cpp
+ * \file flow_network_fuzzing.cpp
  *
  */
-#include "../helper.hpp"
+#include "helper.hpp"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size);
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
