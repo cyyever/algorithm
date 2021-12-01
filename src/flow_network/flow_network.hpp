@@ -51,13 +51,13 @@ namespace cyy::algorithm {
       graph.set_all_weights(0);
     }
     weight_type get_flow_value() const {
+      graph.get_containing_edges(source);
       return ::ranges::accumulate(graph.get_adjacent_list(source) |
                                       ranges::views::values,
                                   weight_type{})-
       ::ranges::accumulate(graph.get_reverse().get_adjacent_list(source) |
                                       ranges::views::values,
                                   weight_type{})
-
         ;
     }
 

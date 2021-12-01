@@ -38,6 +38,7 @@ namespace cyy::algorithm {
     auto operator<=>(const auto &rhs) const {
       return std::tuple(first, second) <=> std::tuple(rhs.first, rhs.second);
     }
+    bool contains(size_t v) const { return first == v || second == v; }
     indexed_edge reverse() const { return {second, first}; }
   };
 } // namespace cyy::algorithm
@@ -73,7 +74,7 @@ namespace cyy::algorithm {
       }
       vertex_indices = new_vertices;
       next_vertex_index = 0;
-      for (auto const &[_, idx] : vertex_indices) {
+      for (auto const idx : get_vertex_indices()) {
         next_vertex_index = std::max(next_vertex_index, idx + 1);
       }
     }
@@ -156,6 +157,7 @@ namespace cyy::algorithm {
       }
     }
 
+
     auto foreach_edge() const {
       return foreach_edge_with_weight() | ranges::views::keys;
     }
@@ -175,9 +177,7 @@ namespace cyy::algorithm {
     edge_type get_edge(const indexed_edge &edge) const {
       for (auto const &to_vertice : get_adjacent_list(edge.first)) {
         if (to_vertice.first == edge.second) {
-          auto first_vertex = get_vertex(edge.first);
-          auto second_vertex = get_vertex(edge.second);
-          return {first_vertex, second_vertex, to_vertice.second};
+          return {get_vertex(edge.first),get_vertex(edge.second), to_vertice.second};
         }
       }
       throw std::runtime_error("no edge");
