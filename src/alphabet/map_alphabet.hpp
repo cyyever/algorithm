@@ -56,8 +56,9 @@ namespace cyy::algorithm {
     std::string __to_string(symbol_type symbol) const override {
       if constexpr (std::is_same_v<data_type, std::string>) {
         return get_data(symbol);
+      } else {
+        throw std::runtime_error("can't convert to string");
       }
-      throw std::runtime_error("can't convert to string");
     }
     symbol_type get_symbol(size_t index) const noexcept override {
       auto it = symbol_map.left.begin();
