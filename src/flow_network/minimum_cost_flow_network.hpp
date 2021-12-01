@@ -1,7 +1,7 @@
 /*!
- * \file graph.hpp
+ * \file minimum_cost_flow_network.hpp
  *
- * \brief implements graph
+ * \brief
  */
 
 #pragma once

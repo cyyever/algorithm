@@ -56,7 +56,7 @@ generate_minimum_cost_flow_network(std::span<const uint8_t> &data) {
       uint8_t, weight_type>::demand_fun_type demand;
   for (auto e : g.foreach_edge()) {
     if (data.size() >= 3) {
-      capacity_and_cost.emplace(g.get_edge(e), {data[0], data[1], data[2]});
+      capacity_and_cost.emplace(g.get_edge(e), std::tuple<weight_type, weight_type, weight_type>{data[0], data[1], data[2]});
       data = data.subspan(3);
     } else {
       break;
