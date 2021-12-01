@@ -46,6 +46,9 @@ namespace cyy::algorithm {
         throw std::runtime_error("sink is not in graph");
       }
       sink = graph.get_vertex_index(sink_);
+      if(source==sink) {
+        throw std::runtime_error("sink is the same as source");
+      }
 
       // init flow to zero
       graph.set_all_weights(0);
@@ -157,7 +160,6 @@ namespace cyy::algorithm {
 
     void augment(auto &residual_graph, const path_type &path) {
       auto bottleneck = get_extreme_weight(residual_graph, path);
-
       assert(bottleneck > 0);
       for (size_t i = 0; i + 1 < path.size(); i++) {
         indexed_edge indexed_e{path[i], path[i + 1]};
