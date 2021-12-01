@@ -49,9 +49,12 @@ namespace std {
       return ::std::hash<size_t>()(x.first) ^ ::std::hash<size_t>()(x.second);
     }
   };
-  template <typename vertex_type,typename weight_type> struct hash<cyy::algorithm::edge<vertex_type,weight_type>> {
-    size_t operator()(const cyy::algorithm::edge<vertex_type,weight_type> &x) const noexcept {
-      return ::std::hash<vertex_type>()(x.first) ^ ::std::hash<vertex_type>()(x.second);
+  template <typename vertex_type, typename weight_type>
+  struct hash<cyy::algorithm::edge<vertex_type, weight_type>> {
+    size_t operator()(const cyy::algorithm::edge<vertex_type, weight_type> &x)
+        const noexcept {
+      return ::std::hash<vertex_type>()(x.first) ^
+             ::std::hash<vertex_type>()(x.second);
     }
   };
 } // namespace std
@@ -170,22 +173,21 @@ namespace cyy::algorithm {
       return foreach_edge_with_weight() | ranges::views::values;
     }
 
-      size_t add_dummy_vertex() {
+    size_t add_dummy_vertex() {
       assert(!empty());
-      if constexpr(std::is_same_v<vertex_type,std::string>) {
+      if constexpr (std::is_same_v<vertex_type, std::string>) {
         static constexpr auto artificial_vertex_name = "___dummy_vertex";
-            return add_vertex(artificial_vertex_name) ;
+        return add_vertex(artificial_vertex_name);
       } else {
-        auto it=vertex_indices.left.rbegin();
-        return add_vertex(it->first+1);
+        auto it = vertex_indices.left.rbegin();
+        return add_vertex(it->first + 1);
       }
     }
-
 
     size_t add_vertex(vertex_type vertex) {
       auto it = vertex_indices.left.find(vertex);
       if (it != vertex_indices.left.end()) {
-        throw std::runtime_error("vertex has existed");
+        return it->second;
       }
       vertex_indices.insert({std::move(vertex), next_vertex_index});
       return next_vertex_index++;

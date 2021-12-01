@@ -21,4 +21,3 @@ generate_graph(std::span<const uint8_t> &data) {
   }
   return g;
 }
-
