@@ -8,10 +8,10 @@
 #include <algorithm>
 #include <memory>
 #include <optional>
+#include <set>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include <set>
 
 #include <range/v3/all.hpp>
 
@@ -53,7 +53,12 @@ namespace cyy::algorithm {
     weight_type get_flow_value() const {
       return ::ranges::accumulate(graph.get_adjacent_list(source) |
                                       ranges::views::values,
-                                  weight_type{});
+                                  weight_type{})-
+      ::ranges::accumulate(graph.get_reverse().get_adjacent_list(source) |
+                                      ranges::views::values,
+                                  weight_type{})
+
+        ;
     }
 
     void max_flow() { max_flow_by_edmonds_karp(); }
@@ -148,6 +153,7 @@ namespace cyy::algorithm {
       return {s_set, t_set};
     }
 
+    auto const &get_graph() const { return graph; }
   private:
     flow_network() = default;
     bool check_flow() const {

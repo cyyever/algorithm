@@ -32,16 +32,14 @@ namespace cyy::algorithm {
       return g;
     }
 
-    directed_graph get_transpose() const {
-      directed_graph transpose = *this;
-      transpose.clear_edges();
+    directed_graph get_reverse() const {
+      directed_graph reverse = *this;
+      reverse.clear_edges();
       for (auto const &e : this->foreach_edge()) {
         auto edge = this->get_edge(e).reverse();
-
-        transpose.add_edge(edge);
+        reverse.add_edge(edge);
       }
-
-      return transpose;
+      return reverse;
     }
 
     std::vector<size_t> get_indegrees() const {

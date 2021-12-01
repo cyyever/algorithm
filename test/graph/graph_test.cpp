@@ -20,7 +20,7 @@ TEST_CASE("graph") {
     g.remove_edge({"1", "2"});
   }
   SUBCASE("rearrange") { g.rearrange_vertices(); }
-  SUBCASE("transpose") { h.get_transpose(); }
+  SUBCASE("reverse") { h.get_reverse(); }
   SUBCASE("depth first recursive search") {
     h.add_edge({"1", "2"});
     h.recursive_depth_first_search(0, [](auto u, auto v) {
