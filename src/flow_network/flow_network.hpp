@@ -17,7 +17,6 @@
 
 #include "graph/graph.hpp"
 #include "graph/path.hpp"
-#include "hash.hpp"
 namespace cyy::algorithm {
   template <typename vertex_type = size_t, typename weight_type = double>
   class flow_network {
