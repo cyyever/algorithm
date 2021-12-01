@@ -60,13 +60,6 @@ namespace cyy::algorithm {
       // return a basis matrix of A, i.e. n rows that is invertible.
       auto transpose = A.transpose();
       auto D = transpose.fullPivLu().image(transpose).transpose();
-#ifdef NDEBUG
-#ifndef _MSC_VER
-      for (auto const &row : D.rowwise()) {
-        assert(std::ranges::count(A.rowwise(), row) > 0);
-      }
-#endif
-#endif
       return D;
     }
 
