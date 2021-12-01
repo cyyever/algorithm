@@ -70,7 +70,6 @@ namespace cyy::algorithm {
     template <s_t_path_type path_type = s_t_path_type::random>
     void max_flow_by_ford_fulkerson() {
       auto residual_graph = get_residual_graph();
-      size_t cnt = 0;
       while (true) {
         std::vector<size_t> path;
         if constexpr (path_type == s_t_path_type::shortest) {
@@ -83,16 +82,6 @@ namespace cyy::algorithm {
         if (path.empty()) {
           break;
         }
-        /* cnt++; */
-        /* if (cnt > 100) { */
-        /*   std::cout << "cnt " << cnt << " bottleneck_opt=" << *bottleneck_opt
-         */
-        /*             << std::endl; */
-        /*   for (auto const &[e, weight] : capacities) { */
-        /*     std::cout << e.first << "->  " << e.second << " =" << weight */
-        /*               << std::endl; */
-        /*   } */
-        /* } */
         augment(residual_graph, path);
       }
 #ifndef NDEBUG
