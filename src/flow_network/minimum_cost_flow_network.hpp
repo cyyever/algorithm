@@ -23,13 +23,15 @@ namespace cyy::algorithm {
     using edge_type = edge<vertex_type, weight_type>;
     using flow_fun_type = std::unordered_map<indexed_edge, weight_type>;
     using capacity_and_cost_fun_type =
-        /* std::unordered_map<std::pair<vertex_type, vertex_type>, */
         std::unordered_map<edge_type,
                            std::tuple<weight_type, weight_type, weight_type>>;
     using demand_fun_type = std::unordered_map<vertex_type, weight_type>;
     minimum_cost_flow_network(
         const capacity_and_cost_fun_type &capacity_and_cost_map,
         const demand_fun_type &demand_) {
+      if (capacity_and_cost_map.empty()) {
+        throw std::runtime_error("no capacities and costs");
+      }
       for (const auto &[e, capacity_and_cost] : capacity_and_cost_map) {
         graph.add_edge({e.first, e.second});
         auto indexed_e = indexed_edge{graph.get_vertex_index(e.first),
@@ -44,15 +46,13 @@ namespace cyy::algorithm {
         costs[indexed_e] = cost;
       }
       weight_type total_demand = 0;
-      for (auto const &[_, d] : demand_) {
-        total_demand += d;
-      }
-      if (total_demand != 0) {
-        throw std::logic_error("total demand must be 0");
-      }
 
       for (auto const &[vertex, index] : graph.get_vertices_and_indices()) {
         demand[index] = demand_.at(vertex);
+        total_demand += demand[index];
+      }
+      if (total_demand != 0) {
+        throw std::logic_error("total demand must be 0");
       }
     }
 
