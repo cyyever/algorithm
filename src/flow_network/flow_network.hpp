@@ -6,6 +6,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <set>
@@ -69,61 +70,30 @@ namespace cyy::algorithm {
     template <s_t_path_type path_type = s_t_path_type::random>
     void max_flow_by_ford_fulkerson() {
       auto residual_graph = get_residual_graph();
+      size_t cnt = 0;
       while (true) {
         std::vector<size_t> path;
         if constexpr (path_type == s_t_path_type::shortest) {
           path = convert_parent_list_to_path(
-              shortest_path_by_edge_number(residual_graph.graph,
-                                           residual_graph.source),
-              residual_graph.source, residual_graph.sink);
+              shortest_path_by_edge_number(residual_graph, source), source,
+              sink);
         } else {
-          path = get_path(residual_graph.graph, residual_graph.source,
-                          residual_graph.sink);
+          path = get_path(residual_graph, source, sink);
         }
         if (path.empty()) {
           break;
         }
-        std::optional<weight_type> bottleneck_opt;
-        for (size_t i = 0; i + 1 < path.size(); i++) {
-          indexed_edge e{path[i], path[i + 1]};
-          if (!bottleneck_opt.has_value()) {
-            bottleneck_opt = residual_graph.capacities[e];
-          } else {
-            bottleneck_opt =
-                std::min(*bottleneck_opt, residual_graph.capacities[e]);
-          }
-        }
-        assert(*bottleneck_opt > 0);
-        for (size_t i = 0; i + 1 < path.size(); i++) {
-          indexed_edge e{path[i], path[i + 1]};
-          if (residual_graph.is_backward_edge(e)) {
-            auto new_weight =
-                graph.get_weight(e.reverse()) - bottleneck_opt.value();
-            graph.set_weight(e.reverse(), new_weight);
-            residual_graph.graph.add_edge(graph.get_edge(e).reverse());
-            auto leftover_capacity = capacities.at(e.reverse()) - new_weight;
-            assert(leftover_capacity > 0);
-            residual_graph.capacities[e.reverse()] = leftover_capacity;
-            if (new_weight == 0) {
-              residual_graph.remove_edge(e);
-              residual_graph.backward_edges.erase(e);
-            } else {
-              residual_graph.capacities[e] = new_weight;
-            }
-          } else {
-            auto new_weight = graph.get_weight(e) + bottleneck_opt.value();
-            graph.set_weight(e, new_weight);
-            assert(new_weight > 0);
-            residual_graph.graph.add_edge(graph.get_edge(e).reverse());
-            residual_graph.capacities[e.reverse()] = new_weight;
-            residual_graph.backward_edges.insert(e.reverse());
-            if (capacities[e] == new_weight) {
-              residual_graph.remove_edge(e);
-            } else {
-              residual_graph.capacities[e] -= bottleneck_opt.value();
-            }
-          }
-        }
+        /* cnt++; */
+        /* if (cnt > 100) { */
+        /*   std::cout << "cnt " << cnt << " bottleneck_opt=" << *bottleneck_opt
+         */
+        /*             << std::endl; */
+        /*   for (auto const &[e, weight] : capacities) { */
+        /*     std::cout << e.first << "->  " << e.second << " =" << weight */
+        /*               << std::endl; */
+        /*   } */
+        /* } */
+        augment(residual_graph, path);
       }
 #ifndef NDEBUG
       assert(check_flow());
@@ -137,11 +107,11 @@ namespace cyy::algorithm {
       std::set<size_t> s_set;
       std::set<size_t> t_set;
       s_set.insert(source);
-      residual_graph.graph.recursive_depth_first_search(source,
-                                                        [&s_set](auto, auto v) {
-                                                          s_set.insert(v);
-                                                          return false;
-                                                        });
+      residual_graph.recursive_depth_first_search(source,
+                                                  [&s_set](auto, auto v) {
+                                                    s_set.insert(v);
+                                                    return false;
+                                                  });
       for (auto v : graph.get_vertex_indices()) {
         if (!s_set.contains(v)) {
           t_set.insert(v);
@@ -184,43 +154,52 @@ namespace cyy::algorithm {
     }
 
     auto get_residual_graph() const {
-      if (!backward_edges.empty()) {
-        throw std::runtime_error(
-            "can't get residual graph from a residual graph");
-      }
-      auto residual_graph = *this;
-      residual_graph.graph.clear_edges();
-      residual_graph.capacities.clear();
+      auto residual_graph = this->graph;
       for (auto const &edge : graph.foreach_edge()) {
-        auto weight = graph.get_weight(edge);
-        auto leftover_capacity = capacities.at(edge) - weight;
-        if (leftover_capacity > 0 || weight > 0) {
-          auto first_vertex = graph.get_vertex(edge.first);
-          auto second_vertex = graph.get_vertex(edge.second);
-          auto new_edge = edge_type{first_vertex, second_vertex, weight_type{}};
-          if (leftover_capacity > 0) {
-            residual_graph.graph.add_edge(new_edge);
-            residual_graph.capacities[edge] = leftover_capacity;
-          }
-          if (weight > 0) {
-            residual_graph.graph.add_edge(new_edge.reverse());
-            residual_graph.capacities[edge.reverse()] = weight;
-            residual_graph.backward_edges.insert(edge.reverse());
-          }
-        }
+        modified_residual_edge(residual_graph, edge);
       }
-
       return residual_graph;
-    }
-
-    bool is_backward_edge(const indexed_edge &e) const {
-      return backward_edges.contains(e);
     }
 
     void remove_edge(const indexed_edge &e) {
       graph.remove_edge(e);
       capacities.erase(e);
-      backward_edges.erase(e);
+    }
+
+    void augment(auto &residual_graph, const path_type &path) {
+      auto bottleneck = get_extreme_weight(residual_graph, path);
+
+      assert(bottleneck > 0);
+      for (size_t i = 0; i + 1 < path.size(); i++) {
+        indexed_edge indexed_e{path[i], path[i + 1]};
+        /* auto e = residual_graph.get_edge(indexed_e); */
+        // backward
+        if (!graph.has_edge(indexed_e)) {
+          auto forward_edge = indexed_e.reverse();
+          auto new_weight = graph.get_weight(forward_edge) - bottleneck;
+          graph.set_weight(forward_edge, new_weight);
+        } else {
+          // forward
+          auto &forward_edge = indexed_e;
+          auto new_weight = graph.get_weight(forward_edge)+ bottleneck;
+          graph.set_weight(forward_edge, new_weight);
+        }
+        modified_residual_edge(residual_graph, indexed_e);
+      }
+    }
+
+    void modified_residual_edge(auto &residual_graph,
+                                const indexed_edge &e) const {
+      residual_graph.remove_edge(e);
+      residual_graph.remove_edge(e.reverse());
+      auto weight = graph.get_weight(e);
+      auto leftover_capacity = capacities.at(e) - weight;
+      if (leftover_capacity > 0) {
+        residual_graph.set_weight(e, leftover_capacity);
+      }
+      if (weight > 0) {
+        residual_graph.add_edge(graph.get_edge(e).reverse());
+      }
     }
 
   private:
@@ -228,7 +207,6 @@ namespace cyy::algorithm {
     size_t source{};
     size_t sink{};
     std::unordered_map<indexed_edge, weight_type> capacities;
-    std::unordered_set<indexed_edge> backward_edges;
   };
 
 } // namespace cyy::algorithm

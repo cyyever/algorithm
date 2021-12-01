@@ -201,9 +201,7 @@ namespace cyy::algorithm {
              vertex_indices.right.end();
     }
     void add_edge(const edge_type &e) {
-      if (!add_directed_edge(e)) {
-        return;
-      }
+      add_directed_edge(e);
       if constexpr (!directed) {
         add_directed_edge(e.reverse());
       }
@@ -291,11 +289,12 @@ namespace cyy::algorithm {
     }
 
     void set_weight(const indexed_edge &edge, weight_type new_weight) {
-      for (auto &to_vertice : weighted_adjacent_list.at(edge.first)) {
-        if (to_vertice.first == edge.second) {
-          to_vertice.second = new_weight;
-        }
+      auto &adjacent_list=weighted_adjacent_list.at(edge.first);
+      auto it=std::ranges::find_if(adjacent_list,[&edge](auto const &to_vertice){return to_vertice.first == edge.second;});
+      if(it==adjacent_list.end()) {
+        throw std::runtime_error("no edge found");
       }
+      it->second=new_weight;
     }
 
     // breadth first search in g from s
@@ -398,7 +397,7 @@ namespace cyy::algorithm {
     }
 
   protected:
-    bool add_directed_edge(const edge_type &e) {
+    void add_directed_edge(const edge_type &e) {
       auto first_index = add_vertex(e.first);
       auto second_index = add_vertex(e.second);
       auto &neighbors = weighted_adjacent_list[first_index];
@@ -407,11 +406,11 @@ namespace cyy::algorithm {
         return a.first == second_index;
       });
       if (it != neighbors.end()) {
-        return false;
+        throw std::runtime_error("edge has existed");
       }
 #endif
       neighbors.emplace_back(second_index, e.weight);
-      return true;
+      return;
     }
     bool remove_directed_edge(const edge_type &e) {
       return remove_directed_edge({get_vertex(e.first), get_vertex(e.second)});
