@@ -157,7 +157,6 @@ namespace cyy::algorithm {
       }
     }
 
-
     auto foreach_edge() const {
       return foreach_edge_with_weight() | ranges::views::keys;
     }
@@ -177,7 +176,8 @@ namespace cyy::algorithm {
     edge_type get_edge(const indexed_edge &edge) const {
       for (auto const &to_vertice : get_adjacent_list(edge.first)) {
         if (to_vertice.first == edge.second) {
-          return {get_vertex(edge.first),get_vertex(edge.second), to_vertice.second};
+          return {get_vertex(edge.first), get_vertex(edge.second),
+                  to_vertice.second};
         }
       }
       throw std::runtime_error("no edge");
