@@ -15,7 +15,7 @@
 #include "heap.hpp"
 
 namespace cyy::algorithm {
-  using path_type=std::vector<size_t>;
+  using path_type = std::vector<size_t>;
   inline path_type
   convert_parent_list_to_path(const std::vector<size_t> &parent, size_t source,
                               size_t sink) {
@@ -34,21 +34,24 @@ namespace cyy::algorithm {
     return path;
   }
 
-  template <typename graphType,bool minimum=true>
-    auto get_extreme_weight(const graphType &g, const path_type& path) {
-      typename graphType::weight_type extreme_weight{};
-      for (size_t i = 0; i + 1 < path.size(); i++) {
-        indexed_edge e{path[i], path[i + 1]};
-        if constexpr(minimum) {
-          extreme_weight= std::min(extreme_weight,g.get_edge(e).weight);
-        } else {
-          extreme_weight= std::max(extreme_weight,g.get_edge(e).weight);
+  template <typename graphType, bool minimum = true>
+  auto get_extreme_weight(const graphType &g, const path_type &path) {
+    typename graphType::weight_type extreme_weight{};
+    for (size_t i = 0; i + 1 < path.size(); i++) {
+      indexed_edge e{path[i], path[i + 1]};
+      if (i == 0) {
+        extreme_weight = g.get_edge(e).weight;
+      } else {
 
+        if constexpr (minimum) {
+          extreme_weight = std::min(extreme_weight, g.get_edge(e).weight);
+        } else {
+          extreme_weight = std::max(extreme_weight, g.get_edge(e).weight);
         }
       }
-      return extreme_weight;
     }
-
+    return extreme_weight;
+  }
 
   template <typename graphType>
   auto shortest_path_by_edge_number(const graphType &g, size_t s) {

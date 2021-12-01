@@ -289,12 +289,15 @@ namespace cyy::algorithm {
     }
 
     void set_weight(const indexed_edge &edge, weight_type new_weight) {
-      auto &adjacent_list=weighted_adjacent_list.at(edge.first);
-      auto it=std::ranges::find_if(adjacent_list,[&edge](auto const &to_vertice){return to_vertice.first == edge.second;});
-      if(it==adjacent_list.end()) {
+      auto &adjacent_list = weighted_adjacent_list.at(edge.first);
+      auto it =
+          std::ranges::find_if(adjacent_list, [&edge](auto const &to_vertice) {
+            return to_vertice.first == edge.second;
+          });
+      if (it == adjacent_list.end()) {
         throw std::runtime_error("no edge found");
       }
-      it->second=new_weight;
+      it->second = new_weight;
     }
 
     // breadth first search in g from s

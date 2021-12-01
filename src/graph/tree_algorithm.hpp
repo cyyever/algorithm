@@ -27,6 +27,7 @@ namespace cyy::algorithm {
     graph<vertex_type> MST;
     heap<size_t, weight_type> h;
     auto s = *g.get_vertex_indices().begin();
+    weights[s] = 0;
     h.insert(s, 0);
     while (!h.empty()) {
       auto u = h.top_data();

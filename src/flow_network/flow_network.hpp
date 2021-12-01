@@ -172,7 +172,6 @@ namespace cyy::algorithm {
       assert(bottleneck > 0);
       for (size_t i = 0; i + 1 < path.size(); i++) {
         indexed_edge indexed_e{path[i], path[i + 1]};
-        /* auto e = residual_graph.get_edge(indexed_e); */
         // backward
         if (!graph.has_edge(indexed_e)) {
           auto forward_edge = indexed_e.reverse();
@@ -181,7 +180,7 @@ namespace cyy::algorithm {
         } else {
           // forward
           auto &forward_edge = indexed_e;
-          auto new_weight = graph.get_weight(forward_edge)+ bottleneck;
+          auto new_weight = graph.get_weight(forward_edge) + bottleneck;
           graph.set_weight(forward_edge, new_weight);
         }
         modified_residual_edge(residual_graph, indexed_e);
@@ -192,13 +191,14 @@ namespace cyy::algorithm {
                                 const indexed_edge &e) const {
       residual_graph.remove_edge(e);
       residual_graph.remove_edge(e.reverse());
-      auto weight = graph.get_weight(e);
-      auto leftover_capacity = capacities.at(e) - weight;
-      if (leftover_capacity > 0) {
-        residual_graph.set_weight(e, leftover_capacity);
+      auto origin_edge = graph.get_edge(e);
+      if (origin_edge.weight > 0) {
+        residual_graph.add_edge(origin_edge.reverse());
       }
-      if (weight > 0) {
-        residual_graph.add_edge(graph.get_edge(e).reverse());
+      auto leftover_capacity = capacities.at(e) - origin_edge.weight;
+      if (leftover_capacity > 0) {
+        origin_edge.weight = leftover_capacity;
+        residual_graph.add_edge(origin_edge);
       }
     }
 
