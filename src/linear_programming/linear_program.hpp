@@ -150,9 +150,9 @@ namespace cyy::algorithm {
         }
         // choose pivot_col from lexicographical order
         auto pivot_col = *std::ranges::min_element(
-            pivot_cols, [&tableau](auto const &a, auto const &b) {
-              auto v1 = tableau.col(a).reshaped();
-              auto v2 = tableau.col(b).reshaped();
+            pivot_cols, [&tableau](auto const &U, auto const &V) {
+              auto v1 = tableau.col(U).reshaped();
+              auto v2 = tableau.col(V).reshaped();
               for (int i = 0; i < v1.size(); i++) {
                 if (v1(i) < v2(i)) {
                   return true;
