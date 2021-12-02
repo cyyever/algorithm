@@ -47,8 +47,15 @@ namespace cyy::algorithm {
     bool is_primally_feasible_basis(const basis_type &basis) const {
       return A_b.is_feasible(A_b.get_extreme_point(basis));
     }
+    template <bool c_is_0 = false>
     bool is_dually_feasible_basis(const basis_type &basis) const {
-      return c.dot(A_b.get_extreme_point(basis)) <= 0;
+      if constexpr (c_is_0) {
+        return true;
+      } else {
+        auto y =
+            (c.transpose() * A_b.get_basis_matrix(basis).inverse()).reshaped();
+        return std::ranges::all_of(y, [](auto const &a) { return a <= 0; });
+      }
     }
 
     std::optional<basis_type> primal_simplex_phase_1() const {
@@ -107,14 +114,14 @@ namespace cyy::algorithm {
 
     template <bool c_is_0 = false>
     std::optional<basis_type> dual_simplex_phase_2(basis_type basis) const {
-      assert(is_dually_feasible_basis(basis));
+      assert(is_dually_feasible_basis<c_is_0>(basis));
       auto tableau = get_tableau_form(basis);
 
       while (true) {
         auto const b = get_b(tableau).reshaped();
         auto it = std::ranges::find_if(b, [](auto const &n) { return n < 0; });
         if (it == b.end()) {
-          assert(is_dually_feasible_basis(basis));
+          assert(is_dually_feasible_basis<c_is_0>(basis));
           return basis;
         }
         auto pivot_row = std::distance(b.begin(), it);
@@ -180,7 +187,7 @@ namespace cyy::algorithm {
       tableau.topLeftCorner(1, get_A().cols()) = c.transpose();
       tableau.bottomLeftCorner(get_A().rows(), get_A().cols()) = get_A();
       tableau.leftCols(get_A().cols()) *= basis_inverse;
-      tableau(0, Eigen::last) = -(c.dot(x));
+      tableau(0, tableau.cols() - 1) = -(c.dot(x));
       tableau.bottomRightCorner(get_b().rows(), 1) = get_b() - get_A() * x;
       return tableau;
     }

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <cyy/math/algebra/matrix.hpp>
+#include <range/v3/all.hpp>
 
 namespace cyy::algorithm {
   // A polyhedron satisfying Ax<=b
@@ -71,17 +72,23 @@ namespace cyy::algorithm {
       return basis;
     }
 
-    bool is_feasible(const vector_type &x) const { return A * x <= b; }
+    bool is_feasible(const vector_type &x) const {
+      return std::ranges::all_of((b - (A * x)).reshaped(),
+                                 [](auto const &a) { return a >= 0; });
+    }
 
-    auto get_extreme_point(const basis_type &basis) const {
-      return get_basis_matrix(basis).inverse() * b(basis);
+    vector_type get_extreme_point(const basis_type &basis) const {
+      auto real_basis = ::ranges::to<std::vector<int>>(basis);
+      return get_basis_matrix(basis).inverse() * b(real_basis);
     }
 
     auto get_basis_matrix(const basis_type &basis) const {
-      return A(basis, Eigen::all);
+      auto real_basis = ::ranges::to<std::vector<int>>(basis);
+      return A(real_basis, Eigen::all);
     }
     auto get_subset(const basis_type &basis) const {
-      return std::pair{get_basis_matrix(basis), b(basis)};
+      auto real_basis = ::ranges::to<std::vector<int>>(basis);
+      return std::pair{get_basis_matrix(basis), b(real_basis)};
     }
 
   private:
