@@ -180,7 +180,7 @@ namespace cyy::algorithm {
       tableau.topLeftCorner(1, get_A().cols()) = c.transpose();
       tableau.bottomLeftCorner(get_A().rows(), get_A().cols()) = get_A();
       tableau.leftCols(get_A().cols()) *= basis_inverse;
-      tableau.topRightCorner(1, 1) = -c.dot(x);
+      tableau(0, Eigen::last) = -(c.dot(x));
       tableau.bottomRightCorner(get_b().rows(), 1) = get_b() - get_A() * x;
     }
     auto const &get_A() const { return A_b.get_A(); }
