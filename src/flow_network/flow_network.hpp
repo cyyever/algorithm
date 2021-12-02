@@ -9,7 +9,6 @@
 #include <iostream>
 #include <memory>
 #include <optional>
-#include <set>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -92,12 +91,12 @@ namespace cyy::algorithm {
 #endif
     }
 
-    std::pair<std::set<size_t>, std::set<size_t>>
+    std::pair<std::unordered_set<size_t>, std::unordered_set<size_t>>
     get_minimum_capacity_s_t_cut() {
       max_flow();
       auto residual_graph = get_residual_graph();
-      std::set<size_t> s_set;
-      std::set<size_t> t_set;
+      std::unordered_set<size_t> s_set;
+      std::unordered_set<size_t> t_set;
       s_set.insert(source);
       residual_graph.recursive_depth_first_search(source,
                                                   [&s_set](auto, auto v) {
@@ -159,7 +158,7 @@ namespace cyy::algorithm {
     }
 
     void augment(auto &residual_graph, const path_type &path) {
-      auto bottleneck = get_extreme_weight(residual_graph, path);
+      auto bottleneck = residual_graph.get_extreme_weight(path);
       assert(bottleneck > 0);
       for (size_t i = 0; i + 1 < path.size(); i++) {
         indexed_edge indexed_e{path[i], path[i + 1]};

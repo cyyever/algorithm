@@ -15,6 +15,7 @@
 #include <vector>
 
 #include <boost/bimap.hpp>
+#include <fmt/format.h>
 #include <range/v3/all.hpp>
 
 namespace cyy::algorithm {
@@ -41,6 +42,7 @@ namespace cyy::algorithm {
     bool contains(size_t v) const { return first == v || second == v; }
     indexed_edge reverse() const { return {second, first}; }
   };
+  using path_type = std::vector<size_t>;
 } // namespace cyy::algorithm
 
 namespace std {
@@ -68,6 +70,7 @@ namespace cyy::algorithm {
     using weight_type = weightType;
     using vertex_index_map_type = std::unordered_map<vertex_type, size_t>;
     using adjacent_matrix_type = std::vector<std::vector<weight_type>>;
+    static constexpr bool is_directed = directed;
     graph_base() = default;
     template <std::ranges::input_range U>
     requires std::same_as<edge_type, std::ranges::range_value_t<U>>
@@ -211,6 +214,23 @@ namespace cyy::algorithm {
       return std::ranges::find_if(l, [&e](auto const &p) {
                return p.first == e.second;
              }) != l.end();
+    }
+    template <bool minimum = true>
+    auto get_extreme_weight(const path_type &path) {
+      weight_type extreme_weight{};
+      for (size_t i = 0; i + 1 < path.size(); i++) {
+        indexed_edge e{path[i], path[i + 1]};
+        if (i == 0) {
+          extreme_weight = get_edge(e).weight;
+        } else {
+          if constexpr (minimum) {
+            extreme_weight = std::min(extreme_weight, get_edge(e).weight);
+          } else {
+            extreme_weight = std::max(extreme_weight, get_edge(e).weight);
+          }
+        }
+      }
+      return extreme_weight;
     }
 
     bool has_vertex(const vertex_type &vertex) const {
@@ -461,4 +481,45 @@ namespace cyy::algorithm {
     static inline std::list<std::pair<size_t, weight_type>> empty_adjacent_list;
   };
 
+  template <typename T>
+  concept IsGraph = requires(T a) {
+    {a.get_vertices()};
+    {a.is_directed};
+    {a.foreach_edge_with_weight()};
+  };
 } // namespace cyy::algorithm
+
+namespace fmt {
+
+  /* template <typename vertex_type, bool directed, typename weight_type> */
+  template <cyy::algorithm::IsGraph G>
+  struct formatter<
+      /* cyy::algorithm::graph_base<vertex_type, directed, weight_type> */
+
+      G> {
+    // Parses format specifications
+    constexpr auto parse(format_parse_context &ctx) -> decltype(ctx.begin()) {
+      // Parse the presentation format and store it in the formatter:
+      auto it = ctx.begin(), end = ctx.end();
+      // Check if reached the end of the range:
+      if (it != end && *it != '}')
+        throw format_error("invalid format");
+
+      // Return an iterator past the end of the parsed range:
+      return it;
+    }
+
+    template <class FormatContext>
+    auto format(const auto &g, FormatContext &ctx) {
+      for (auto const &v : g.get_vertices()) {
+        fmt::format_to(ctx.out(), "vertex {}\n", v);
+      }
+      for (auto const &[indexed_edge, w] : g.foreach_edge_with_weight()) {
+        auto e = g.get_edge(indexed_edge);
+        fmt::format_to(ctx.out(), "{} {} {} with weight {}\n", e.first,
+                       G::is_directed ? "->" : "<->", e.second, w);
+      }
+      return ctx.out();
+    }
+  };
+} // namespace fmt

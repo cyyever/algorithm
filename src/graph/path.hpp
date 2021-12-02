@@ -9,17 +9,15 @@
 
 #include <cassert>
 #include <functional>
-#include <vector>
 
 #include "graph_base.hpp"
 #include "heap.hpp"
 
 namespace cyy::algorithm {
-  using path_type = std::vector<size_t>;
   inline path_type
   convert_parent_list_to_path(const std::vector<size_t> &parent, size_t source,
                               size_t sink) {
-    std::vector<size_t> path;
+    path_type path;
     path.reserve(parent.size());
     auto vertex = sink;
     while (vertex != source) {
@@ -34,26 +32,7 @@ namespace cyy::algorithm {
     return path;
   }
 
-  template <typename graphType, bool minimum = true>
-  auto get_extreme_weight(const graphType &g, const path_type &path) {
-    typename graphType::weight_type extreme_weight{};
-    for (size_t i = 0; i + 1 < path.size(); i++) {
-      indexed_edge e{path[i], path[i + 1]};
-      if (i == 0) {
-        extreme_weight = g.get_edge(e).weight;
-      } else {
-        if constexpr (minimum) {
-          extreme_weight = std::min(extreme_weight, g.get_edge(e).weight);
-        } else {
-          extreme_weight = std::max(extreme_weight, g.get_edge(e).weight);
-        }
-      }
-    }
-    return extreme_weight;
-  }
-
-  template <typename graphType>
-  auto shortest_path_by_edge_number(const graphType &g, size_t s) {
+  template <IsGraph G> auto shortest_path_by_edge_number(const G &g, size_t s) {
 #ifndef NDEBUG
     assert(g.has_vertex_index(s));
 #endif
@@ -70,8 +49,7 @@ namespace cyy::algorithm {
     return parent;
   }
 
-  template <typename graphType>
-  auto shortest_path_Dijkstra(const graphType &g, size_t s) {
+  template <IsGraph G> auto shortest_path_Dijkstra(const G &g, size_t s) {
 #ifndef NDEBUG
     assert(g.has_vertex_index(s));
     for (auto const &[_, weight] : g.foreach_edge_with_weight()) {
@@ -81,7 +59,7 @@ namespace cyy::algorithm {
     if (!g.has_vertex_index(s)) {
       return std::vector<size_t>();
     }
-    using weight_type = typename graphType::weight_type;
+    using weight_type = typename G::weight_type;
     std::vector<std::optional<weight_type>> distance(g.get_next_vertex_index());
     distance[s] = 0;
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
@@ -109,15 +87,14 @@ namespace cyy::algorithm {
     }
     return parent;
   }
-  template <typename graphType>
-  auto shortest_path_Bellman_Ford(const graphType &g, size_t s) {
+  template <IsGraph G> auto shortest_path_Bellman_Ford(const G &g, size_t s) {
 #ifndef NDEBUG
     assert(g.has_vertex_index(s));
 #endif
     if (!g.has_vertex_index(s)) {
       return std::vector<size_t>();
     }
-    using weight_type = typename graphType::weight_type;
+    using weight_type = typename G::weight_type;
     std::vector<std::optional<weight_type>> distance(g.get_next_vertex_index());
     distance[s] = 0;
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
@@ -148,9 +125,8 @@ namespace cyy::algorithm {
     return parent;
   }
 
-  template <typename graphType>
-  std::vector<size_t> get_path(const graphType &g, size_t source,
-                               size_t target) {
+  template <IsGraph G>
+  std::vector<size_t> get_path(const G &g, size_t source, size_t target) {
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
     g.recursive_depth_first_search(source, [&parent, &target](auto u, auto v) {
       parent[v] = u;

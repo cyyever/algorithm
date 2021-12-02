@@ -22,6 +22,11 @@ TEST_CASE("tree") {
     g.add_edge({"1", "2"});
     auto mst = MST_kruskal(g);
   }
+  SUBCASE("print") {
+    cyy::algorithm::tree<std::string> T;
+    T.add_edge({"1", "2"});
+    std::cout << fmt::format("{}", T) << std::endl;
+  }
   SUBCASE("Prufer code") {
     cyy::algorithm::tree<std::string> T;
     T.add_vertex("1");
