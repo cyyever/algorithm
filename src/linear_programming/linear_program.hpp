@@ -96,21 +96,19 @@ namespace cyy::algorithm {
           if (row(pivot_col) >= 0) {
             continue;
           }
-          number_type lambda;
           if constexpr (b_is_0) {
-            lambda =
-                -(row(Eigen::last) - get_b()(row_idx - 1)) / row(pivot_col);
+            pivot_row = row_idx;
           } else {
-            lambda = -row(Eigen::last) / row(pivot_col);
-          }
+          auto lambda = -row(Eigen::last) / row(pivot_col);
 
           if (min_lambda == -1 || lambda < min_lambda) {
             min_lambda = lambda;
             pivot_row = row_idx;
           }
           assert(min_lambda >= 0);
+          }
         }
-        if (min_lambda < 0) {
+        if (pivot_row< 0) {
           break;
         }
         do_pivot_col_operation(tableau, pivot_row, pivot_col);
