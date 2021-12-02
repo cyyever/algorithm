@@ -27,6 +27,9 @@ namespace cyy::algorithm {
       if (A.size() == 0) {
         throw std::invalid_argument("A is empty");
       }
+      if (b.size() == 0) {
+        throw std::invalid_argument("b is empty");
+      }
     }
 
     std::pair<matrix_type, polyhedron<number_type>> decompose() {
