@@ -196,7 +196,7 @@ namespace cyy::algorithm {
 
     static void do_pivot_col_operation(matrix_type &tableau, int pivot_row,
                                        int pivot_col) {
-      tableau.cols(pivot_col) /= tableau(pivot_row, pivot_col);
+      tableau.col(pivot_col) /= tableau(pivot_row, pivot_col);
       for (int col_idx = 0; col_idx < tableau.cols(); col_idx++) {
         tableau.col(col_idx) -=
             tableau(pivot_row, col_idx) * tableau.col(pivot_col);
