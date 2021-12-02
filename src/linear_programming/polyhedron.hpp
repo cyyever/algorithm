@@ -55,11 +55,20 @@ namespace cyy::algorithm {
 
     auto rank() const { return Eigen::FullPivLU<matrix_type>(A).rank(); }
 
-    auto get_basis_matrix() const {
-      // return a basis matrix of A, i.e. n rows that is invertible.
+    auto get_basis() const {
+      // return a basis of A.
       auto transpose = A.transpose();
-      auto D = transpose.fullPivLu().image(transpose).transpose();
-      return D;
+      auto D = transpose.fullPivLu().image(transpose).transpose().eval();
+      basis_type basis;
+      for (int j = 0; j < D.rows(); j++) {
+        for (int i = 0; i < A.rows(); i++) {
+          if (D.row(j) == A.row(i)) {
+            basis.insert(i);
+            break;
+          }
+        }
+      }
+      return basis;
     }
 
     bool is_feasible(const vector_type &x) const { return A * x <= b; }

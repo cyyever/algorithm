@@ -30,6 +30,19 @@ namespace cyy::algorithm {
       }
     }
 
+    std::optional<vector_type> solve_by_primal_simplex() const {
+      auto primal_feasible_basis_opt = primal_simplex_phase_1();
+      if (!primal_feasible_basis_opt.has_value()) {
+        return {};
+      }
+      primal_feasible_basis_opt =
+          primal_simplex_phase_2(*primal_feasible_basis_opt);
+      if (!primal_feasible_basis_opt.has_value()) {
+        return {};
+      }
+      return A_b.get_extreme_point(*primal_feasible_basis_opt);
+    }
+
   private:
     bool is_primally_feasible_basis(const basis_type &basis) const {
       return A_b.is_feasible(A_b.get_extreme_point(basis));
@@ -38,8 +51,16 @@ namespace cyy::algorithm {
       return c.dot(A_b.get_extreme_point(basis)) <= 0;
     }
 
+    std::optional<basis_type> primal_simplex_phase_1() const {
+      return dual_simplex_phase_2<true>(A_b.get_basis());
+    }
+    std::optional<basis_type> dual_simplex_phase_1() const {
+      return primal_simplex_phase_2<true>(get_A().get_basis());
+    }
+
     template <bool b_is_0 = false>
-    std::optional<basis_type> primal_simplex_phase_2(const basis_type &basis) {
+    std::optional<basis_type>
+    primal_simplex_phase_2(const basis_type &basis) const {
       assert(is_primally_feasible_basis(basis));
       auto tableau = get_tableau_form(basis);
       while (true) {
@@ -78,15 +99,16 @@ namespace cyy::algorithm {
         if (min_lambda < 0) {
           break;
         }
-        basis.rease(pivot_col);
-        basis.add(pivot_row);
+        basis.erase(pivot_col);
+        basis.insert(pivot_row - 1);
         do_pivot_col_operation(tableau, pivot_row, pivot_col);
       }
       return {};
     }
 
     template <bool c_is_0 = false>
-    std::optional<basis_type> dual_simplex_phase_2(const basis_type &basis) {
+    std::optional<basis_type>
+    dual_simplex_phase_2(const basis_type &basis) const {
       assert(is_dually_feasible_basis(basis));
       auto tableau = get_tableau_form(basis);
 
@@ -142,8 +164,8 @@ namespace cyy::algorithm {
               return false;
             });
 
-        basis.rease(pivot_row);
-        basis.add(pivot_col);
+        basis.erase(pivot_row);
+        basis.insert(pivot_col - 1);
         do_pivot_col_operation(tableau, pivot_row, pivot_col);
       }
       return {};
@@ -151,7 +173,7 @@ namespace cyy::algorithm {
 
     auto get_tableau_form(const basis_type &basis) {
       cyy::math::la::matrix<number_type> tableau;
-      tableau.reshape(get_A().rows() + 1, get_A().cols() + 1);
+      tableau.resize(get_A().rows() + 1, get_A().cols() + 1);
       auto [sub_A, sub_b] = A_b.get_subset(basis);
       auto basis_inverse = sub_A.inverse();
       auto x = basis_inverse * sub_b;

@@ -19,6 +19,7 @@ TEST_CASE("polyhedron") {
     DOCTEST_REQUIRE_EQ(polyhedron.rank(), 1);
     auto [U, pointed_polyhedron] = polyhedron.decompose();
     DOCTEST_REQUIRE(pointed_polyhedron.full_rank());
-    pointed_polyhedron.get_basis_matrix();
+    auto basis = pointed_polyhedron.get_basis();
+    DOCTEST_REQUIRE_EQ(basis.size(), pointed_polyhedron.rank());
   }
 }

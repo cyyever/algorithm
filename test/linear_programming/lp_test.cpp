@@ -15,4 +15,6 @@ TEST_CASE("LP") {
   cyy::math::la::vector<cyy::math::rational> b{{1}, {2}, {2}, {2}, {2}};
   cyy::math::la::vector<cyy::math::rational> c{{1}, {1}};
   linear_program LP(c, polyhedron(A, b));
+  auto x_opt = LP.solve_by_primal_simplex();
+  DOCTEST_REQUIRE(x_opt.has_value());
 }
