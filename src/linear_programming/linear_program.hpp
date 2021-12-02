@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <optional>
 #include <ranges>
-#include <vector>
 #include <set>
+#include <vector>
 
 #include "polyhedron.hpp"
 
@@ -63,7 +63,8 @@ namespace cyy::algorithm {
   private:
     template <bool b_is_0 = false>
     bool is_primally_feasible_basis(const basis_type &basis) const {
-      return A_b.is_feasible<b_is_0>(A_b.get_extreme_point<b_is_0>(basis));
+      return A_b.template is_feasible<b_is_0>(
+          A_b.template get_extreme_point<b_is_0>(basis));
     }
     template <bool c_is_0 = false>
     bool is_dually_feasible_basis(const basis_type &basis) const {
