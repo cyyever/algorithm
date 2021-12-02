@@ -13,14 +13,15 @@
 #include <boost/functional/hash.hpp>
 
 namespace std {
-  template <class T1, class T2> struct hash<std::pair<T1, T2>> {
-    std::size_t operator()(const std::pair<T1, T2> &x) const noexcept {
-      return boost::hash<decltype(x)>()(x);
-    }
-  };
   template <typename T>
   concept Hashable = requires(T a) {
     { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
+  };
+
+  template <Hashable T1, Hashable T2> struct hash<std::pair<T1, T2>> {
+    std::size_t operator()(const std::pair<T1, T2> &x) const noexcept {
+      return boost::hash<decltype(x)>()(x);
+    }
   };
 
   template <std::ranges::input_range T>
