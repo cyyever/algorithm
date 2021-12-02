@@ -15,8 +15,10 @@ namespace cyy::algorithm {
   // A polyhedron satisfying Ax<=b
   template <typename number_type = double> class polyhedron {
   public:
-    polyhedron(cyy::math::la::matrix<number_type> A_,
-               cyy::math::la::vector<number_type> b_)
+    using basis_type = std::set<int>;
+    using matrix_type = cyy::math::la::matrix<number_type>;
+    using vector_type = cyy::math::la::vector<number_type>;
+    polyhedron(matrix_type A_, vector_type b_)
         : A(std::move(A_)), b(std::move(b_)) {
       if (A.rows() != b.rows()) {
         throw std::invalid_argument("mismatched A and b");
@@ -26,11 +28,10 @@ namespace cyy::algorithm {
       }
     }
 
-    std::pair<cyy::math::la::matrix<number_type>, polyhedron<number_type>>
-    decompose() {
+    std::pair<matrix_type, polyhedron<number_type>> decompose() {
       // If A is not full rank, decompose it into U and U_complement, where
       // U=kernel(A). If A is full rank, then U would be {0}
-      Eigen::FullPivLU<cyy::math::la::matrix<number_type>> lu_decomp(A);
+      Eigen::FullPivLU<matrix_type> lu_decomp(A);
       auto U = lu_decomp.kernel();
       auto pointed_polyhedron = *this;
       pointed_polyhedron.A.resize(A.rows() + U.cols() * 2, A.cols());
@@ -52,9 +53,7 @@ namespace cyy::algorithm {
       return this->rank() == std::min(A.rows(), A.cols());
     }
 
-    auto rank() const {
-      return Eigen::FullPivLU<cyy::math::la::matrix<number_type>>(A).rank();
-    }
+    auto rank() const { return Eigen::FullPivLU<matrix_type>(A).rank(); }
 
     auto get_basis_matrix() const {
       // return a basis matrix of A, i.e. n rows that is invertible.
@@ -63,9 +62,22 @@ namespace cyy::algorithm {
       return D;
     }
 
+    bool is_feasible(const vector_type &x) const { return A * x <= b; }
+
+    auto get_extreme_point(const basis_type &basis) const {
+      return get_basis_matrix(basis).inverse() * b(basis);
+    }
+
+    auto get_basis_matrix(const basis_type &basis) const {
+      return A(basis, Eigen::all);
+    }
+    auto get_subset(const basis_type &basis) const {
+      return std::pair{get_basis_matrix(basis), b(basis)};
+    }
+
   private:
-    cyy::math::la::matrix<number_type> A;
-    cyy::math::la::matrix<number_type> b;
+    matrix_type A;
+    vector_type b;
   };
 
 } // namespace cyy::algorithm
