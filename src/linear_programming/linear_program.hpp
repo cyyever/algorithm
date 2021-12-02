@@ -59,18 +59,17 @@ namespace cyy::algorithm {
     }
 
     template <bool b_is_0 = false>
-    std::optional<basis_type>
-    primal_simplex_phase_2(const basis_type &basis) const {
+    std::optional<basis_type> primal_simplex_phase_2(basis_type basis) const {
       assert(is_primally_feasible_basis(basis));
       auto tableau = get_tableau_form(basis);
       while (true) {
-        auto const &y = get_y(tableau);
+        auto const &y = get_y(tableau).reshaped();
         auto it = std::ranges::find_if(y, [](auto const &n) { return n > 0; });
         if (it == y.end()) {
           assert(is_primally_feasible_basis(basis));
           return basis;
         }
-        auto pivot_col = std::advance(y.begin(), it);
+        auto pivot_col = std::distance(y.begin(), it);
         number_type min_lambda = -1;
         int pivot_row = -1;
         for (auto row_idx = 1; row_idx < tableau.rows(); row_idx++) {
@@ -107,19 +106,18 @@ namespace cyy::algorithm {
     }
 
     template <bool c_is_0 = false>
-    std::optional<basis_type>
-    dual_simplex_phase_2(const basis_type &basis) const {
+    std::optional<basis_type> dual_simplex_phase_2(basis_type basis) const {
       assert(is_dually_feasible_basis(basis));
       auto tableau = get_tableau_form(basis);
 
       while (true) {
-        auto b = tableau.topLeftCorner(1, get_A().cols());
+        auto const b = get_b(tableau).reshaped();
         auto it = std::ranges::find_if(b, [](auto const &n) { return n < 0; });
         if (it == b.end()) {
           assert(is_dually_feasible_basis(basis));
           return basis;
         }
-        auto pivot_row = std::advance(b.begin(), it);
+        auto pivot_row = std::distance(b.begin(), it);
         number_type min_lambda = -1;
         std::vector<int> pivot_cols;
         for (auto col_idx = 0; col_idx + 1 < tableau.cols(); col_idx++) {
@@ -152,8 +150,10 @@ namespace cyy::algorithm {
         }
         // choose pivot_col from lexicographical order
         auto pivot_col = *std::ranges::min_element(
-            pivot_cols, [](auto const &v1, auto const &v2) {
-              for (int i = 0; i < v1.rows(); i++) {
+            pivot_cols, [&tableau](auto const &a, auto const &b) {
+              auto v1 = tableau.col(a).reshaped();
+              auto v2 = tableau.col(b).reshaped();
+              for (int i = 0; i < v1.size(); i++) {
                 if (v1(i) < v2(i)) {
                   return true;
                 }
@@ -172,7 +172,7 @@ namespace cyy::algorithm {
     }
 
     matrix_type get_tableau_form(const basis_type &basis) const {
-        matrix_type tableau;
+      matrix_type tableau;
       tableau.resize(get_A().rows() + 1, get_A().cols() + 1);
       auto [sub_A, sub_b] = A_b.get_subset(basis);
       auto basis_inverse = sub_A.inverse();
