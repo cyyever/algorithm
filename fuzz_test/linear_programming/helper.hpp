@@ -16,9 +16,9 @@ template <typename number_type = double>
 cyy::algorithm::linear_program<number_type>
 generate_linear_program(std::span<const uint8_t> &data) {
 
-  cyy::math::la::matrix<cyy::math::rational> A;
-  cyy::math::la::vector<cyy::math::rational> b;
-  cyy::math::la::vector<cyy::math::rational> c;
+  cyy::math::la::matrix<number_type> A;
+  cyy::math::la::vector<number_type> b;
+  cyy::math::la::vector<number_type> c;
   int m = 0;
   int n = 0;
   if (data.size() >= 2) {
