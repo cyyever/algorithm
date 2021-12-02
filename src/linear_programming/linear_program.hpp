@@ -80,7 +80,7 @@ namespace cyy::algorithm {
 
     template <bool b_is_0 = false>
     std::optional<basis_type> primal_simplex_phase_2(basis_type basis) const {
-      assert(is_primally_feasible_basis(basis));
+      assert(is_primally_feasible_basis<b_is_0>(basis));
       auto tableau = get_tableau_form(basis);
       while (true) {
         auto const &y = get_y(tableau).reshaped();
@@ -120,7 +120,7 @@ namespace cyy::algorithm {
         basis.erase(old_row);
         basis.insert(pivot_row - 1);
         assert(tableau == get_tableau_form(basis));
-        assert(is_primally_feasible_basis(basis));
+        assert(is_primally_feasible_basis<b_is_0>(basis));
       }
       return {};
     }
