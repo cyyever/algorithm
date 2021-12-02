@@ -373,11 +373,6 @@ namespace cyy::algorithm {
       for (const auto &[e, cost] : costs) {
         reduced_costs[e] =
             cost + potential.at(e.first) - potential.at(e.second);
-#ifdef NDEBUG
-        if (ts.T.has_edge(e)) {
-          assert(reduced_costs[e] == 0);
-        }
-#endif
       }
       return reduced_costs;
     }

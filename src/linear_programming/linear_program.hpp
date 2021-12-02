@@ -171,8 +171,8 @@ namespace cyy::algorithm {
       return {};
     }
 
-    auto get_tableau_form(const basis_type &basis) {
-      cyy::math::la::matrix<number_type> tableau;
+    matrix_type get_tableau_form(const basis_type &basis) const {
+        matrix_type tableau;
       tableau.resize(get_A().rows() + 1, get_A().cols() + 1);
       auto [sub_A, sub_b] = A_b.get_subset(basis);
       auto basis_inverse = sub_A.inverse();
@@ -182,14 +182,15 @@ namespace cyy::algorithm {
       tableau.leftCols(get_A().cols()) *= basis_inverse;
       tableau(0, Eigen::last) = -(c.dot(x));
       tableau.bottomRightCorner(get_b().rows(), 1) = get_b() - get_A() * x;
+      return tableau;
     }
     auto const &get_A() const { return A_b.get_A(); }
     auto const &get_b() const { return A_b.get_b(); }
-    auto &get_b(matrix_type &tableau) const {
+    auto get_b(matrix_type &tableau) const {
       return tableau.bottomRightCorner(get_b().rows(), 1);
     }
 
-    auto &get_y(matrix_type &tableau) const {
+    auto get_y(matrix_type &tableau) const {
       return tableau.topLeftCorner(1, get_A().cols());
     }
 
