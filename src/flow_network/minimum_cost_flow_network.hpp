@@ -73,15 +73,18 @@ namespace cyy::algorithm {
         bool forward_direction = true;
         indexed_edge violating_edge;
         {
-          auto it = std::ranges::find_if(
-              ts.U, [this](auto const &e) { return reduced_costs[e] > 0; });
+          auto reduced_costs = get_reduced_costs();
+          auto it = std::ranges::find_if(ts.U, [&reduced_costs](auto const &e) {
+            return reduced_costs[e] > 0;
+          });
           if (it != ts.U.end()) {
             violating_edge = *it;
             ts.U.erase(it);
             forward_direction = false;
           } else {
-            it = std::ranges::find_if(
-                ts.L, [this](auto const &e) { return reduced_costs[e] < 0; });
+            it = std::ranges::find_if(ts.L, [&reduced_costs](auto const &e) {
+              return reduced_costs[e] < 0;
+            });
             if (it != ts.L.end()) {
               violating_edge = *it;
               ts.L.erase(it);
@@ -311,14 +314,6 @@ namespace cyy::algorithm {
         return false;
       });
       assert(potential.size() == demand.size());
-      for (const auto &[e, cost] : costs) {
-        reduced_costs[e] = cost + potential[e.first] - potential[e.second];
-#ifdef NDEBUG
-        if (ts.T.has_edge(e)) {
-          assert(reduced_costs[e] == 0);
-        }
-#endif
-      }
     }
 
     tree_structure get_strongly_feasible_tree_structure() {
@@ -373,12 +368,25 @@ namespace cyy::algorithm {
       return {std::move(T), std::move(L), {}};
     }
 
+    auto get_reduced_costs() const {
+      flow_fun_type reduced_costs;
+      for (const auto &[e, cost] : costs) {
+        reduced_costs[e] =
+            cost + potential.at(e.first) - potential.at(e.second);
+#ifdef NDEBUG
+        if (ts.T.has_edge(e)) {
+          assert(reduced_costs[e] == 0);
+        }
+#endif
+      }
+      return reduced_costs;
+    }
+
   private:
     directed_graph<vertex_type, weight_type> graph;
     flow_fun_type upper_capacities;
     flow_fun_type lower_capacities;
     flow_fun_type costs;
-    flow_fun_type reduced_costs;
     std::unordered_map<size_t, weight_type> demand;
     std::unordered_map<size_t, weight_type> potential;
     std::optional<size_t> artificial_vertex_opt;
