@@ -37,6 +37,8 @@ namespace cyy::algorithm {
     bool is_dually_feasible_basis(const basis_type &basis) const {
       return c.dot(A_b.get_extreme_point(basis)) <= 0;
     }
+
+    template <bool b_is_0 = false>
     std::optional<basis_type> primal_simplex_phase_2(const basis_type &basis) {
       assert(is_primally_feasible_basis(basis));
       auto tableau = get_tableau_form(basis);
@@ -55,17 +57,23 @@ namespace cyy::algorithm {
           if (row(pivot_col) >= 0) {
             continue;
           }
-          if (min_lambda == -1) {
-            min_lambda = -row(Eigen::last) / row(pivot_col);
+          if constexpr (b_is_0) {
             pivot_row = row_idx;
+            break;
           } else {
-            auto lambda = -row(Eigen::last) / row(pivot_col);
-            if (lambda < min_lambda) {
+
+            if (min_lambda == -1) {
+              min_lambda = -row(Eigen::last) / row(pivot_col);
               pivot_row = row_idx;
-              min_lambda = lambda;
+            } else {
+              auto lambda = -row(Eigen::last) / row(pivot_col);
+              if (lambda < min_lambda) {
+                pivot_row = row_idx;
+                min_lambda = lambda;
+              }
             }
+            assert(min_lambda >= 0);
           }
-          assert(min_lambda >= 0);
         }
         if (min_lambda < 0) {
           break;
@@ -77,6 +85,7 @@ namespace cyy::algorithm {
       return {};
     }
 
+    template <bool c_is_0 = false>
     std::optional<basis_type> dual_simplex_phase_2(const basis_type &basis) {
       assert(is_dually_feasible_basis(basis));
       auto tableau = get_tableau_form(basis);
@@ -96,36 +105,41 @@ namespace cyy::algorithm {
           if (col(pivot_row) <= 0) {
             continue;
           }
-          if (min_lambda == -1) {
-            min_lambda = -col(0) / col(pivot_row);
+          if constexpr (c_is_0) {
             pivot_cols.push_back(col_idx);
           } else {
-            auto lambda = -col(0) / col(pivot_row);
-            if (lambda == min_lambda) {
+
+            if (min_lambda == -1) {
+              min_lambda = -col(0) / col(pivot_row);
               pivot_cols.push_back(col_idx);
-            } else if (lambda < min_lambda) {
-              pivot_cols.clear();
-              pivot_cols.push_back(col_idx);
-              min_lambda = lambda;
+            } else {
+              auto lambda = -col(0) / col(pivot_row);
+              if (lambda == min_lambda) {
+                pivot_cols.push_back(col_idx);
+              } else if (lambda < min_lambda) {
+                pivot_cols.clear();
+                pivot_cols.push_back(col_idx);
+                min_lambda = lambda;
+              }
             }
+            assert(min_lambda >= 0);
           }
-          assert(min_lambda >= 0);
         }
         if (min_lambda < 0) {
           break;
         }
         // choose pivot_col from lexicographical order
         auto pivot_col = *std::ranges::min_element(
-            pivot_cols, [](auto const &a, auto const &b) {
-              for (int i = 0; i < a.rows(); i++) {
-                if (a(i) < b(i)) {
+            pivot_cols, [](auto const &v1, auto const &v2) {
+              for (int i = 0; i < v1.rows(); i++) {
+                if (v1(i) < v2(i)) {
                   return true;
                 }
-                if (b(i) < a(i)) {
+                if (v2(i) < v1(i)) {
                   return false;
                 }
-                return false;
               }
+              return false;
             });
 
         basis.rease(pivot_row);
