@@ -9,6 +9,7 @@
 #include <optional>
 #include <ranges>
 #include <vector>
+#include <set>
 
 #include "polyhedron.hpp"
 
@@ -138,7 +139,7 @@ namespace cyy::algorithm {
         if (it == b.end()) {
           return basis;
         }
-        auto pivot_row = std::distance(b.begin(), it) + 1;
+        int pivot_row = std::distance(b.begin(), it) + 1;
         number_type min_lambda = -1;
         std::vector<int> pivot_cols;
         for (auto col_idx = 0; col_idx + 1 < tableau.cols(); col_idx++) {
