@@ -31,6 +31,10 @@ namespace cyy::algorithm {
     }
 
     std::optional<vector_type> solve_by_primal_simplex() const {
+      if(!check_kernel_space()) {
+        return {};
+
+      }
       auto primal_feasible_basis_opt = primal_simplex_phase_1();
       if (!primal_feasible_basis_opt.has_value()) {
         return {};
@@ -40,6 +44,8 @@ namespace cyy::algorithm {
       if (!primal_feasible_basis_opt.has_value()) {
         return {};
       }
+
+      
       return A_b.get_extreme_point(*primal_feasible_basis_opt);
     }
 
@@ -229,6 +235,21 @@ namespace cyy::algorithm {
             tableau(pivot_row, col_idx) * tableau.col(pivot_col);
       }
       assert(tableau(pivot_row, pivot_col) == 1);
+    }
+
+    bool check_kernel_space() const {
+      // check kernel
+      if(!kernel_space.has_value()) {
+        return true;
+      }
+
+      for (auto row_idx = 1; row_idx <kernel_space->rows(); row_idx++) {
+        auto const &row =kernel_space->row(row_idx);
+        if(c.dot(row)!=0) {
+          return false;
+        }
+      }
+      return true;
     }
 
     static int get_nth_basis(const basis_type &basis, int n) {
