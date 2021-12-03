@@ -245,8 +245,8 @@ namespace cyy::algorithm {
         return true;
       }
 
-      for (auto const &row : kernel_space->rowwise()) {
-        if (c.dot(row) != 0) {
+      for (auto const &col : kernel_space->colwise()) {
+        if (c.dot(col) != 0) {
           return false;
         }
       }
