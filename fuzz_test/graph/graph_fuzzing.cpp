@@ -18,7 +18,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
     if (g.has_vertex_index(0)) {
       shortest_path_Bellman_Ford(g, 0);
     }
-  } catch (const std::invalid_argument &) {
+  } catch (const std::exception&) {
   }
   return 0; // Non-zero return values are reserved for future use.
 }
