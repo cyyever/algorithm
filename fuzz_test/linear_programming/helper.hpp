@@ -20,11 +20,13 @@ generate_linear_program(std::span<const uint8_t> &data) {
   cyy::math::la::vector<number_type> c;
   int m = 0;
   int n = 0;
+
   if (data.size() >= 2) {
     m = data[0];
     n = data[1];
     data = data.subspan(2);
   }
+  if(m<=2 &&n<=2) {
   A.resize(m, n);
   b.resize(n);
   c.resize(n);
@@ -41,6 +43,7 @@ generate_linear_program(std::span<const uint8_t> &data) {
       c(j) = data[0];
       data = data.subspan(1);
     }
+  }
   }
   return cyy::algorithm::linear_program(c, cyy::algorithm::polyhedron(A, b));
 }
