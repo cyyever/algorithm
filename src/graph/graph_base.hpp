@@ -441,6 +441,9 @@ namespace cyy::algorithm {
 
   protected:
     void add_directed_edge(const edge_type &e) {
+      if(e.first==e.second) {
+        throw std::runtime_error("not an edge");
+      }
       auto first_index = add_vertex(e.first);
       auto second_index = add_vertex(e.second);
       auto &neighbors = weighted_adjacent_list[first_index];
