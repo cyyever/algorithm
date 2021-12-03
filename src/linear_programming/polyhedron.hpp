@@ -72,14 +72,26 @@ namespace cyy::algorithm {
       return basis;
     }
 
+    template <bool b_is_0 = false>
     bool is_feasible(const vector_type &x) const {
-      return std::ranges::all_of((b - (A * x)).reshaped(),
-                                 [](auto const &a) { return a >= 0; });
+      if constexpr (b_is_0) {
+        return std::ranges::all_of((-(A * x)).reshaped(),
+                                   [](auto const &a) { return a >= 0; });
+
+      } else {
+        return std::ranges::all_of((b - (A * x)).reshaped(),
+                                   [](auto const &a) { return a >= 0; });
+      }
     }
 
+    template <bool b_is_0 = false>
     vector_type get_extreme_point(const basis_type &basis) const {
-      auto real_basis = ::ranges::to<std::vector<int>>(basis);
-      return get_basis_matrix(basis).inverse() * b(real_basis);
+      if constexpr (b_is_0) {
+        return b.Zero();
+      } else {
+        auto real_basis = ::ranges::to<std::vector<int>>(basis);
+        return get_basis_matrix(basis).inverse() * b(real_basis);
+      }
     }
 
     auto get_basis_matrix(const basis_type &basis) const {

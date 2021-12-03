@@ -56,8 +56,9 @@ namespace cyy::algorithm {
     }
 
   private:
+    template <bool b_is_0 = false>
     bool is_primally_feasible_basis(const basis_type &basis) const {
-      return A_b.is_feasible(A_b.get_extreme_point(basis));
+      return A_b.is_feasible<b_is_0>(A_b.get_extreme_point<b_is_0>(basis));
     }
     template <bool c_is_0 = false>
     bool is_dually_feasible_basis(const basis_type &basis) const {
@@ -95,22 +96,19 @@ namespace cyy::algorithm {
           if (row(pivot_col) >= 0) {
             continue;
           }
+          number_type lambda;
           if constexpr (b_is_0) {
-            pivot_row = row_idx;
-            break;
+            lambda =
+                -(row(Eigen::last) - get_b()(row_idx - 1)) / row(pivot_col);
           } else {
-            if (min_lambda == -1) {
-              min_lambda = -row(Eigen::last) / row(pivot_col);
-              pivot_row = row_idx;
-            } else {
-              auto lambda = -row(Eigen::last) / row(pivot_col);
-              if (lambda < min_lambda) {
-                pivot_row = row_idx;
-                min_lambda = lambda;
-              }
-            }
-            assert(min_lambda >= 0);
+            lambda = -row(Eigen::last) / row(pivot_col);
           }
+
+          if (min_lambda == -1 || lambda < min_lambda) {
+            min_lambda = lambda;
+            pivot_row = row_idx;
+          }
+          assert(min_lambda >= 0);
         }
         if (min_lambda < 0) {
           break;
