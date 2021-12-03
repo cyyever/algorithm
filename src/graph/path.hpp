@@ -104,9 +104,8 @@ namespace cyy::algorithm {
     if (vertex_number == 0) {
       return parent;
     }
-    bool flag = false;
     for (size_t i = 0; i + 1 < vertex_number; i++) {
-      flag = false;
+      bool flag = false;
       for (auto const u : g.get_vertex_indices()) {
         for (auto [v, weight] : g.get_adjacent_list(u)) {
           if (distance[u].has_value() &&
