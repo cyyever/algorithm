@@ -43,6 +43,18 @@ namespace cyy::algorithm {
       return A_b.get_extreme_point(*primal_feasible_basis_opt);
     }
 
+    std::optional<vector_type> solve_by_dual_simplex() const {
+      auto dual_feasible_basis_opt = dual_simplex_phase_1();
+      if (!dual_feasible_basis_opt.has_value()) {
+        return {};
+      }
+      dual_feasible_basis_opt = dual_simplex_phase_2(*dual_feasible_basis_opt);
+      if (!dual_feasible_basis_opt.has_value()) {
+        return {};
+      }
+      return A_b.get_extreme_point(*dual_feasible_basis_opt);
+    }
+
   private:
     bool is_primally_feasible_basis(const basis_type &basis) const {
       return A_b.is_feasible(A_b.get_extreme_point(basis));
@@ -62,7 +74,7 @@ namespace cyy::algorithm {
       return dual_simplex_phase_2<true>(A_b.get_basis());
     }
     std::optional<basis_type> dual_simplex_phase_1() const {
-      return primal_simplex_phase_2<true>(get_A().get_basis());
+      return primal_simplex_phase_2<true>(A_b.get_basis());
     }
 
     template <bool b_is_0 = false>
@@ -73,7 +85,6 @@ namespace cyy::algorithm {
         auto const &y = get_y(tableau).reshaped();
         auto it = std::ranges::find_if(y, [](auto const &n) { return n > 0; });
         if (it == y.end()) {
-          assert(is_primally_feasible_basis(basis));
           return basis;
         }
         auto pivot_col = std::distance(y.begin(), it);
@@ -88,7 +99,6 @@ namespace cyy::algorithm {
             pivot_row = row_idx;
             break;
           } else {
-
             if (min_lambda == -1) {
               min_lambda = -row(Eigen::last) / row(pivot_col);
               pivot_row = row_idx;
@@ -105,9 +115,14 @@ namespace cyy::algorithm {
         if (min_lambda < 0) {
           break;
         }
-        basis.erase(pivot_col);
-        basis.insert(pivot_row - 1);
         do_pivot_col_operation(tableau, pivot_row, pivot_col);
+        auto old_row = get_nth_basis(basis, pivot_col);
+        assert(pivot_row - 1 != old_row);
+        assert(basis.contains(old_row));
+        basis.erase(old_row);
+        basis.insert(pivot_row - 1);
+        assert(tableau == get_tableau_form(basis));
+        assert(is_primally_feasible_basis(basis));
       }
       return {};
     }
@@ -121,10 +136,9 @@ namespace cyy::algorithm {
         auto const b = get_b(tableau).reshaped();
         auto it = std::ranges::find_if(b, [](auto const &n) { return n < 0; });
         if (it == b.end()) {
-          assert(is_dually_feasible_basis<c_is_0>(basis));
           return basis;
         }
-        auto pivot_row = std::distance(b.begin(), it);
+        auto pivot_row = std::distance(b.begin(), it) + 1;
         number_type min_lambda = -1;
         std::vector<int> pivot_cols;
         for (auto col_idx = 0; col_idx + 1 < tableau.cols(); col_idx++) {
@@ -171,9 +185,13 @@ namespace cyy::algorithm {
               return false;
             });
 
-        basis.erase(pivot_row);
-        basis.insert(pivot_col - 1);
+        assert(pivot_row - 1 != pivot_col);
+        auto old_row = get_nth_basis(basis, pivot_row - 1);
+        assert(old_row != pivot_col);
+        basis.erase(old_row);
+        basis.insert(pivot_col);
         do_pivot_col_operation(tableau, pivot_row, pivot_col);
+        assert(is_dually_feasible_basis<c_is_0>(basis));
       }
       return {};
     }
@@ -181,14 +199,16 @@ namespace cyy::algorithm {
     matrix_type get_tableau_form(const basis_type &basis) const {
       matrix_type tableau;
       tableau.resize(get_A().rows() + 1, get_A().cols() + 1);
+      get_y(tableau) = c.transpose();
+      tableau.bottomLeftCorner(get_A().rows(), get_A().cols()) = get_A();
+      tableau(0, tableau.cols() - 1) = 0;
+      get_b(tableau) = get_b();
       auto [sub_A, sub_b] = A_b.get_subset(basis);
       auto basis_inverse = sub_A.inverse();
       auto x = basis_inverse * sub_b;
-      tableau.topLeftCorner(1, get_A().cols()) = c.transpose();
-      tableau.bottomLeftCorner(get_A().rows(), get_A().cols()) = get_A();
+      tableau.rightCols(1) -= tableau.leftCols(get_A().cols()) * x;
       tableau.leftCols(get_A().cols()) *= basis_inverse;
-      tableau(0, tableau.cols() - 1) = -(c.dot(x));
-      tableau.bottomRightCorner(get_b().rows(), 1) = get_b() - get_A() * x;
+      assert(tableau(*basis.begin() + 1, 0) == 1);
       return tableau;
     }
     auto const &get_A() const { return A_b.get_A(); }
@@ -204,10 +224,21 @@ namespace cyy::algorithm {
     static void do_pivot_col_operation(matrix_type &tableau, int pivot_row,
                                        int pivot_col) {
       tableau.col(pivot_col) /= tableau(pivot_row, pivot_col);
+      assert(tableau(pivot_row, pivot_col) == 1);
       for (int col_idx = 0; col_idx < tableau.cols(); col_idx++) {
+        if (col_idx == pivot_col) {
+          continue;
+        }
         tableau.col(col_idx) -=
             tableau(pivot_row, col_idx) * tableau.col(pivot_col);
       }
+      assert(tableau(pivot_row, pivot_col) == 1);
+    }
+
+    static int get_nth_basis(const basis_type &basis, int n) {
+      auto it = basis.begin();
+      std::advance(it, n);
+      return *it;
     }
 
   private:
