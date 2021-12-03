@@ -11,7 +11,6 @@
 
 #include "linear_programming/linear_program.hpp"
 
-
 template <typename number_type = double>
 cyy::algorithm::linear_program<number_type>
 generate_linear_program(std::span<const uint8_t> &data) {
@@ -43,5 +42,5 @@ generate_linear_program(std::span<const uint8_t> &data) {
       data = data.subspan(1);
     }
   }
-  return cyy::algorithm::linear_program(c,cyy::algorithm::polyhedron(A, b));
+  return cyy::algorithm::linear_program(c, cyy::algorithm::polyhedron(A, b));
 }

@@ -90,7 +90,7 @@ namespace cyy::algorithm {
     template <bool b_is_0 = false>
     vector_type get_extreme_point(const basis_type &basis) const {
       if constexpr (b_is_0) {
-        auto x=b;
+        auto x = A.row(0).transpose().eval();
         x.setZero();
         return x;
       } else {
