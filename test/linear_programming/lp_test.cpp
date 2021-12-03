@@ -27,8 +27,7 @@ TEST_CASE("LP") {
     DOCTEST_REQUIRE_EQ(x_opt.value()(1), cyy::math::rational(-2, 5));
   }
   SUBCASE("unbounded") {
-    cyy::math::la::matrix<cyy::math::rational> A{
-        {-1, 0}};
+    cyy::math::la::matrix<cyy::math::rational> A{{-1, 0}};
     cyy::math::la::vector<cyy::math::rational> b{{0}};
     cyy::math::la::vector<cyy::math::rational> c{{1}, {1}};
 

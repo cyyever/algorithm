@@ -123,7 +123,9 @@ namespace cyy::algorithm {
         assert(basis.contains(old_row));
         basis.erase(old_row);
         basis.insert(pivot_row - 1);
-        assert(tableau == get_tableau_form(basis));
+        if constexpr (!b_is_0) {
+          assert(tableau == get_tableau_form(basis));
+        }
         assert(is_primally_feasible_basis<b_is_0>(basis));
       }
       return {};
