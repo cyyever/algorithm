@@ -23,16 +23,30 @@ namespace cyy::algorithm {
     vertex_type first;
     vertex_type second;
     weight_type weight = 1;
+    edge(vertex_type first_, vertex_type second_, weight_type weight_ = 1)
+        : first(std::move(first_)), second(std::move(second_)),
+          weight(std::move(weight_)) {
+      if (first == second) {
+        throw std::runtime_error("not an edge");
+      }
+    }
     auto operator<=>(const auto &rhs) const { return weight <=> rhs.weight; }
     auto operator==(const auto &rhs) const {
       return first == rhs.first && second == rhs.second;
     }
-    edge reverse() const { return {second, first, weight}; }
+    edge reverse() const { return edge(second, first, weight); }
   };
 
   struct indexed_edge {
     size_t first;
     size_t second;
+    indexed_edge()=default;
+    indexed_edge(size_t first_, size_t second_)
+        : first(std::move(first_)), second(std::move(second_)) {
+      if (first == second) {
+        throw std::runtime_error("not an edge");
+      }
+    }
     auto operator==(const auto &rhs) const {
       return first == rhs.first && second == rhs.second;
     }
@@ -40,7 +54,7 @@ namespace cyy::algorithm {
       return std::tuple(first, second) <=> std::tuple(rhs.first, rhs.second);
     }
     bool contains(size_t v) const { return first == v || second == v; }
-    indexed_edge reverse() const { return {second, first}; }
+    indexed_edge reverse() const { return indexed_edge(second, first); }
   };
   using path_type = std::vector<size_t>;
 } // namespace cyy::algorithm
@@ -441,9 +455,6 @@ namespace cyy::algorithm {
 
   protected:
     void add_directed_edge(const edge_type &e) {
-      if(e.first==e.second) {
-        throw std::runtime_error("not an edge");
-      }
       auto first_index = add_vertex(e.first);
       auto second_index = add_vertex(e.second);
       auto &neighbors = weighted_adjacent_list[first_index];
