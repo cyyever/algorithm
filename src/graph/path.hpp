@@ -100,10 +100,6 @@ namespace cyy::algorithm {
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
     parent[s] = s;
 
-    auto vertex_number = g.get_vertex_number();
-    if (vertex_number == 0) {
-      return parent;
-    }
     for (size_t i = 0; i + 1 < vertex_number; i++) {
       bool flag = false;
       for (auto const u : g.get_vertex_indices()) {
