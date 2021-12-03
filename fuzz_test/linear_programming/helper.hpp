@@ -26,7 +26,7 @@ generate_linear_program(std::span<const uint8_t> &data) {
     n = data[1];
     data = data.subspan(2);
   }
-  if(m<=2 &&n<=2) {
+  if(m<=5 &&n<=5) {
   A.resize(m, n);
   b.resize(n);
   c.resize(n);
