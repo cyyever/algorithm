@@ -90,7 +90,9 @@ namespace cyy::algorithm {
     template <bool b_is_0 = false>
     vector_type get_extreme_point(const basis_type &basis) const {
       if constexpr (b_is_0) {
-        return b.Zero();
+        auto x=b;
+        x.setZero();
+        return x;
       } else {
         auto real_basis = ::ranges::to<std::vector<int>>(basis);
         return get_basis_matrix(basis).inverse() * b(real_basis);
