@@ -33,7 +33,7 @@ generate_linear_program(std::span<const uint8_t> &data) {
   if (data.size() >= m * n + n + n) {
     for (int i = 0; i < m; i++) {
       for (int j = 0; j < n; j++) {
-        A(m, n) = data[0];
+        A(i, j) = data[0];
         data = data.subspan(1);
       }
     }
