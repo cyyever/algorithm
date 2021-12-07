@@ -19,5 +19,5 @@ foreach(test_source IN LISTS test_sources)
                              PRIVATE DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN)
   target_compile_definitions(
     ${test_prog} PRIVATE DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS)
-  add_test_with_runtime_analysis(TARGET ${test_prog} HELGRIND OFF)
+  add_test_with_runtime_analysis(TARGET ${test_prog} HELGRIND OFF TSAN OFF)
 endforeach()
