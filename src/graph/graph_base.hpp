@@ -40,7 +40,7 @@ namespace cyy::algorithm {
   struct indexed_edge {
     size_t first;
     size_t second;
-    indexed_edge()=default;
+    indexed_edge() = default;
     indexed_edge(size_t first_, size_t second_)
         : first(std::move(first_)), second(std::move(second_)) {
       if (first == second) {
@@ -166,7 +166,6 @@ namespace cyy::algorithm {
               });
             });
       } else {
-
         return ranges::views::for_each(
             weighted_adjacent_list, [](const auto &p) {
               return p.second |

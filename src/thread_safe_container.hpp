@@ -139,7 +139,7 @@ namespace cyy::algorithm {
     template <typename Rep, typename Period>
     std::optional<value_type>
     pop_front(const std::chrono::duration<Rep, Period> &rel_time) {
-      std::unique_lock<mutex_type> lock(container_mutex);
+      std::unique_lock lock(container_mutex);
       if (wait_for_consumer_condition(
               lock, rel_time, [this]() { return !container.empty(); })) {
         std::optional<value_type> value{std::move(container.front())};

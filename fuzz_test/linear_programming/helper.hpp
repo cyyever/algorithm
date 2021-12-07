@@ -26,24 +26,24 @@ generate_linear_program(std::span<const uint8_t> &data) {
     n = data[1];
     data = data.subspan(2);
   }
-  if(m<=5 &&n<=5) {
-  A.resize(m, n);
-  b.resize(n);
-  c.resize(n);
-  if (data.size() >= m * n + n + n) {
-    for (int i = 0; i < m; i++) {
+  if (m <= 5 && n <= 5) {
+    A.resize(m, n);
+    b.resize(n);
+    c.resize(n);
+    if (data.size() >= m * n + n + n) {
+      for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) {
+          A(i, j) = data[0];
+          data = data.subspan(1);
+        }
+      }
       for (int j = 0; j < n; j++) {
-        A(i, j) = data[0];
+        b(j) = data[0];
+        data = data.subspan(1);
+        c(j) = data[0];
         data = data.subspan(1);
       }
     }
-    for (int j = 0; j < n; j++) {
-      b(j) = data[0];
-      data = data.subspan(1);
-      c(j) = data[0];
-      data = data.subspan(1);
-    }
-  }
   }
   return cyy::algorithm::linear_program(c, cyy::algorithm::polyhedron(A, b));
 }
