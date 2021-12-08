@@ -28,7 +28,7 @@ target_link_libraries(CyyAlgorithmLib PUBLIC Boost::headers)
 target_link_libraries(CyyAlgorithmLib PRIVATE fmt::fmt)
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::util)
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::log)
-target_link_libraries(CyyAlgorithmLib INTERFACE CyyMathLib)
+target_link_libraries(CyyAlgorithmLib PRIVATE CyyMathLib)
 
 target_include_directories(
   CyyAlgorithmLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
