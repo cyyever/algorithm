@@ -25,7 +25,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 target_link_libraries(CyyAlgorithmLib PUBLIC Boost::headers)
-target_link_libraries(CyyAlgorithmLib INTERFACE fmt::fmt)
+target_link_libraries(CyyAlgorithmLib PRIVATE fmt::fmt)
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::util)
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::log)
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyMathLib)
