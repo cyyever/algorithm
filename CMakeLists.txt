@@ -13,7 +13,6 @@ find_package(spdlog REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Eigen3)
 find_package(CyyNaiveLib REQUIRED)
-find_package(CyyMathLib REQUIRED)
 
 add_library(CyyAlgorithmLib ${SOURCE})
 
@@ -28,7 +27,6 @@ target_link_libraries(CyyAlgorithmLib PUBLIC Boost::headers)
 target_link_libraries(CyyAlgorithmLib PRIVATE fmt::fmt)
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::util)
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::log)
-target_link_libraries(CyyAlgorithmLib PRIVATE CyyMathLib)
 
 target_include_directories(
   CyyAlgorithmLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
