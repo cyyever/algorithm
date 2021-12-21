@@ -13,10 +13,10 @@
 namespace py = pybind11;
 inline void define_graph(py::module_ &m) {
   using edge_type = cyy::algorithm::edge<py::object, double>;
-  py::class_<edge_type>(m, "edge").def(
+  py::class_<edge_type>(m, "Edge").def(
       py::init<py::object, py::object, double>());
   using graph_type = cyy::algorithm::graph<py::object, double>;
-  py::class_<graph_type>(m, "graph")
+  py::class_<graph_type>(m, "Graph")
       .def(py::init<>())
       .def("add_vertex", &graph_type::add_vertex,
            py::call_guard<py::gil_scoped_release>())
@@ -26,7 +26,7 @@ inline void define_graph(py::module_ &m) {
            py::call_guard<py::gil_scoped_release>());
   using directed_graph_type =
       cyy::algorithm::directed_graph<py::object, double>;
-  py::class_<directed_graph_type>(m, "directed_graph")
+  py::class_<directed_graph_type>(m, "DirectedGraph")
       .def(py::init<>())
       .def("add_vertex", &directed_graph_type::add_vertex,
            py::call_guard<py::gil_scoped_release>())
