@@ -14,7 +14,8 @@ namespace py = pybind11;
 inline void define_graph(py::module_ &m) {
   using edge_type = cyy::algorithm::edge<py::object, double>;
   py::class_<edge_type>(m, "Edge").def(
-      py::init<py::object, py::object, double>());
+      py::init<py::object, py::object, double>(), py::arg("first"),
+      py::arg("second"), py::arg("weight") = 1);
   using graph_type = cyy::algorithm::graph<py::object, double>;
   py::class_<graph_type>(m, "Graph")
       .def(py::init<>())
