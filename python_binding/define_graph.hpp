@@ -19,22 +19,16 @@ inline void define_graph(py::module_ &m) {
   using graph_type = cyy::algorithm::graph<py::object, double>;
   py::class_<graph_type>(m, "Graph")
       .def(py::init<>())
-      .def("add_vertex", &graph_type::add_vertex,
-           py::call_guard<py::gil_scoped_release>())
-      .def("add_edge", &graph_type::add_edge,
-           py::call_guard<py::gil_scoped_release>())
-      .def("empty", &graph_type::empty,
-           py::call_guard<py::gil_scoped_release>());
+      .def("add_vertex", &graph_type::add_vertex)
+      .def("add_edge", &graph_type::add_edge)
+      .def("empty", &graph_type::empty);
   using directed_graph_type =
       cyy::algorithm::directed_graph<py::object, double>;
   py::class_<directed_graph_type>(m, "DirectedGraph")
       .def(py::init<>())
-      .def("add_vertex", &directed_graph_type::add_vertex,
-           py::call_guard<py::gil_scoped_release>())
-      .def("add_edge", &directed_graph_type::add_edge,
-           py::call_guard<py::gil_scoped_release>())
-      .def("empty", &directed_graph_type::empty,
-           py::call_guard<py::gil_scoped_release>());
+      .def("add_vertex", &directed_graph_type::add_vertex)
+      .def("add_edge", &directed_graph_type::add_edge)
+      .def("empty", &directed_graph_type::empty);
   using DAG_type = cyy::algorithm::DAG<py::object, double>;
   py::class_<DAG_type, directed_graph_type>(m, "DAG").def(
       py::init<directed_graph_type, bool>());

@@ -14,18 +14,13 @@ inline void define_heap(py::module_ &m) {
   using heap_type = cyy::algorithm::heap<py::object, py::object>;
   py::class_<heap_type>(m, "Heap")
       .def(py::init<>())
-      .def("top_key", &heap_type::top_key,
-           py::call_guard<py::gil_scoped_release>())
-      .def("top_data", &heap_type::top_data,
-           py::call_guard<py::gil_scoped_release>())
-      .def("size", &heap_type::size, py::call_guard<py::gil_scoped_release>())
-      .def("empty", &heap_type::empty, py::call_guard<py::gil_scoped_release>())
-      .def("contains", &heap_type::contains,
-           py::call_guard<py::gil_scoped_release>())
+      .def("top_key", &heap_type::top_key)
+      .def("top_data", &heap_type::top_data)
+      .def("size", &heap_type::size)
+      .def("empty", &heap_type::empty)
+      .def("contains", &heap_type::contains)
       .def("insert",
-           py::overload_cast<py::object, py::object>(&heap_type::insert),
-           py::call_guard<py::gil_scoped_release>())
-      .def("change_key", &heap_type::change_key,
-           py::call_guard<py::gil_scoped_release>())
-      .def("pop", &heap_type::pop, py::call_guard<py::gil_scoped_release>());
+           py::overload_cast<py::object, py::object>(&heap_type::insert))
+      .def("change_key", &heap_type::change_key)
+      .def("pop", &heap_type::pop);
 }
