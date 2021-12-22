@@ -100,7 +100,7 @@ namespace cyy::algorithm {
             in_T.nearest_ancestor(violating_edge.first, violating_edge.second);
         std::vector<size_t> cycle;
         if (forward_direction) {
-          cycle = in_T.get_path(violating_edge.first, ancestor);
+          cycle = in_T.get_path(violating_edge.first, size_t(ancestor));
           std::ranges::reverse(cycle);
           auto path = in_T.get_path(violating_edge.second, ancestor);
           cycle.insert(cycle.end(), path.begin(), path.end());

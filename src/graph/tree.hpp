@@ -72,22 +72,10 @@ namespace cyy::algorithm {
         : DAG<vertex_type, weight_type>(std::move(g)) {
       root = this->get_vertex_index(root_);
     }
+    using DAG<vertex_type, weight_type>::get_path;
     // get a path from root to u
-    std::vector<size_t> get_path(size_t u) const { return get_path(root, u); }
-
-    // get a path from u to v
-    std::vector<size_t> get_path(size_t u, size_t v) const {
-      std::vector<size_t> path{u};
-      while (u != v) {
-        auto const &l = this->get_adjacent_list(u);
-        if (l.empty()) {
-          return {};
-        }
-        u = l.begin()->first;
-        path.push_back(u);
-      }
-      assert(path.back() == v);
-      return path;
+    std::vector<size_t> get_path(size_t u) const {
+      return this->get_path(root, u);
     }
 
     auto get_root() const { return root; }

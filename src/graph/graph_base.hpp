@@ -253,6 +253,22 @@ namespace cyy::algorithm {
       return vertex_indices.right.find(vertex_index) !=
              vertex_indices.right.end();
     }
+    // get a path from u to v
+    path_type get_path(size_t u, size_t v) const {
+      path_type path{u};
+      while (u != v) {
+        auto const &l = this->get_adjacent_list(u);
+        if (l.empty()) {
+          return {};
+        }
+        u = l.begin()->first;
+        path.push_back(u);
+      }
+      assert(path.back() == v);
+      return path;
+    }
+    // get a path from u to v
+    bool has_path(size_t u, size_t v) const { return !get_path(u, v).empty(); }
     void add_edge(const edge_type &e) {
       add_directed_edge(e);
       if constexpr (!directed) {

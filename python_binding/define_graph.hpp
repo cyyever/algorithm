@@ -34,8 +34,8 @@ inline void define_graph(py::module_ &m) {
   py::class_<DAG_type, directed_graph_type>(m, "DAG")
       .def(py::init<directed_graph_type, bool>())
       .def("get_topological_ordering", &DAG_type::get_topological_ordering);
-  using directed_tree_type =
-      cyy::algorithm::directed_tree<py::object, double>;
-  py::class_<directed_tree_type,DAG_type>(m, "DirectedTree")
-      .def(py::init<>());
+  using directed_tree_type = cyy::algorithm::directed_tree<py::object, double>;
+  py::class_<directed_tree_type, DAG_type>(m, "DirectedTree")
+      .def(py::init<>())
+      .def("has_path", &DAG_type::has_path);
 }
