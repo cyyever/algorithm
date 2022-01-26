@@ -101,7 +101,7 @@ namespace cyy::algorithm {
 
     auto get_basis_matrix(const basis_type &basis) const {
       auto real_basis = ::ranges::to<std::vector<int>>(basis);
-      return A(real_basis, Eigen::all);
+      return A(real_basis, Eigen::placeholders::all);
     }
     auto get_subset(const basis_type &basis) const {
       auto real_basis = ::ranges::to<std::vector<int>>(basis);

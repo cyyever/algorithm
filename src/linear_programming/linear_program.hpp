@@ -105,7 +105,7 @@ namespace cyy::algorithm {
           if constexpr (b_is_0) {
             pivot_row = row_idx;
           } else {
-            auto lambda = -row(Eigen::last) / row(pivot_col);
+            auto lambda = -row(Eigen::placeholders::last) / row(pivot_col);
 
             if (min_lambda == -1 || lambda < min_lambda) {
               min_lambda = lambda;
