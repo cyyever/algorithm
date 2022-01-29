@@ -8,7 +8,6 @@ option(BUILD_PYTHON_BINDING "Build python binding" OFF)
 file(GLOB_RECURSE SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
 
 find_package(Boost REQUIRED)
-find_package(Threads REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(fmt REQUIRED)
 find_package(Eigen3)
