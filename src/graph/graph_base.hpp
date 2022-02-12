@@ -520,12 +520,8 @@ namespace cyy::algorithm {
 
 namespace fmt {
 
-  /* template <typename vertex_type, bool directed, typename weight_type> */
   template <cyy::algorithm::IsGraph G>
-  struct formatter<
-      /* cyy::algorithm::graph_base<vertex_type, directed, weight_type> */
-
-      G> {
+  struct formatter<G> {
     // Parses format specifications
     constexpr auto parse(format_parse_context &ctx) -> decltype(ctx.begin()) {
       // Parse the presentation format and store it in the formatter:
@@ -533,7 +529,6 @@ namespace fmt {
       // Check if reached the end of the range:
       if (it != end && *it != '}')
         throw format_error("invalid format");
-
       // Return an iterator past the end of the parsed range:
       return it;
     }
