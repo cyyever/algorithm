@@ -45,10 +45,16 @@ namespace cyy::algorithm {
         LOG_WARN("load {} keys", data_info.size());
       }
 
+#if defined( _MSC_VER )
+      saving_thread_num=1;
+      fetch_thread_num=1;
+#else
       auto cpu_num = std::jthread::hardware_concurrency();
       saving_thread_num = cpu_num;
       fetch_thread_num = cpu_num;
+#endif
       LOG_WARN("saving_thread_num and fetch_thread_num {}", cpu_num);
+
       for (size_t i = 0; i < saving_thread_num; i++) {
         saving_threads.emplace_back(*this, i);
       }
@@ -238,6 +244,9 @@ namespace cyy::algorithm {
       wait_flush_ratio = wait_flush_ratio_;
     }
     void set_saving_thread_number(size_t saving_thread_num_) {
+#if defined( _MSC_VER )
+      return;
+#endif
       if (saving_thread_num_ == 0) {
         throw std::runtime_error("saving_thread_num_ is 0");
       }
@@ -255,6 +264,9 @@ namespace cyy::algorithm {
       LOG_WARN("new saving_thread_num {}", saving_thread_num);
     }
     void set_fetch_thread_number(size_t fetch_thread_num_) {
+#if defined( _MSC_VER )
+      return;
+#endif
       if (fetch_thread_num_ == 0) {
         throw std::runtime_error("fetch_thread_num_ is 0");
       }
