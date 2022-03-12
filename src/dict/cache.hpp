@@ -52,8 +52,8 @@ namespace cyy::algorithm {
       auto cpu_num = std::jthread::hardware_concurrency();
       saving_thread_num = cpu_num;
       fetch_thread_num = cpu_num;
-#endif
       LOG_WARN("saving_thread_num and fetch_thread_num {}", cpu_num);
+#endif
 
       for (size_t i = 0; i < saving_thread_num; i++) {
         saving_threads.emplace_back(*this, i);
