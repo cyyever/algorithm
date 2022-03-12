@@ -25,7 +25,7 @@ TEST_CASE("thread_safe_linear_container") {
     CHECK(container.const_ref()->empty());
   }
 
-  SUBCASE("concurrent_push_back") {
+  SUBCASE("concurrently push_back") {
     container.clear();
     std::vector<std::thread> thds;
     for (int i = 0; i < 10; i++) {
@@ -56,7 +56,7 @@ TEST_CASE("thread_safe_linear_container") {
     container.clear();
     CHECK(container.const_ref()->empty());
   }
-  SUBCASE("concurrent pop_front") {
+  SUBCASE("concurrently pop_front") {
     std::vector<std::thread> thds;
     for (int i = 0; i < 10; i++) {
       thds.emplace_back([&container]() {
@@ -66,5 +66,18 @@ TEST_CASE("thread_safe_linear_container") {
     for (auto &thd : thds) {
       thd.join();
     }
+  }
+  SUBCASE("concurrently push_back and pop_front") {
+    container.clear();
+    std::vector<std::thread> thds;
+    for (int i = 0; i < 1000; i++) {
+      thds.emplace_back([i, &container]() { container.push_back(i); });
+      thds.emplace_back([&container]() {
+          CHECK(container.pop_front(std::chrono::minutes(1)).has_value()); });
+    }
+    for (auto &thd : thds) {
+      thd.join();
+    }
+    CHECK(container.const_ref()->empty());
   }
 }
