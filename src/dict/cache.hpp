@@ -45,15 +45,10 @@ namespace cyy::algorithm {
         LOG_WARN("load {} keys", data_info.size());
       }
 
-#if defined( _MSC_VER )
-      saving_thread_num=1;
-      fetch_thread_num=1;
-#else
       auto cpu_num = std::jthread::hardware_concurrency();
       saving_thread_num = cpu_num;
       fetch_thread_num = cpu_num;
       LOG_WARN("saving_thread_num and fetch_thread_num {}", cpu_num);
-#endif
 
       for (size_t i = 0; i < saving_thread_num; i++) {
         saving_threads.emplace_back(*this, i);
@@ -126,8 +121,8 @@ namespace cyy::algorithm {
     }
 
     std::optional<T> get(const std::string &key) {
+      std::unique_lock lk(data_mutex);
       while (true) {
-        std::unique_lock lk(data_mutex);
         auto [result, value_opt] = prefetch(key, false);
         if (result < 0) {
           throw std::runtime_error(key);
@@ -244,9 +239,6 @@ namespace cyy::algorithm {
       wait_flush_ratio = wait_flush_ratio_;
     }
     void set_saving_thread_number(size_t saving_thread_num_) {
-#if defined( _MSC_VER )
-      return;
-#endif
       if (saving_thread_num_ == 0) {
         throw std::runtime_error("saving_thread_num_ is 0");
       }
@@ -264,9 +256,6 @@ namespace cyy::algorithm {
       LOG_WARN("new saving_thread_num {}", saving_thread_num);
     }
     void set_fetch_thread_number(size_t fetch_thread_num_) {
-#if defined( _MSC_VER )
-      return;
-#endif
       if (fetch_thread_num_ == 0) {
         throw std::runtime_error("fetch_thread_num_ is 0");
       }
@@ -289,7 +278,6 @@ namespace cyy::algorithm {
     class fetch_thread final : public cyy::naive_lib::runnable {
     public:
       fetch_thread(cache &dict_) : dict(dict_) {}
-      /* ~fetch_thread() override { stop(); } */
 
     private:
       void run() override {
@@ -320,7 +308,6 @@ namespace cyy::algorithm {
               }
               dict.data.emplace(key, std::move(value));
             }
-            LOG_DEBUG("load {} succ", key);
           } catch (const std::exception &e) {
             LOG_ERROR("load {} failed:{}", key, e.what());
             {
@@ -342,7 +329,6 @@ namespace cyy::algorithm {
     class save_thread final : public cyy::naive_lib::runnable {
     public:
       explicit save_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {}
-      /* ~save_thread() override { stop(); } */
 
     private:
       void run() override {
@@ -380,7 +366,6 @@ namespace cyy::algorithm {
             if (dict.change_state(key, data_state::SAVING,
                                   data_state::IN_DISK)) {
               dict.saving_data.erase(key);
-              LOG_DEBUG("torch::save {} succ", key);
               if (dict.saving_data.empty()) {
                 lk.unlock();
                 dict.flush_finished_cv.notify_all();
@@ -426,6 +411,7 @@ namespace cyy::algorithm {
         return false;
       }
       if (it->second != old_state) {
+        LOG_ERROR("change_state failed old_state {}, state {} new state {}",old_state,it->second,new_state);
         return false;
       }
       it->second = new_state;
@@ -460,6 +446,13 @@ namespace cyy::algorithm {
 
         if (it->second == data_state::LOADING) {
           return {0, {}};
+        }
+        if(it->second==data_state::PRE_LOAD) {
+          return {0, {}};
+        }
+        if(it->second!=data_state::IN_DISK) {
+          LOG_ERROR("invalid data_state {} for fetch {}",it->second,key);
+          return {-1, {}};
         }
         it->second = data_state::PRE_LOAD;
       }
