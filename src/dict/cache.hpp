@@ -411,7 +411,8 @@ namespace cyy::algorithm {
         return false;
       }
       if (it->second != old_state) {
-        LOG_ERROR("change_state failed old_state {}, state {} new state {}",old_state,it->second,new_state);
+        LOG_ERROR("change_state failed old_state {}, state {} new state {}",
+                  int(old_state), int(it->second), int(new_state));
         return false;
       }
       it->second = new_state;
@@ -447,11 +448,11 @@ namespace cyy::algorithm {
         if (it->second == data_state::LOADING) {
           return {0, {}};
         }
-        if(it->second==data_state::PRE_LOAD) {
+        if (it->second == data_state::PRE_LOAD) {
           return {0, {}};
         }
-        if(it->second!=data_state::IN_DISK) {
-          LOG_ERROR("invalid data_state {} for fetch {}",it->second,key);
+        if (it->second != data_state::IN_DISK) {
+          LOG_ERROR("invalid data_state {} for fetch {}", int(it->second), key);
           return {-1, {}};
         }
         it->second = data_state::PRE_LOAD;
