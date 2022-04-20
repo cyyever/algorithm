@@ -1,7 +1,7 @@
 /*!
  * \file cache.hpp
  *
- * \brief
+ * \brief A dictionary that provides synchronization between memory and storage
  */
 #pragma once
 #include <chrono>
