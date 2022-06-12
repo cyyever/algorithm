@@ -18,7 +18,7 @@ namespace cyy::algorithm {
     }
 
     for (auto it = prufer_code.begin(); it != prufer_code.end(); ++it) {
-      auto v = *it;
+      auto const &v = *it;
       auto it2 = vertices.begin();
       edges.emplace_back(*it2, v);
       vertices.erase(it2);
@@ -27,7 +27,7 @@ namespace cyy::algorithm {
       }
     }
     assert(vertices.size() == 2);
-    edges.emplace_back(*vertices.begin(), *(vertices.rbegin()));
+    edges.emplace_back(*vertices.begin(), *vertices.rbegin());
 
     return tree<size_t>(std::move(edges));
   }
