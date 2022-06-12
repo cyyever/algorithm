@@ -10,7 +10,6 @@
 #include <utility>
 
 #include <boost/container_hash/hash.hpp>
-#include <boost/functional/hash.hpp>
 
 namespace std {
   template <typename T>

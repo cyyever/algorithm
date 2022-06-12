@@ -520,8 +520,7 @@ namespace cyy::algorithm {
 
 namespace fmt {
 
-  template <cyy::algorithm::IsGraph G>
-  struct formatter<G> {
+  template <cyy::algorithm::IsGraph G> struct formatter<G> {
     // Parses format specifications
     constexpr auto parse(format_parse_context &ctx) -> decltype(ctx.begin()) {
       // Parse the presentation format and store it in the formatter:

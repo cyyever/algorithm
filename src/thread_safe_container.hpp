@@ -74,8 +74,8 @@ namespace cyy::algorithm {
       : public thread_safe_container<ContainerType> {
   public:
     using typename thread_safe_container<ContainerType>::container_type;
-    using typename thread_safe_container<ContainerType>::mutex_type;
     using typename thread_safe_container<ContainerType>::value_type;
+    using size_type = typename ContainerType::size_type;
     using thread_safe_container<ContainerType>::container;
     using thread_safe_container<ContainerType>::container_mutex;
 
@@ -158,9 +158,9 @@ namespace cyy::algorithm {
 
     template <typename Rep, typename Period>
     bool wait_for_less_size(
-        typename container_type::size_type want_size,
+        size_type want_size,
         const std::chrono::duration<Rep, Period> &rel_time) const {
-      std::unique_lock<mutex_type> lock(container_mutex);
+      std::unique_lock lock(container_mutex);
       if (container.size() <= want_size) {
         return true;
       }
@@ -169,9 +169,9 @@ namespace cyy::algorithm {
     }
 
   private:
-    template <typename Rep, typename Period, typename Predicate>
+    template <typename Rep, typename Period, typename Predicate, typename Mutex>
     bool wait_for_consumer_condition(
-        std::unique_lock<mutex_type> &lock,
+        std::unique_lock<Mutex> &lock,
         const std::chrono::duration<Rep, Period> &rel_time,
         Predicate pred) const {
       auto res =
