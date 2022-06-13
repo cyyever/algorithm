@@ -205,12 +205,10 @@ namespace cyy::algorithm {
     void notify_less_element() const {
       auto cur_size = container.size();
       auto first_it = less_element_cv_map.lower_bound(cur_size);
-      auto it = first_it;
-      while (it != less_element_cv_map.end()) {
+      for (auto it = first_it; it != less_element_cv_map.end(); it++) {
         auto &cv_ptr = it->second;
         cv_ptr->notify_all();
         recycle_cv(cv_ptr);
-        it++;
       }
       less_element_cv_map.erase(first_it, less_element_cv_map.end());
     }
