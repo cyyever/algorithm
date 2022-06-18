@@ -10,7 +10,6 @@
 #include <vector>
 
 #include <cyy/math/algebra/matrix.hpp>
-#include <range/v3/all.hpp>
 
 namespace cyy::algorithm {
   // A polyhedron satisfying Ax<=b
@@ -94,17 +93,17 @@ namespace cyy::algorithm {
         x.setZero();
         return x;
       } else {
-        auto real_basis = ::ranges::to<std::vector<int>>(basis);
+        std::vector<int> real_basis(basis.begin(), basis.end());
         return get_basis_matrix(basis).inverse() * b(real_basis);
       }
     }
 
     auto get_basis_matrix(const basis_type &basis) const {
-      auto real_basis = ::ranges::to<std::vector<int>>(basis);
+      std::vector<int> real_basis(basis.begin(), basis.end());
       return A(real_basis, Eigen::placeholders::all);
     }
     auto get_subset(const basis_type &basis) const {
-      auto real_basis = ::ranges::to<std::vector<int>>(basis);
+      std::vector<int> real_basis(basis.begin(), basis.end());
       return std::pair{get_basis_matrix(basis), b(real_basis)};
     }
 

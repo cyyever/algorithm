@@ -16,7 +16,6 @@
 
 #include <boost/bimap.hpp>
 #include <fmt/format.h>
-#include <range/v3/all.hpp>
 
 namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type> struct edge {
@@ -158,25 +157,26 @@ namespace cyy::algorithm {
 
     auto foreach_edge_with_weight() const {
       if constexpr (directed) {
-        return ::ranges::views::for_each(
-            weighted_adjacent_list, [](const auto &p) {
+        return std::views::join(
+            std::views::transform(weighted_adjacent_list, [](const auto &p) {
               return std::ranges::views::transform(
                   p.second, [&p](auto const &t) {
                     return std::pair(indexed_edge{p.first, t.first}, t.second);
                   });
-            });
+            }));
       } else {
-        return ranges::views::for_each(weighted_adjacent_list, [](const auto
-                                                                      &p) {
-          return std::ranges::views::filter(
-                     p.second,
-                     [&p](const std::pair<size_t, weight_type> &e) -> bool {
-                       return e.first > p.first;
-                     }) |
-                 std::ranges::views::transform([&p](auto const &t) {
-                   return std::pair(indexed_edge{p.first, t.first}, t.second);
-                 });
-        });
+        return std::views::join(
+            std::views::transform(weighted_adjacent_list, [](const auto &p) {
+              return std::ranges::views::filter(
+                         p.second,
+                         [&p](const std::pair<size_t, weight_type> &e) -> bool {
+                           return e.first > p.first;
+                         }) |
+                     std::ranges::views::transform([&p](auto const &t) {
+                       return std::pair(indexed_edge{p.first, t.first},
+                                        t.second);
+                     });
+            }));
       }
     }
 

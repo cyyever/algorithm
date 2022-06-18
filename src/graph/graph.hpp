@@ -10,8 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include <range/v3/all.hpp>
-
 #include "graph_base.hpp"
 namespace cyy::algorithm {
 

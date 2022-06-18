@@ -15,9 +15,6 @@ find_package(CyyNaiveLib REQUIRED)
 
 add_library(CyyAlgorithmLib ${SOURCE})
 
-find_package(range-v3 REQUIRED)
-target_link_libraries(CyyAlgorithmLib PUBLIC range-v3::range-v3)
-
 target_link_libraries(CyyAlgorithmLib PUBLIC Boost::headers)
 target_link_libraries(CyyAlgorithmLib PRIVATE fmt::fmt)
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::util)
