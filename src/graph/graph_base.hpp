@@ -181,11 +181,11 @@ namespace cyy::algorithm {
     }
 
     auto foreach_edge() const {
-      return foreach_edge_with_weight() | ranges::views::keys;
+      return foreach_edge_with_weight() | std::views::keys;
     }
 
     auto foreach_weight() const {
-      return foreach_edge_with_weight() | ranges::views::values;
+      return foreach_edge_with_weight() | std::views::values;
     }
 
     size_t add_dummy_vertex() {
@@ -337,7 +337,7 @@ namespace cyy::algorithm {
     }
     size_t get_vertex_number() const { return vertex_indices.size(); }
     size_t get_edge_number() const {
-      return static_cast<size_t>(ranges::distance(foreach_edge()));
+      return static_cast<size_t>(std::ranges::distance(foreach_edge()));
     }
     const vertex_type &get_vertex(size_t index) const {
       return vertex_indices.right.at(index);
