@@ -45,10 +45,10 @@ namespace cyy::algorithm {
     }
 
     auto get_containing_edges(size_t vertex_index) const {
-      return ::ranges::filter_view(this->foreach_edge_with_weight(),
-                                   [vertex_index](auto const &e) {
-                                     return e.first.contains(vertex_index);
-                                   });
+      return std::ranges::filter_view(this->foreach_edge_with_weight(),
+                                      [vertex_index](auto const &e) {
+                                        return e.first.contains(vertex_index);
+                                      });
     }
     std::vector<size_t> get_indegrees() const {
       std::vector<size_t> indegrees(this->get_next_vertex_index(), 0);

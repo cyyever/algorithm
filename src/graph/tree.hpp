@@ -21,7 +21,7 @@ namespace cyy::algorithm {
     tree() = default;
 
     template <std::ranges::input_range U>
-    requires std::same_as<edge_type, std::ranges::range_value_t<U>>
+      requires std::same_as<edge_type, std::ranges::range_value_t<U>>
     explicit tree(U edges, bool check = true) : graph<vertex_type>(edges) {
       if (check && !this->is_tree()) {
         throw std::logic_error("not a tree");
@@ -63,7 +63,7 @@ namespace cyy::algorithm {
     directed_tree_base() = default;
 
     template <std::ranges::input_range U>
-    requires std::same_as<edge_type, std::ranges::range_value_t<U>>
+      requires std::same_as<edge_type, std::ranges::range_value_t<U>>
     directed_tree_base(U edges, vertex_type root_)
         : directed_tree_base(directed_graph<vertex_type>(edges), root(root_)) {}
 
