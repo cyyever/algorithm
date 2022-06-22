@@ -17,7 +17,7 @@ namespace cyy::algorithm {
     using edge_type = typename directed_graph<vertex_type>::edge_type;
 
     template <std::ranges::input_range U>
-    requires std::same_as<edge_type, std::ranges::range_value_t<U>>
+      requires std::same_as<edge_type, std::ranges::range_value_t<U>>
     explicit DAG(U edges, bool check = false)
         : directed_graph<vertex_type>(edges) {
       if (check && !get_topological_ordering()) {

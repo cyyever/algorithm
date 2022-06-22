@@ -8,12 +8,11 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
+#include <numeric>
 #include <optional>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-#include <range/v3/all.hpp>
 
 #include "graph/graph.hpp"
 #include "graph/path.hpp"
@@ -132,7 +131,8 @@ namespace cyy::algorithm {
         if (i == source || i == sink) {
           continue;
         }
-        weight_type sum = ::ranges::accumulate(matrix[i], weight_type{});
+        weight_type sum =
+            std::accumulate(matrix[i].begin(), matrix[i].end(), weight_type{});
         weight_type sum2 = 0;
         for (size_t j = 0; j < matrix.size(); j++) {
           sum2 += matrix[j][i];

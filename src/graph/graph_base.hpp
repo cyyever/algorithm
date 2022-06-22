@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <concepts>
 #include <list>
+#include <iostream>
 #include <memory>
 #include <ranges>
 #include <unordered_map>
@@ -16,7 +17,6 @@
 
 #include <boost/bimap.hpp>
 #include <fmt/format.h>
-#include <range/v3/all.hpp>
 
 namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type> struct edge {
@@ -87,7 +87,7 @@ namespace cyy::algorithm {
     static constexpr bool is_directed = directed;
     graph_base() = default;
     template <std::ranges::input_range U>
-    requires std::same_as<edge_type, std::ranges::range_value_t<U>>
+      requires std::same_as<edge_type, std::ranges::range_value_t<U>>
     explicit graph_base(U edges) {
       for (auto const &edge : edges) {
         add_edge(edge);
@@ -158,35 +158,35 @@ namespace cyy::algorithm {
 
     auto foreach_edge_with_weight() const {
       if constexpr (directed) {
-        return ranges::views::for_each(
-            weighted_adjacent_list, [](const auto &p) {
-              return ranges::views::for_each(p.second, [&p](auto const &t) {
-                return ranges::yield(
-                    std::pair(indexed_edge{p.first, t.first}, t.second));
-              });
-            });
+        return std::views::join(
+            std::views::transform(weighted_adjacent_list, [](const auto &p) {
+              return std::ranges::views::transform(
+                  p.second, [&p](auto const &t) {
+                    return std::pair(indexed_edge{p.first, t.first}, t.second);
+                  });
+            }));
       } else {
-        return ranges::views::for_each(
-            weighted_adjacent_list, [](const auto &p) {
-              return p.second |
-                     ranges::views::filter(
+        return std::views::join(
+            std::views::transform(weighted_adjacent_list, [](const auto &p) {
+              return std::ranges::views::filter(
+                         p.second,
                          [&p](const std::pair<size_t, weight_type> &e) -> bool {
                            return e.first > p.first;
                          }) |
-                     ranges::views::for_each([&p](auto const &t) {
-                       return ranges::yield(
-                           std::pair(indexed_edge{p.first, t.first}, t.second));
+                     std::ranges::views::transform([&p](auto const &t) {
+                       return std::pair(indexed_edge{p.first, t.first},
+                                        t.second);
                      });
-            });
+            }));
       }
     }
 
     auto foreach_edge() const {
-      return foreach_edge_with_weight() | ranges::views::keys;
+      return foreach_edge_with_weight() | std::views::keys;
     }
 
     auto foreach_weight() const {
-      return foreach_edge_with_weight() | ranges::views::values;
+      return foreach_edge_with_weight() | std::views::values;
     }
 
     size_t add_dummy_vertex() {
@@ -338,7 +338,7 @@ namespace cyy::algorithm {
     }
     size_t get_vertex_number() const { return vertex_indices.size(); }
     size_t get_edge_number() const {
-      return static_cast<size_t>(ranges::distance(foreach_edge()));
+      return static_cast<size_t>(std::ranges::distance(foreach_edge()));
     }
     const vertex_type &get_vertex(size_t index) const {
       return vertex_indices.right.at(index);
@@ -512,10 +512,10 @@ namespace cyy::algorithm {
 
   template <typename T>
   concept IsGraph = requires(T a) {
-    {a.get_vertices()};
-    {a.is_directed};
-    {a.foreach_edge_with_weight()};
-  };
+                      { a.get_vertices() };
+                      { a.is_directed };
+                      { a.foreach_edge_with_weight() };
+                    };
 } // namespace cyy::algorithm
 
 namespace fmt {
