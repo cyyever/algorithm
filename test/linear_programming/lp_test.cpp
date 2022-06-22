@@ -6,6 +6,7 @@
 
 #include <doctest/doctest.h>
 
+#ifdef MY_MATH
 #include "linear_programming/linear_program.hpp"
 
 using namespace cyy::algorithm;
@@ -36,3 +37,4 @@ TEST_CASE("LP") {
     DOCTEST_REQUIRE(!x_opt.has_value());
   }
 }
+#endif
