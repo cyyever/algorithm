@@ -8,6 +8,7 @@
 
 #include "linear_programming/polyhedron.hpp"
 
+#ifdef MY_MATH
 using namespace cyy::algorithm;
 TEST_CASE("polyhedron") {
   SUBCASE("decompose and basis") {
@@ -25,3 +26,4 @@ TEST_CASE("polyhedron") {
     DOCTEST_REQUIRE_EQ(basis.size(), rank);
   }
 }
+#endif

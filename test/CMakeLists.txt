@@ -1,5 +1,5 @@
 find_package(doctest REQUIRED)
-find_package(CyyMathLib)
+find_package(CyyMathLib QUIET)
 find_package(fmt REQUIRED)
 
 file(GLOB test_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
