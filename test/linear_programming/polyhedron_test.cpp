@@ -6,9 +6,8 @@
 
 #include <doctest/doctest.h>
 
-#include "linear_programming/polyhedron.hpp"
-
 #ifdef MY_MATH
+#include "linear_programming/polyhedron.hpp"
 using namespace cyy::algorithm;
 TEST_CASE("polyhedron") {
   SUBCASE("decompose and basis") {
