@@ -9,14 +9,16 @@
 #include <algorithm>
 #include <concepts>
 #include <list>
-#include <iostream>
 #include <memory>
 #include <ranges>
 #include <unordered_map>
 #include <vector>
 
 #include <boost/bimap.hpp>
-#include <fmt/format.h>
+
+#ifdef __cpp_lib_format
+#include <format>
+#endif
 
 namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type> struct edge {
@@ -518,7 +520,8 @@ namespace cyy::algorithm {
                     };
 } // namespace cyy::algorithm
 
-namespace fmt {
+#ifdef __cpp_lib_format
+namespace std {
 
   template <cyy::algorithm::IsGraph G> struct formatter<G> {
     // Parses format specifications
@@ -535,14 +538,15 @@ namespace fmt {
     template <class FormatContext>
     auto format(const auto &g, FormatContext &ctx) {
       for (auto const &v : g.get_vertices()) {
-        fmt::format_to(ctx.out(), "vertex {}\n", v);
+        std::format_to(ctx.out(), "vertex {}\n", v);
       }
       for (auto const &[indexed_edge, w] : g.foreach_edge_with_weight()) {
         auto e = g.get_edge(indexed_edge);
-        fmt::format_to(ctx.out(), "{} {} {} with weight {}\n", e.first,
+        std::format_to(ctx.out(), "{} {} {} with weight {}\n", e.first,
                        G::is_directed ? "->" : "<->", e.second, w);
       }
       return ctx.out();
     }
   };
-} // namespace fmt
+}
+#endif

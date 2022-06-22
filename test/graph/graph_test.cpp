@@ -7,7 +7,6 @@
 #include <string>
 
 #include <doctest/doctest.h>
-#include <fmt/format.h>
 
 #include "graph/dag.hpp"
 #include "graph/path.hpp"
@@ -16,10 +15,12 @@ using namespace cyy::algorithm;
 TEST_CASE("graph") {
   cyy::algorithm::graph<std::string> g;
   cyy::algorithm::directed_graph<std::string> h;
+#ifdef __cpp_lib_format
   SUBCASE("print") {
     g.add_edge({"1", "2"});
-    std::cout << fmt::format("{}", g) << std::endl;
+    std::cout << std::format("{}", g) << std::endl;
   }
+#endif
   SUBCASE("process edge") {
     g.add_edge({"1", "2"});
     g.remove_edge({"1", "2"});
