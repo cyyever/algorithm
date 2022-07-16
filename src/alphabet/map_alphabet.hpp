@@ -17,11 +17,20 @@
 #include "exception.hpp"
 
 namespace cyy::algorithm {
+  template <typename T>
+  concept MapType = std::same_as<
+      T, std::map<typename T::key_type, typename T::mapped_type,
+                  typename T::key_compare, typename T::allocator_type>> ||
+      std::same_as<
+          T, std::unordered_map<typename T::key_type, typename T::mapped_type,
+                                typename T::hasher, typename T::key_equal,
+                                typename T::allocator_type>>;
+
   template <typename data_type = std::string>
   class map_alphabet final : public ALPHABET {
   public:
-    map_alphabet(std::map<symbol_type, data_type> symbol_map_,
-                 std::string_view name_)
+    template <MapType T>
+    map_alphabet(const T &symbol_map_, std::string_view name_)
         : ALPHABET(name_) {
       if (symbol_map_.empty()) {
         throw exception::empty_alphabet("symbol map is empty");
