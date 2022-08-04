@@ -46,22 +46,9 @@ namespace cyy::algorithm {
       }
 
       auto cpu_num = std::jthread::hardware_concurrency();
-      saving_thread_num = cpu_num;
-      fetch_thread_num = cpu_num;
+      set_saving_thread_number(cpu_num);
+      set_fetch_thread_number(cpu_num);
       LOG_WARN("saving_thread_num and fetch_thread_num {}", cpu_num);
-
-      for (size_t i = 0; i < saving_thread_num; i++) {
-        saving_threads.emplace_back(*this, i);
-      }
-      for (auto &t : saving_threads) {
-        t.start();
-      }
-      for (size_t i = 0; i < fetch_thread_num; i++) {
-        fetch_threads.emplace_back(*this);
-      }
-      for (auto &t : fetch_threads) {
-        t.start();
-      }
     }
 
     cache(const cache &rhs) { LOG_WARN("stub function"); }
@@ -76,14 +63,14 @@ namespace cyy::algorithm {
       if (permanent) {
         flush_all(true);
       }
-      for (size_t i = 0; i < fetch_thread_num; i++) {
+      for (auto &t : fetch_threads) {
         fetch_request_queue.emplace_back();
-      }
-      for (size_t i = 0; i < saving_thread_num; i++) {
-        save_request_queue.emplace_back();
       }
       for (auto &t : fetch_threads) {
         t.stop();
+      }
+      for (auto &t : saving_threads) {
+        save_request_queue.emplace_back();
       }
       for (auto &t : saving_threads) {
         t.stop();
@@ -253,7 +240,7 @@ namespace cyy::algorithm {
         saving_threads.back().start();
       }
       saving_thread_num = saving_thread_num_;
-      LOG_WARN("new saving_thread_num {}", saving_thread_num);
+      LOG_DEBUG("new saving_thread_num {}", saving_thread_num);
     }
     void set_fetch_thread_number(size_t fetch_thread_num_) {
       if (fetch_thread_num_ == 0) {
@@ -269,7 +256,7 @@ namespace cyy::algorithm {
         fetch_threads.back().start();
       }
       fetch_thread_num = fetch_thread_num_;
-      LOG_WARN("new fetch_thread_num {}", fetch_thread_num);
+      LOG_DEBUG("new fetch_thread_num {}", fetch_thread_num);
     }
 
     void enable_permanent_storage() { permanent = true; }
