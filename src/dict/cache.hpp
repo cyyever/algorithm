@@ -66,11 +66,11 @@ namespace cyy::algorithm {
       for (auto &t : fetch_threads) {
         fetch_request_queue.emplace_back();
       }
-      for (auto &t : fetch_threads) {
-        t.stop();
-      }
       for (auto &t : saving_threads) {
         save_request_queue.emplace_back();
+      }
+      for (auto &t : fetch_threads) {
+        t.stop();
       }
       for (auto &t : saving_threads) {
         t.stop();
