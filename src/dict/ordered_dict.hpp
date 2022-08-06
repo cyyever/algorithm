@@ -23,16 +23,14 @@ namespace cyy::algorithm {
     struct iterator : public data_list_type::iterator {
       explicit iterator(typename data_list_type::iterator rhs)
           : data_list_type::iterator{rhs} {}
-      auto &operator*() const {
-        return data_list_type::iterator::operator*().second;
-      }
+      auto &operator*() const { return data_list_type::iterator::operator*(); }
     };
 
     struct const_iterator : public data_list_type::const_iterator {
       explicit const_iterator(typename data_list_type::const_iterator rhs)
           : data_list_type::const_iterator{rhs} {}
       const auto &operator*() const {
-        return data_list_type::const_iterator::operator*().second;
+        return data_list_type::const_iterator::operator*();
       }
     };
 
@@ -40,7 +38,7 @@ namespace cyy::algorithm {
       explicit reverse_iterator(typename data_list_type::reverse_iterator rhs)
           : data_list_type::reverse_iterator{rhs} {}
       const auto &operator*() const {
-        return data_list_type::reverse_iterator::operator*().second;
+        return data_list_type::reverse_iterator::operator*();
       }
     };
 
