@@ -19,7 +19,7 @@ TEST_CASE("ordered_dict") {
     CHECK_EQ(container.size(), 1);
     container.emplace(1, "hello");
     CHECK_EQ(container.size(), 1);
-    CHECK_EQ(*container.rbegin(), "hello");
+    CHECK_EQ(container.rbegin()->second, "hello");
     container.clear();
     CHECK(container.empty());
   }
@@ -32,15 +32,15 @@ TEST_CASE("ordered_dict") {
     container.emplace(1, "a");
     container.emplace(2, "b");
     auto it = container.begin();
-    CHECK_EQ(*it, "a");
+    CHECK_EQ(it->second, "a");
     it++;
-    CHECK_EQ(*it, "b");
+    CHECK_EQ(it->second, "b");
 
     container.find(1);
     it = container.begin();
-    CHECK_EQ(*it, "b");
+    CHECK_EQ(it->second, "b");
     it++;
-    CHECK_EQ(*it, "a");
+    CHECK_EQ(it->second, "a");
     container.clear();
   }
 
