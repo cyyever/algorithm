@@ -35,7 +35,7 @@ namespace cyy::algorithm {
         : backend(std::move(backend_)) {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
 
-      for (const auto key : backend->load_keys()) {
+      for (const auto &key : backend->load_keys()) {
         data_info[key] = data_state::IN_DISK;
         LOG_DEBUG("load key {}", key);
       }
