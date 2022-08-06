@@ -268,19 +268,19 @@ namespace cyy::algorithm {
               std::lock_guard lk(dict.data_mutex);
               if (!dict.change_state(key, data_state::PRE_LOAD,
                                      data_state::LOADING)) {
+                dict.new_data_cv.notify_all();
                 continue;
               }
             }
             auto value = dict.backend->load_data(key);
             {
               std::lock_guard lk(dict.data_mutex);
-              if (!dict.change_state(key, data_state::LOADING,
+              if (dict.change_state(key, data_state::LOADING,
                                      data_state::IN_DISK)) {
-                continue;
+                dict.data.emplace(key, std::move(value));
               }
-              dict.data.emplace(key, std::move(value));
-              dict.new_data_cv.notify_all();
             }
+            dict.new_data_cv.notify_all();
           } catch (const std::exception &e) {
             LOG_ERROR("load {} failed:{}", key, e.what());
             {
@@ -307,18 +307,9 @@ namespace cyy::algorithm {
       void run() override {
         std::optional<std::optional<cache::save_task>> value_opt;
         while (!needs_stop()) {
-          if (id == 0) {
-            value_opt = dict.save_request_queue.pop_front(
-                std::chrono::milliseconds(500));
-          } else {
             value_opt =
                 dict.save_request_queue.pop_front(std::chrono::minutes(1));
-          }
           if (!value_opt.has_value()) {
-            if (id == 0) {
-              dict.flush();
-              LOG_DEBUG("flush by save thread");
-            }
             continue;
           }
           if (!(*value_opt).has_value()) {
@@ -425,14 +416,13 @@ namespace cyy::algorithm {
     }
     using save_task = std::string;
     std::list<cache::save_task> pop_expired_data(size_t max_number) {
-          std::unique_lock lk(data_mutex);
       std::list<save_task> expired_data;
-      while (expired_data.size() < max_number && !data.empty()) {
+      while (expired_data.size() < max_number) {
         std::string key;
         T value;
         {
-
-          if (max_number != SIZE_MAX && data.size() <= in_memory_number) {
+          std::unique_lock lk(data_mutex);
+          if (data.empty() || (max_number != SIZE_MAX && data.size() <= in_memory_number)) {
             break;
           }
           std::tie(key, value) = data.pop_front();
