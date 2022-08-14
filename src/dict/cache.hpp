@@ -329,7 +329,7 @@ namespace cyy::algorithm {
             if (dict.change_state(key, data_state::SAVING,
                                   data_state::IN_DISK)) {
               dict.saving_data.erase(key);
-            } else if(data_info.find(key) == data_info.end())  {
+            } else if(!dict.contains(key))  {
               dict.backend->erase_data(key, value);
             }
           } catch (const std::exception &e) {
