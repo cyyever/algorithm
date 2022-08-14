@@ -330,7 +330,7 @@ namespace cyy::algorithm {
                                   data_state::IN_DISK)) {
               dict.saving_data.erase(key);
             } else if(!dict.contains(key))  {
-              dict.backend->erase_data(key, value);
+              dict.backend->erase_data(key);
             }
           } catch (const std::exception &e) {
             LOG_ERROR("save {} failed,drop it:{}", key, e.what());
