@@ -367,7 +367,7 @@ namespace cyy::algorithm {
         return false;
       }
       if (it->second != old_state) {
-        LOG_ERROR("change_state failed old_state {}, state {} new state {}",
+        LOG_DEBUG("change_state failed old_state {}, state {} new state {}",
                   int(old_state), int(it->second), int(new_state));
         return false;
       }
