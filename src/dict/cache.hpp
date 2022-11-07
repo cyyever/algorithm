@@ -17,7 +17,7 @@
 #include <cyy/naive_lib/util/runnable.hpp>
 
 #include "../thread_safe_container.hpp"
-#include "ordered_dict.hpp"
+#include "lru_cache.hpp"
 
 namespace cyy::algorithm {
   template <typename T> class storage_backend {
@@ -255,7 +255,7 @@ namespace cyy::algorithm {
       void run() override {
         while (!needs_stop()) {
           auto value_opt =
-              dict.fetch_request_queue.pop_front(std::chrono::minutes(1));
+              dict.fetch_request_queue.pop_oldest(std::chrono::minutes(1));
           if (!value_opt.has_value()) {
             continue;
           }
@@ -454,7 +454,7 @@ namespace cyy::algorithm {
       }
     }
 
-    cyy::algorithm::ordered_dict<std::string, T> data;
+    cyy::algorithm::lru_cache<std::string, T> data;
     std::unordered_map<std::string, T> saving_data;
     size_t in_memory_number{128};
     bool permanent{true};

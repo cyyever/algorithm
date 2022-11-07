@@ -6,10 +6,10 @@
  */
 #include <doctest/doctest.h>
 
-#include "dict/ordered_dict.hpp"
+#include "dict/lru_cache.hpp"
 
-TEST_CASE("ordered_dict") {
-  cyy::algorithm::ordered_dict<int, std::string> container;
+TEST_CASE("lru_cache") {
+  cyy::algorithm::lru_cache<int, std::string> container;
 
   CHECK(container.empty());
 
@@ -44,49 +44,19 @@ TEST_CASE("ordered_dict") {
     container.clear();
   }
 
-  SUBCASE("pop_front") {
+  SUBCASE("pop_oldest") {
     container.emplace(1, "a");
     container.emplace(2, "b");
     CHECK(!container.empty());
     CHECK_EQ(container.size(), 2);
-    auto [k, v] = container.pop_front();
+    auto [k, v] = container.pop_oldest();
     CHECK_EQ(k, 1);
     CHECK_EQ(v, "a");
-    std::tie(k, v) = container.pop_front();
+    std::tie(k, v) = container.pop_oldest();
     CHECK_EQ(k, 2);
     CHECK_EQ(v, "b");
     CHECK(container.empty());
-    CHECK_THROWS(container.pop_front());
+    CHECK_THROWS(container.pop_oldest());
   }
 
-  SUBCASE("no move_to_end") {
-    container.move_to_end_in_update = false;
-    container.emplace(1, "a");
-    container.emplace(2, "b");
-    container.emplace(1, "c");
-    CHECK_EQ(container.size(), 2);
-
-    auto [k, v] = container.pop_front();
-    CHECK_EQ(k, 1);
-    CHECK_EQ(v, "c");
-    std::tie(k, v) = container.pop_front();
-    CHECK_EQ(k, 2);
-    CHECK_EQ(v, "b");
-    container.move_to_end_in_update = true;
-    container.clear();
-  }
-  SUBCASE("no find_to_end") {
-    container.move_to_end_in_finding = false;
-    container.emplace(1, "a");
-    container.emplace(2, "b");
-    container.find(1);
-
-    auto [k, v] = container.pop_front();
-    CHECK_EQ(k, 1);
-    CHECK_EQ(v, "a");
-    std::tie(k, v) = container.pop_front();
-    CHECK_EQ(k, 2);
-    CHECK_EQ(v, "b");
-    container.move_to_end_in_finding = true;
-  }
 }

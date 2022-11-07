@@ -1,5 +1,5 @@
 /*!
- * \file ordered_dict.hpp
+ * \file lru_cache.hpp
  *
  * \brief implements python's OrderedDict in C++
  */
@@ -13,7 +13,7 @@
 
 namespace cyy::algorithm {
 
-  template <class Key, class T> class ordered_dict {
+  template <class Key, class T> class lru_cache {
   public:
     using key_type = Key;
     using mapped_type = T;
@@ -53,12 +53,7 @@ namespace cyy::algorithm {
       auto [it, inserted] =
           data_index.emplace(std::forward<KeyArg>(key), data.end());
       if (!inserted) {
-        if (move_to_end_in_update) {
-          data.erase(it->second);
-        } else {
-          (*(it->second)).second = mapped_type(std::forward<Args>(args)...);
-          return false;
-        }
+        data.erase(it->second);
       }
       data.emplace_back(it->first, mapped_type(std::forward<Args>(args)...));
       auto it2 = data.end();
@@ -91,16 +86,13 @@ namespace cyy::algorithm {
       if (it == data_index.end()) {
         return iterator(data.end());
       }
-      if (move_to_end_in_finding) {
-        return move_to_end(iterator(it->second));
-      }
-      return iterator(it->second);
+      return move_to_end(iterator(it->second));
     }
 
-    std::pair<key_type, mapped_type> pop_front() {
+    std::pair<key_type, mapped_type> pop_oldest() {
       auto it = data.begin();
       if (it == data.end()) {
-        throw std::out_of_range("pop_front empty");
+        throw std::out_of_range("pop_oldest empty");
       }
       auto key = std::move(it->first);
       auto value = std::move(it->second);
@@ -109,8 +101,6 @@ namespace cyy::algorithm {
       return {key, value};
     }
 
-    bool move_to_end_in_finding{true};
-    bool move_to_end_in_update{true};
 
   private:
     iterator move_to_end(iterator it) {
