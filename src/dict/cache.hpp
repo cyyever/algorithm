@@ -15,6 +15,7 @@
 
 #include <cyy/naive_lib/log/log.hpp>
 #include <cyy/naive_lib/util/runnable.hpp>
+#include <spdlog/fmt/fmt.h>
 
 #include "../thread_safe_container.hpp"
 #include "lru_cache.hpp"
@@ -438,9 +439,8 @@ namespace cyy::algorithm {
           }
           if (it->second != data_state::IN_MEMORY) {
             throw std::runtime_error(
-                std::string("invalid state " +
-                            std::to_string(static_cast<int>(it->second)) +
-                            " of key:" + key));
+                fmt::format("invalid state {} of key:{}",
+                            std::to_string(static_cast<int>(it->second)), key));
           }
           it->second = data_state::PRE_SAVING;
           saving_data[key] = value;
