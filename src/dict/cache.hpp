@@ -56,7 +56,7 @@ namespace cyy::algorithm {
       LOG_WARN("saving_thread_num and fetch_thread_num {}", cpu_num);
     }
 
-    cache(const cache &rhs) { LOG_WARN("stub function"); }
+    cache(const cache &) { LOG_WARN("stub function"); }
     cache &operator=(const cache &) = default;
 
     cache(cache &&) noexcept = delete;
@@ -74,12 +74,6 @@ namespace cyy::algorithm {
       for (auto &_ : saving_threads) {
         save_request_queue.emplace_back();
       }
-      /* for (auto &t : fetch_threads) { */
-      /*   t.stop(); */
-      /* } */
-      /* for (auto &t : saving_threads) { */
-      /*   t.stop(); */
-      /* } */
       fetch_request_queue.clear();
       save_request_queue.clear();
       data_cache.clear();
@@ -228,8 +222,6 @@ namespace cyy::algorithm {
       }
       for (size_t i = saving_thread_num; i < saving_thread_num_; i++) {
         saving_threads.emplace_back(*this, i);
-        saving_threads.back().start(std::string("saving_thread ") +
-                                    std::to_string(i));
       }
       saving_thread_num = saving_thread_num_;
       LOG_DEBUG("new saving_thread_num {}", saving_thread_num);
@@ -246,10 +238,8 @@ namespace cyy::algorithm {
         fetch_request_queue.clear();
         fetch_thread_num = 0;
       }
-      for (size_t i = 0; i < fetch_thread_num_ - fetch_thread_num; i++) {
+      for (size_t i = fetch_thread_num; i < fetch_thread_num_; i++) {
         fetch_threads.emplace_back(*this, i);
-        fetch_threads.back().start(std::string("fetch_thread ") +
-                                   std::to_string(fetch_threads.size()));
       }
       fetch_thread_num = fetch_thread_num_;
       LOG_DEBUG("new fetch_thread_num {}", fetch_thread_num);
@@ -260,7 +250,9 @@ namespace cyy::algorithm {
 
     class fetch_thread final : public cyy::naive_lib::runnable {
     public:
-      fetch_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {}
+      fetch_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {
+        start(fmt::format("fetch_thread {}", id));
+      }
       ~fetch_thread() override { stop(); }
 
     private:
@@ -313,7 +305,9 @@ namespace cyy::algorithm {
 
     class save_thread final : public cyy::naive_lib::runnable {
     public:
-      save_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {}
+      save_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {
+        start(fmt::format("saving_thread {}", id));
+      }
       ~save_thread() override { stop(); }
 
     private:
