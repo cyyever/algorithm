@@ -91,7 +91,9 @@ namespace cyy::algorithm {
       if (wait_for_consumer_condition(
               lock, rel_time, [this]() { return !container.empty(); },
               st_opt)) {
-        return {container.back()};
+        if (!container.empty()) {
+          return {container.back()};
+        }
       }
       return {};
     }
@@ -104,7 +106,9 @@ namespace cyy::algorithm {
       if (wait_for_consumer_condition(
               lock, rel_time, [this]() { return !container.empty(); },
               st_opt)) {
-        return {container.front()};
+        if (!container.empty()) {
+          return {container.front()};
+        }
       }
       return {};
     }
@@ -149,10 +153,12 @@ namespace cyy::algorithm {
       if (wait_for_consumer_condition(
               lock, rel_time, [this]() { return !container.empty(); },
               st_opt)) {
-        std::optional<value_type> value{std::move(container.front())};
-        pop_front_wrapper();
-        notify_less_element();
-        return value;
+        if (!container.empty()) {
+          std::optional<value_type> value{std::move(container.front())};
+          pop_front_wrapper();
+          notify_less_element();
+          return value;
+        }
       }
       return {};
     }
@@ -182,8 +188,9 @@ namespace cyy::algorithm {
         const std::chrono::duration<Rep, Period> &rel_time, Predicate pred,
         std::optional<std::stop_token> st_opt) const {
       if (st_opt.has_value()) {
-        new_element_cv.wait_for(lock, st_opt.value(), rel_time,
-                                [&pred]() { return pred(); });
+        return new_element_cv.wait_for(
+            lock, st_opt.value(), rel_time,
+            [&pred, &st_opt]() { return st_opt->stop_requested() || pred(); });
       }
       return new_element_cv.wait_for(lock, rel_time,
                                      [&pred]() { return pred(); });
