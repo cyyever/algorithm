@@ -23,16 +23,20 @@
 namespace cyy::algorithm {
   template <typename Key, typename T> class storage_backend {
   public:
+    using key_type = Key;
+    using mapped_type = T;
     virtual ~storage_backend() = default;
-    virtual std::vector<Key> load_keys() = 0;
-    virtual T load_data(const Key &key) = 0;
+    virtual std::vector<key_type> load_keys() = 0;
+    virtual mapped_type load_data(const key_type &key) = 0;
     virtual void clear_data() = 0;
-    virtual void erase_data(const Key &key) = 0;
-    virtual void save_data(const Key &key, T value) = 0;
+    virtual void erase_data(const key_type &key) = 0;
+    virtual void save_data(const key_type &key, mapped_type value) = 0;
   };
   template <typename Key, typename T> class cache {
   public:
-    cache(std::unique_ptr<storage_backend<Key, T>> backend_)
+    using key_type = Key;
+    using mapped_type = T;
+    cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
         : backend(std::move(backend_)) {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
 
@@ -70,12 +74,12 @@ namespace cyy::algorithm {
       for (auto &_ : saving_threads) {
         save_request_queue.emplace_back();
       }
-      for (auto &t : fetch_threads) {
-        t.stop();
-      }
-      for (auto &t : saving_threads) {
-        t.stop();
-      }
+      /* for (auto &t : fetch_threads) { */
+      /*   t.stop(); */
+      /* } */
+      /* for (auto &t : saving_threads) { */
+      /*   t.stop(); */
+      /* } */
       fetch_request_queue.clear();
       save_request_queue.clear();
       data_cache.clear();
@@ -87,9 +91,9 @@ namespace cyy::algorithm {
       }
     }
 
-    void emplace(const Key &key, const T &value) {
+    void emplace(const key_type &key, mapped_type value) {
       std::unique_lock lk(data_mutex);
-      data_cache.emplace(key, value);
+      data_cache.emplace(key, std::move(value));
       data_info[key] = data_state::IN_MEMORY;
       saving_data.erase(key);
       if (data_cache.size() > in_memory_number) {
@@ -108,12 +112,12 @@ namespace cyy::algorithm {
       }
     }
 
-    std::optional<T> get(const Key &key) {
+    std::optional<mapped_type> get(const key_type &key) {
       std::unique_lock lk(data_mutex);
       while (true) {
         auto [result, value_opt] = prefetch(key, false);
         if (result < 0) {
-          throw std::runtime_error(key);
+          throw std::runtime_error(fmt::format("failed to get {}", key));
         }
         if (result > 0) {
           return value_opt;
@@ -129,7 +133,7 @@ namespace cyy::algorithm {
       std::lock_guard lk(data_mutex);
       return data_info.size();
     }
-    void erase(const Key &key) {
+    void erase(const key_type &key) {
       std::lock_guard lk(data_mutex);
       if (!data_info.erase(key)) {
         return;
@@ -139,7 +143,7 @@ namespace cyy::algorithm {
       backend->erase_data(key);
     }
 
-    bool contains(const Key &key) const {
+    bool contains(const key_type &key) const {
       std::lock_guard lk(data_mutex);
       return data_info.find(key) != data_info.end();
     }
@@ -152,8 +156,8 @@ namespace cyy::algorithm {
       }
     }
 
-    std::vector<Key> keys() const {
-      std::vector<Key> res;
+    std::vector<key_type> keys() const {
+      std::vector<key_type> res;
       std::lock_guard lk(data_mutex);
       res.reserve(data_info.size());
       for (auto const &[key, __] : data_info) {
@@ -162,8 +166,8 @@ namespace cyy::algorithm {
       return res;
     }
 
-    std::vector<Key> in_memory_keys() const {
-      std::vector<Key> res;
+    std::vector<key_type> in_memory_keys() const {
+      std::vector<key_type> res;
       std::lock_guard lk(data_mutex);
       res.reserve(data_cache.size());
       for (auto const &[key, _] : data_cache) {
@@ -191,7 +195,7 @@ namespace cyy::algorithm {
       saving_data.clear();
       backend->clear_data();
     }
-    void prefetch(const std::vector<Key> &keys) {
+    void prefetch(const std::vector<key_type> &keys) {
       for (auto const &key : keys) {
         prefetch(key);
       }
@@ -215,9 +219,12 @@ namespace cyy::algorithm {
       }
 
       std::lock_guard lk(data_mutex);
-      while (saving_thread_num > saving_thread_num_) {
-        save_request_queue.emplace_back();
-        saving_thread_num--;
+      if (saving_thread_num_ < saving_thread_num) {
+        for (auto &_ : saving_threads) {
+          save_request_queue.emplace_back();
+        }
+        save_request_queue.clear();
+        saving_thread_num = 0;
       }
       for (size_t i = saving_thread_num; i < saving_thread_num_; i++) {
         saving_threads.emplace_back(*this, i);
@@ -232,9 +239,12 @@ namespace cyy::algorithm {
         throw std::runtime_error("fetch_thread_num_ is 0");
       }
       std::lock_guard lk(data_mutex);
-      while (fetch_thread_num > fetch_thread_num_) {
-        fetch_request_queue.emplace_back();
-        fetch_thread_num--;
+      if (fetch_thread_num_ < fetch_thread_num) {
+        for (auto &_ : fetch_threads) {
+          fetch_request_queue.emplace_back();
+        }
+        fetch_request_queue.clear();
+        fetch_thread_num = 0;
       }
       for (size_t i = 0; i < fetch_thread_num_ - fetch_thread_num; i++) {
         fetch_threads.emplace_back(*this, i);
@@ -251,6 +261,7 @@ namespace cyy::algorithm {
     class fetch_thread final : public cyy::naive_lib::runnable {
     public:
       fetch_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {}
+      ~fetch_thread() override { stop(); }
 
     private:
       void run() override {
@@ -303,6 +314,7 @@ namespace cyy::algorithm {
     class save_thread final : public cyy::naive_lib::runnable {
     public:
       save_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {}
+      ~save_thread() override { stop(); }
 
     private:
       void run() override {
@@ -346,7 +358,7 @@ namespace cyy::algorithm {
     };
 
   protected:
-    std::unique_ptr<storage_backend<Key, T>> backend;
+    std::unique_ptr<storage_backend<key_type, mapped_type>> backend;
 
   private:
     mutable std::recursive_mutex data_mutex;
@@ -359,9 +371,9 @@ namespace cyy::algorithm {
       LOADING,
       LOAD_FAILED,
     };
-    std::unordered_map<Key, data_state> data_info;
+    std::unordered_map<key_type, data_state> data_info;
 
-    bool change_state(const Key &key, data_state old_state,
+    bool change_state(const key_type &key, data_state old_state,
                       data_state new_state) {
       auto it = data_info.find(key);
       if (it == data_info.end()) {
@@ -376,8 +388,8 @@ namespace cyy::algorithm {
       return true;
     }
 
-    std::pair<int, std::optional<T>> prefetch(const Key &key,
-                                              bool with_lock = true) {
+    std::pair<int, std::optional<mapped_type>> prefetch(const key_type &key,
+                                                        bool with_lock = true) {
       {
         std::unique_lock lk(data_mutex, std::defer_lock);
         if (with_lock) {
@@ -417,11 +429,11 @@ namespace cyy::algorithm {
       fetch_request_queue.emplace_front(fetch_task{key});
       return {0, {}};
     }
-    using save_task = Key;
+    using save_task = key_type;
     std::list<cache::save_task> pop_expired_data(size_t max_number) {
       std::list<save_task> expired_data;
       while (expired_data.size() < max_number) {
-        Key key;
+        key_type key;
         T value;
         {
           std::unique_lock lk(data_mutex);
@@ -455,8 +467,8 @@ namespace cyy::algorithm {
       }
     }
 
-    cyy::algorithm::lru_cache<Key, T> data_cache;
-    std::unordered_map<Key, T> saving_data;
+    cyy::algorithm::lru_cache<key_type, mapped_type> data_cache;
+    std::unordered_map<key_type, mapped_type> saving_data;
     size_t in_memory_number{128};
     bool permanent{true};
 
@@ -467,7 +479,7 @@ namespace cyy::algorithm {
     size_t saving_thread_num{0};
     std::list<save_thread> saving_threads;
 
-    using fetch_task = Key;
+    using fetch_task = key_type;
     using fetch_request_queue_type =
         cyy::algorithm::thread_safe_linear_container<
             std::list<std::optional<fetch_task>>>;
