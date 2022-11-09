@@ -14,6 +14,7 @@
 #include <memory>
 #include <optional>
 #include <shared_mutex>
+#include <stop_token>
 #include <type_traits>
 #include <vector>
 
@@ -84,10 +85,12 @@ namespace cyy::algorithm {
 
     template <typename Rep, typename Period>
     std::optional<value_type>
-    back(const std::chrono::duration<Rep, Period> &rel_time) const {
+    back(const std::chrono::duration<Rep, Period> &rel_time,
+         std::optional<std::stop_token> st_opt = {}) const {
       std::unique_lock lock(container_mutex);
       if (wait_for_consumer_condition(
-              lock, rel_time, [this]() { return !container.empty(); })) {
+              lock, rel_time, [this]() { return !container.empty(); },
+              st_opt)) {
         return {container.back()};
       }
       return {};
@@ -95,10 +98,12 @@ namespace cyy::algorithm {
 
     template <typename Rep, typename Period>
     std::optional<value_type>
-    front(const std::chrono::duration<Rep, Period> &rel_time) const {
+    front(const std::chrono::duration<Rep, Period> &rel_time,
+          std::optional<std::stop_token> st_opt = {}) const {
       std::unique_lock lock(container_mutex);
       if (wait_for_consumer_condition(
-              lock, rel_time, [this]() { return !container.empty(); })) {
+              lock, rel_time, [this]() { return !container.empty(); },
+              st_opt)) {
         return {container.front()};
       }
       return {};
@@ -138,10 +143,12 @@ namespace cyy::algorithm {
 
     template <typename Rep, typename Period>
     std::optional<value_type>
-    pop_front(const std::chrono::duration<Rep, Period> &rel_time) {
+    pop_front(const std::chrono::duration<Rep, Period> &rel_time,
+              std::optional<std::stop_token> st_opt = {}) {
       std::unique_lock lock(container_mutex);
       if (wait_for_consumer_condition(
-              lock, rel_time, [this]() { return !container.empty(); })) {
+              lock, rel_time, [this]() { return !container.empty(); },
+              st_opt)) {
         std::optional<value_type> value{std::move(container.front())};
         pop_front_wrapper();
         notify_less_element();
@@ -172,11 +179,14 @@ namespace cyy::algorithm {
     template <typename Rep, typename Period, typename Predicate, typename Mutex>
     bool wait_for_consumer_condition(
         std::unique_lock<Mutex> &lock,
-        const std::chrono::duration<Rep, Period> &rel_time,
-        Predicate pred) const {
-      auto res =
-          new_element_cv.wait_for(lock, rel_time, [&pred]() { return pred(); });
-      return res;
+        const std::chrono::duration<Rep, Period> &rel_time, Predicate pred,
+        std::optional<std::stop_token> st_opt) const {
+      if (st_opt.has_value()) {
+        new_element_cv.wait_for(lock, st_opt.value(), rel_time,
+                                [&pred]() { return pred(); });
+      }
+      return new_element_cv.wait_for(lock, rel_time,
+                                     [&pred]() { return pred(); });
     }
 
     void pop_front_wrapper() { container.erase(container.begin()); }

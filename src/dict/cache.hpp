@@ -68,12 +68,13 @@ namespace cyy::algorithm {
       if (permanent) {
         flush_all(true);
       }
-      for (auto &_ : fetch_threads) {
-        fetch_request_queue.emplace_back();
-      }
-      for (auto &_ : saving_threads) {
-        save_request_queue.emplace_back();
-      }
+      puts("stop threads");
+      /* for (auto &_ : fetch_threads) { */
+      /*   fetch_request_queue.emplace_back(); */
+      /* } */
+      /* for (auto &_ : saving_threads) { */
+      /*   save_request_queue.emplace_back(); */
+      /* } */
       fetch_request_queue.clear();
       save_request_queue.clear();
       data_cache.clear();
@@ -232,9 +233,9 @@ namespace cyy::algorithm {
       }
       std::lock_guard lk(data_mutex);
       if (fetch_thread_num_ < fetch_thread_num) {
-        for (auto &_ : fetch_threads) {
-          fetch_request_queue.emplace_back();
-        }
+        /* for (auto &_ : fetch_threads) { */
+        /*   fetch_request_queue.emplace_back(); */
+        /* } */
         fetch_request_queue.clear();
         fetch_thread_num = 0;
       }
@@ -253,20 +254,25 @@ namespace cyy::algorithm {
       fetch_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {
         start(fmt::format("fetch_thread {}", id));
       }
-      ~fetch_thread() override { stop(); }
+      ~fetch_thread() override {
+        puts("call stop");
+        stop();
+      }
 
     private:
-      void run() override {
+      void run(const std::stop_token &st) override {
         while (!needs_stop()) {
           auto value_opt =
-              dict.fetch_request_queue.pop_front(std::chrono::minutes(1));
+              dict.fetch_request_queue.pop_front(std::chrono::minutes(1), st);
+          std::cout<<"stop requested"<<st.stop_requested()<<std::endl;
           if (!value_opt.has_value()) {
+            puts("get empty value");
             continue;
           }
-          if (!(*value_opt).has_value()) {
-            return;
-          }
-          auto const &key = value_opt.value().value();
+          /* if (!(*value_opt).has_value()) { */
+          /*   return; */
+          /* } */
+          auto const &key = value_opt.value();
           try {
             {
               std::lock_guard lk(dict.data_mutex);
@@ -308,21 +314,26 @@ namespace cyy::algorithm {
       save_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {
         start(fmt::format("saving_thread {}", id));
       }
-      ~save_thread() override { stop(); }
+      ~save_thread() override {
+
+        puts("call stop");
+        stop(); }
 
     private:
-      void run() override {
-        std::optional<std::optional<cache::save_task>> value_opt;
+      void run(const std::stop_token &st) override {
+        std::optional<cache::save_task> value_opt;
         while (!needs_stop()) {
           value_opt =
-              dict.save_request_queue.pop_front(std::chrono::minutes(1));
+              dict.save_request_queue.pop_front(std::chrono::minutes(1), st);
+          std::cout<<"stop requested"<<st.stop_requested()<<std::endl;
           if (!value_opt.has_value()) {
+            puts("get empty value");
             continue;
           }
-          if (!(*value_opt).has_value()) {
-            return;
-          }
-          auto &key = value_opt.value().value();
+          /* if (!(*value_opt).has_value()) { */
+          /*   return; */
+          /* } */
+          auto &key = value_opt.value();
           try {
             std::unique_lock lk(dict.data_mutex);
             if (!dict.change_state(key, data_state::PRE_SAVING,
@@ -468,7 +479,7 @@ namespace cyy::algorithm {
 
     using save_request_queue_type =
         cyy::algorithm::thread_safe_linear_container<
-            std::list<std::optional<save_task>>>;
+            std::list<save_task>>;
     save_request_queue_type save_request_queue;
     size_t saving_thread_num{0};
     std::list<save_thread> saving_threads;
@@ -476,7 +487,7 @@ namespace cyy::algorithm {
     using fetch_task = key_type;
     using fetch_request_queue_type =
         cyy::algorithm::thread_safe_linear_container<
-            std::list<std::optional<fetch_task>>>;
+            std::list<fetch_task>>;
     fetch_request_queue_type fetch_request_queue;
     size_t fetch_thread_num{0};
     std::list<fetch_thread> fetch_threads;
