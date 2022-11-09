@@ -26,7 +26,8 @@ namespace cyy::algorithm {
     using key_type = Key;
     using mapped_type = T;
     virtual ~storage_backend() = default;
-    virtual std::vector<key_type> load_keys() = 0;
+    virtual std::vector<key_type> get_keys() = 0;
+    virtual bool contains(const key_type &key) = 0;
     virtual mapped_type load_data(const key_type &key) = 0;
     virtual void clear_data() = 0;
     virtual void erase_data(const key_type &key) = 0;
@@ -39,16 +40,6 @@ namespace cyy::algorithm {
     cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
         : backend(std::move(backend_)) {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
-
-      for (const auto &key : backend->load_keys()) {
-        data_info[key] = data_state::IN_DISK;
-        LOG_DEBUG("load key {}", key);
-      }
-      if (data_info.empty()) {
-        LOG_WARN("no key to load");
-      } else {
-        LOG_WARN("load {} keys", data_info.size());
-      }
 
       auto cpu_num = std::jthread::hardware_concurrency();
       set_saving_thread_number(cpu_num);
@@ -119,7 +110,10 @@ namespace cyy::algorithm {
 
     size_t size() const {
       std::lock_guard lk(data_mutex);
-      return data_info.size();
+      if (load_all_keys) {
+        return data_info.size();
+      }
+      return backend->get_keys().size();
     }
     void erase(const key_type &key) {
       std::lock_guard lk(data_mutex);
@@ -133,7 +127,11 @@ namespace cyy::algorithm {
 
     bool contains(const key_type &key) const {
       std::lock_guard lk(data_mutex);
-      return data_info.find(key) != data_info.end();
+      auto res = data_info.find(key) != data_info.end();
+      if (!res && !load_all_keys) {
+        res = backend->contains(key);
+      }
+      return res;
     }
 
     void set_logging(bool enable_debug) const {
@@ -147,6 +145,17 @@ namespace cyy::algorithm {
     std::vector<key_type> keys() const {
       std::vector<key_type> res;
       std::lock_guard lk(data_mutex);
+      if (!load_all_keys) {
+        res = backend->get_keys();
+        for (auto const &key : res) {
+          if (!data_info.contains(key)) {
+            data_info[key] = data_state::IN_DISK;
+          }
+        }
+        load_all_keys = true;
+        return res;
+      }
+
       res.reserve(data_info.size());
       for (auto const &[key, __] : data_info) {
         res.emplace_back(key);
@@ -208,9 +217,6 @@ namespace cyy::algorithm {
 
       std::lock_guard lk(data_mutex);
       if (saving_thread_num_ < saving_thread_num) {
-        for (auto &_ : saving_threads) {
-          save_request_queue.emplace_back();
-        }
         save_request_queue.clear();
         saving_thread_num = 0;
       }
@@ -376,7 +382,14 @@ namespace cyy::algorithm {
         }
         auto it = data_info.find(key);
         if (it == data_info.end()) {
-          return {1, {}};
+          if (!load_all_keys) {
+            if (backend->contains(key)) {
+              data_info[key] = data_state::IN_DISK;
+              it = data_info.find(key);
+            } else {
+              return {1, {}};
+            }
+          }
         }
         if (it->second == data_state::PRE_SAVING ||
             it->second == data_state::SAVING) {
@@ -465,6 +478,7 @@ namespace cyy::algorithm {
     std::list<fetch_thread> fetch_threads;
 
     std::condition_variable_any new_data_cv;
+    bool mutable load_all_keys{false};
     float wait_flush_ratio{1.5};
   };
 } // namespace cyy::algorithm
