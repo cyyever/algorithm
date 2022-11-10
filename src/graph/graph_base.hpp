@@ -10,7 +10,6 @@
 #include <concepts>
 #include <list>
 #include <memory>
-#include <iostream>
 #include <ranges>
 #include <unordered_map>
 #include <vector>
@@ -90,7 +89,7 @@ namespace cyy::algorithm {
     static constexpr bool is_directed = directed;
     graph_base() = default;
     template <std::ranges::input_range U>
-      requires std::same_as<edge_type, std::ranges::range_value_t<U>>
+    requires std::same_as<edge_type, std::ranges::range_value_t<U>>
     explicit graph_base(U edges) {
       for (auto const &edge : edges) {
         add_edge(edge);
@@ -515,10 +514,10 @@ namespace cyy::algorithm {
 
   template <typename T>
   concept IsGraph = requires(T a) {
-                      { a.get_vertices() };
-                      { a.is_directed };
-                      { a.foreach_edge_with_weight() };
-                    };
+    {a.get_vertices()};
+    {a.is_directed};
+    {a.foreach_edge_with_weight()};
+  };
 } // namespace cyy::algorithm
 
 #ifdef __cpp_lib_format
@@ -549,5 +548,5 @@ namespace std {
       return ctx.out();
     }
   };
-}
+} // namespace std
 #endif
