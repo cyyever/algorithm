@@ -47,16 +47,28 @@ namespace cyy::algorithm {
       value_reference(const value_reference &) = delete;
       value_reference &operator=(const value_reference &) = delete;
 
-      value_reference(value_reference &&) noexcept = default;
-      value_reference &operator=(value_reference &&) noexcept = default;
+      value_reference(value_reference &&rhs) noexcept {
+        *this = std::move(rhs);
+      }
+      value_reference &operator=(value_reference &&rhs) noexcept {
+        key = std::move(rhs.key);
+        value = std::move(rhs.value);
+        cache_ptr = rhs.cache_ptr;
+        rhs.cache_ptr = nullptr;
+        return *this;
+      }
 
-      ~value_reference() { cache_ptr->emplace(key, value); }
+      ~value_reference() {
+        if (cache_ptr) {
+          cache_ptr->emplace(key, value);
+        }
+      }
       mapped_type &operator->() { return value; }
 
     private:
       key_type key;
       mapped_type value;
-      cache<key_type, mapped_type> *cache_ptr;
+      cache<key_type, mapped_type> *cache_ptr{};
     };
 
   public:
