@@ -63,6 +63,7 @@ namespace cyy::algorithm {
           cache_ptr->emplace(key, value);
         }
       }
+      void cancel_save() { cache_ptr = nullptr; }
       mapped_type &operator->() { return value; }
 
     private:
