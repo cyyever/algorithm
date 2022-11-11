@@ -158,7 +158,7 @@ namespace cyy::algorithm {
 
     bool contains(const key_type &key) const {
       std::lock_guard lk(data_mutex);
-      auto res = data_info.find(key) != data_info.end();
+      auto res = data_info.contains(key);
       if (!res && !load_all_keys) {
         res = backend->contains(key);
       }
