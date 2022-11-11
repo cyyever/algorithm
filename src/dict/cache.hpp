@@ -37,6 +37,29 @@ namespace cyy::algorithm {
   public:
     using key_type = Key;
     using mapped_type = T;
+
+    class value_reference final {
+    public:
+      value_reference(key_type key_, mapped_type value_,
+                      cache<key_type, mapped_type> *cache_ptr_)
+          : key(key_), value{value_}, cache_ptr{cache_ptr_} {}
+
+      value_reference(const value_reference &) = delete;
+      value_reference &operator=(const value_reference &) = delete;
+
+      value_reference(value_reference &&) noexcept = default;
+      value_reference &operator=(value_reference &&) noexcept = default;
+
+      ~value_reference() { cache_ptr->emplace(key, value); }
+      mapped_type &operator->() { return value; }
+
+    private:
+      key_type key;
+      mapped_type value;
+      cache<key_type, mapped_type> *cache_ptr;
+    };
+
+  public:
     cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
         : backend(std::move(backend_)) {
       cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
@@ -108,12 +131,20 @@ namespace cyy::algorithm {
       throw std::runtime_error("should not be here");
     }
 
+    std::optional<value_reference> mutable_get(const key_type &key) {
+      auto value_opt = get(key);
+      if (value_opt.has_value()) {
+        return value_reference(key, value_opt.value(), this);
+      }
+      return {};
+    }
+
     size_t size() const {
       std::lock_guard lk(data_mutex);
       if (load_all_keys) {
         return data_info.size();
       }
-      return backend->get_keys().size();
+      return keys().size();
     }
     void erase(const key_type &key) {
       std::lock_guard lk(data_mutex);
@@ -132,14 +163,6 @@ namespace cyy::algorithm {
         res = backend->contains(key);
       }
       return res;
-    }
-
-    void set_logging(bool enable_debug) const {
-      if (enable_debug) {
-        cyy::naive_lib::log::set_level(spdlog::level::level_enum::debug);
-      } else {
-        cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
-      }
     }
 
     std::vector<key_type> keys() const {
@@ -241,6 +264,20 @@ namespace cyy::algorithm {
     void enable_permanent_storage() { permanent = true; }
     void disable_permanent_storage() { permanent = false; }
 
+  protected:
+    std::unique_ptr<storage_backend<key_type, mapped_type>> backend;
+
+  private:
+    mutable std::recursive_mutex data_mutex;
+    enum class data_state : int {
+      IN_MEMORY = 0,
+      IN_DISK,
+      PRE_SAVING,
+      SAVING,
+      PRE_LOAD,
+      LOADING,
+      LOAD_FAILED,
+    };
     class fetch_thread final : public cyy::naive_lib::runnable {
     public:
       fetch_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {
@@ -338,20 +375,6 @@ namespace cyy::algorithm {
       size_t id;
     };
 
-  protected:
-    std::unique_ptr<storage_backend<key_type, mapped_type>> backend;
-
-  private:
-    mutable std::recursive_mutex data_mutex;
-    enum class data_state : int {
-      IN_MEMORY = 0,
-      IN_DISK,
-      PRE_SAVING,
-      SAVING,
-      PRE_LOAD,
-      LOADING,
-      LOAD_FAILED,
-    };
     std::unordered_map<key_type, data_state> data_info;
 
     bool change_state(const key_type &key, data_state old_state,

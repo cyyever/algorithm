@@ -186,7 +186,7 @@ namespace cyy::algorithm {
     bool wait_for_consumer_condition(
         std::unique_lock<Mutex> &lock,
         const std::chrono::duration<Rep, Period> &rel_time, Predicate pred,
-        std::optional<std::stop_token> st_opt) const {
+        const std::optional<std::stop_token> &st_opt) const {
       if (st_opt.has_value()) {
         return new_element_cv.wait_for(
             lock, st_opt.value(), rel_time,
