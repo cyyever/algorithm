@@ -57,7 +57,7 @@ namespace cyy::algorithm {
 
     void release() {
       if (permanent) {
-        flush_all(true);
+        flush(SIZE_MAX, true);
       }
       fetch_request_queue.clear();
       save_request_queue.clear();
@@ -172,17 +172,13 @@ namespace cyy::algorithm {
       }
       return res;
     }
-    void flush_all(bool wait = false) {
-      flush();
-      if (!wait) {
-        return;
-      }
-
-      save_request_queue.wait_for_less_size(0, std::chrono::minutes(1));
-    }
-    void flush(size_t flush_num = SIZE_MAX) {
+    void flush(size_t flush_num = SIZE_MAX, bool wait = false) {
       auto tasks = pop_expired_data(flush_num);
       flush(tasks);
+
+      if (wait) {
+        save_request_queue.wait_for_less_size(0, std::chrono::minutes(1));
+      }
       return;
     }
     void clear() {
