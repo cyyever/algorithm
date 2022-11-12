@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <unordered_map>
 #include <utility>
@@ -94,7 +95,7 @@ namespace cyy::algorithm {
 
     void release() {
       if (permanent) {
-        flush(SIZE_MAX, true);
+        flush(true);
       }
       fetch_request_queue.clear();
       save_request_queue.clear();
@@ -209,15 +210,16 @@ namespace cyy::algorithm {
       }
       return res;
     }
-    void flush(size_t flush_num = SIZE_MAX, bool wait = false) {
-      auto tasks = pop_expired_data(flush_num);
-      flush(tasks);
+    void flush(bool wait = false) {
+      auto tasks = pop_expired_data(SIZE_MAX);
+      flush_tasks(tasks);
 
       if (wait) {
         save_request_queue.wait_for_less_size(0, std::chrono::minutes(1));
       }
       return;
     }
+
     void clear() {
       std::lock_guard lk(data_mutex);
       data_info.clear();
@@ -486,7 +488,7 @@ namespace cyy::algorithm {
       }
       return expired_data;
     }
-    void flush(std::list<save_task> &tasks) {
+    void flush_tasks(std::list<save_task> &tasks) {
       for (auto &task : tasks) {
         save_request_queue.emplace_back(std::move(task));
       }
