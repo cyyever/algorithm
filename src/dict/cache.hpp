@@ -111,7 +111,7 @@ namespace cyy::algorithm {
     void emplace(const key_type &key, mapped_type value) {
       std::unique_lock lk(data_mutex);
       data_cache.emplace(key, std::move(value));
-      data_info[key] = data_state::IN_MEMORY;
+      data_info[key] = data_state::MEMORY_MODIFIED;
       saving_data.erase(key);
       if (data_cache.size() > in_memory_number) {
         auto wait_threshold =
@@ -187,7 +187,7 @@ namespace cyy::algorithm {
         res = backend->get_keys();
         for (auto const &key : res) {
           if (!data_info.contains(key)) {
-            data_info[key] = data_state::IN_DISK;
+            data_info[key] = data_state::CONSISTENT;
           }
         }
         load_all_keys = true;
@@ -286,8 +286,8 @@ namespace cyy::algorithm {
   private:
     mutable std::recursive_mutex data_mutex;
     enum class data_state : int {
-      IN_MEMORY = 0,
-      IN_DISK,
+      MEMORY_MODIFIED = 0,
+      CONSISTENT,
       PRE_SAVING,
       SAVING,
       PRE_LOAD,
@@ -323,7 +323,7 @@ namespace cyy::algorithm {
             {
               std::lock_guard lk(dict.data_mutex);
               if (dict.change_state(key, data_state::LOADING,
-                                    data_state::IN_DISK)) {
+                                    data_state::CONSISTENT)) {
                 dict.data_cache.emplace(key, std::move(value));
               }
             }
@@ -355,26 +355,33 @@ namespace cyy::algorithm {
 
     private:
       void run(const std::stop_token &st) override {
-        std::optional<cache::save_task> value_opt;
+        std::optional<cache::save_task> task_opt;
         while (!needs_stop()) {
-          value_opt =
+          task_opt =
               dict.save_request_queue.pop_front(std::chrono::minutes(1), st);
-          if (!value_opt.has_value()) {
+          if (!task_opt.has_value()) {
             continue;
           }
-          auto &key = value_opt.value();
+          auto &key = task_opt.value();
           try {
             std::unique_lock lk(dict.data_mutex);
             if (!dict.change_state(key, data_state::PRE_SAVING,
                                    data_state::SAVING)) {
               continue;
             }
-            auto value = dict.saving_data.at(key);
+            std::optional<cache::mapped_type> value_opt{};
+            if (auto it = dict.saving_data.find(key);
+                it != dict.saving_data.end()) {
+              value_opt = it->second;
+            } else if (auto it = dict.data_cache.find(key);
+                       it != dict.data_cache.end()) {
+              value_opt = it->second;
+            }
             lk.unlock();
-            dict.backend->save_data(key, value);
+            dict.backend->save_data(key, std::move(value_opt.value()));
             lk.lock();
             if (dict.change_state(key, data_state::SAVING,
-                                  data_state::IN_DISK)) {
+                                  data_state::CONSISTENT)) {
               dict.saving_data.erase(key);
             } else if (!dict.contains(key)) {
               dict.backend->erase_data(key);
@@ -419,7 +426,7 @@ namespace cyy::algorithm {
         if (it == data_info.end()) {
           if (!load_all_keys) {
             if (backend->contains(key)) {
-              data_info[key] = data_state::IN_DISK;
+              data_info[key] = data_state::CONSISTENT;
               it = data_info.find(key);
             } else {
               return {1, {}};
@@ -428,10 +435,7 @@ namespace cyy::algorithm {
         }
         if (it->second == data_state::PRE_SAVING ||
             it->second == data_state::SAVING) {
-          auto node = saving_data.extract(key);
-          data_cache.emplace(key, node.mapped());
-          it->second = data_state::IN_MEMORY;
-          return {1, std::move(node.mapped())};
+          return {1, saving_data[key]};
         }
         if (auto data_it = data_cache.find(key); data_it != data_cache.end()) {
           return {1, data_it->second};
@@ -446,7 +450,7 @@ namespace cyy::algorithm {
         if (it->second == data_state::PRE_LOAD) {
           return {0, {}};
         }
-        if (it->second != data_state::IN_DISK) {
+        if (it->second != data_state::CONSISTENT) {
           LOG_ERROR("invalid data_state {} for fetch {}", int(it->second), key);
           return {-1, {}};
         }
@@ -473,10 +477,10 @@ namespace cyy::algorithm {
           if (it == data_info.end()) {
             throw std::runtime_error(std::string("can't find info :" + key));
           }
-          if (it->second == data_state::IN_DISK) {
+          if (it->second == data_state::CONSISTENT) {
             continue;
           }
-          if (it->second != data_state::IN_MEMORY) {
+          if (it->second != data_state::MEMORY_MODIFIED) {
             throw std::runtime_error(
                 fmt::format("invalid state {} of key:{}",
                             std::to_string(static_cast<int>(it->second)), key));
@@ -488,6 +492,26 @@ namespace cyy::algorithm {
       }
       return expired_data;
     }
+
+    void flush_keys(std::span<key_type> keys, bool wait = false) {
+      std::list<save_task> expired_data;
+      for (auto const &key : keys) {
+        std::unique_lock lk(data_mutex);
+        auto it = data_info.find(key);
+        if (it == data_info.end()) {
+          continue;
+        }
+        if (it->second == data_state::MEMORY_MODIFIED) {
+          it->second = data_state::PRE_SAVING;
+          expired_data.emplace_back(save_task{key});
+        }
+      }
+      flush_tasks(expired_data);
+      if (wait) {
+        save_request_queue.wait_for_less_size(0, std::chrono::years(1));
+      }
+    }
+
     void flush_tasks(std::list<save_task> &tasks) {
       for (auto &task : tasks) {
         save_request_queue.emplace_back(std::move(task));
