@@ -376,7 +376,9 @@ namespace cyy::algorithm {
               value_opt = it->second;
             }
             lk.unlock();
-            dict.backend->save_data(key, std::move(value_opt.value()));
+            if (value_opt.has_value()) {
+              dict.backend->save_data(key, std::move(value_opt.value()));
+            }
             lk.lock();
             if (dict.change_state(key, data_state::SAVING,
                                   data_state::CONSISTENT)) {
