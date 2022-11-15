@@ -11,6 +11,7 @@
 #include <span>
 #include <stdexcept>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -110,6 +111,7 @@ namespace cyy::algorithm {
       std::unique_lock lk(data_mutex);
       data_cache.emplace(key, std::move(value));
       data_info[key] = data_state::MEMORY_MODIFIED;
+      hold_data.erase(key);
       saving_data.erase(key);
       if (data_cache.size() > in_memory_number) {
         auto wait_threshold =
@@ -127,7 +129,7 @@ namespace cyy::algorithm {
       }
     }
 
-    std::optional<mapped_type> get(const key_type &key) {
+    std::optional<mapped_type> get(const key_type &key,bool hold=false) {
       std::unique_lock lk(data_mutex);
       while (true) {
         auto [result, value_opt] = prefetch(key, false);
@@ -135,6 +137,9 @@ namespace cyy::algorithm {
           throw std::runtime_error(fmt::format("failed to get {}", key));
         }
         if (result > 0) {
+          if(hold && value_opt.has_value()) {
+            hold_data.emplace(key);
+          }
           return value_opt;
         }
         LOG_DEBUG("wait data {}, fetch_request_queue size is {}", key,
@@ -145,7 +150,7 @@ namespace cyy::algorithm {
     }
 
     std::optional<value_reference> mutable_get(const key_type &key) {
-      auto value_opt = get(key);
+      auto value_opt = get(key,true);
       if (value_opt.has_value()) {
         return value_reference(key, value_opt.value(), this);
       }
@@ -164,6 +169,7 @@ namespace cyy::algorithm {
       if (!data_info.erase(key)) {
         return;
       }
+      hold_data.erase(key);
       data_cache.erase(key);
       saving_data.erase(key);
       backend->erase_data(key);
@@ -480,6 +486,9 @@ namespace cyy::algorithm {
           if (it->second == data_state::CONSISTENT) {
             continue;
           }
+          if(hold_data.contains(key)) {
+            continue;
+          }
           if (it->second != data_state::MEMORY_MODIFIED) {
             throw std::runtime_error(
                 fmt::format("invalid state {} of key:{}",
@@ -501,6 +510,9 @@ namespace cyy::algorithm {
         if (it == data_info.end()) {
           continue;
         }
+        if(hold_data.contains(key)) {
+          continue;
+        }
         if (it->second == data_state::MEMORY_MODIFIED) {
           it->second = data_state::PRE_SAVING;
           expired_data.emplace_back(save_task{key});
@@ -520,6 +532,7 @@ namespace cyy::algorithm {
 
     cyy::algorithm::lru_cache<key_type, mapped_type> data_cache;
     std::unordered_map<key_type, mapped_type> saving_data;
+    std::unordered_set<key_type> hold_data;
     size_t in_memory_number{128};
     bool permanent{true};
 
