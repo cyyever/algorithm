@@ -77,8 +77,6 @@ namespace cyy::algorithm {
   public:
     cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
         : backend(std::move(backend_)) {
-      cyy::naive_lib::log::set_level(spdlog::level::level_enum::warn);
-
       auto cpu_num = std::jthread::hardware_concurrency();
       set_saving_thread_number(cpu_num);
       set_fetch_thread_number(cpu_num);
