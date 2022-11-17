@@ -225,6 +225,28 @@ namespace cyy::algorithm {
       return;
     }
 
+    void flush(bool wait = false) {
+      std::list<save_task> dirty_tasks;
+      std::unique_lock lk(data_mutex);
+      for (auto const &key : dirty_data) {
+        auto it = data_info.find(key);
+        if (it == data_info.end()) {
+          continue;
+        }
+        if (hold_data.contains(key)) {
+          continue;
+        }
+        if (it->second == data_state::MEMORY_MODIFIED) {
+          it->second = data_state::PRE_SAVING;
+          dirty_tasks.emplace_back(save_task{key});
+        }
+      }
+      flush_tasks(dirty_tasks);
+      if (wait) {
+        save_request_queue.wait_for_less_size(0, std::chrono::years(1));
+      }
+    }
+
     void clear() {
       std::lock_guard lk(data_mutex);
       data_info.clear();
@@ -503,28 +525,6 @@ namespace cyy::algorithm {
         expired_data.emplace_back(save_task{key});
       }
       return expired_data;
-    }
-
-    void flush(bool wait = false) {
-      std::list<save_task> dirty_tasks;
-      std::unique_lock lk(data_mutex);
-      for (auto const &key : dirty_data) {
-        auto it = data_info.find(key);
-        if (it == data_info.end()) {
-          continue;
-        }
-        if (hold_data.contains(key)) {
-          continue;
-        }
-        if (it->second == data_state::MEMORY_MODIFIED) {
-          it->second = data_state::PRE_SAVING;
-          dirty_tasks.emplace_back(save_task{key});
-        }
-      }
-      flush_tasks(dirty_tasks);
-      if (wait) {
-        save_request_queue.wait_for_less_size(0, std::chrono::years(1));
-      }
     }
 
     void flush_tasks(std::list<save_task> &tasks) {
