@@ -50,10 +50,10 @@ namespace cyy::algorithm {
     batch_save_data(std::vector<std::pair<key_type, mapped_type>> batch_data) {
       std::vector<std::pair<key_type, bool>> batch_res;
       for (auto &[k, v] : batch_data) {
-        auto res = save_data(k, std::move(v))
-                       batch_res.emplace_back(std::move(k), res);
+        auto res = save_data(k, std::move(v));
+        batch_res.emplace_back(std::move(k), res);
       }
-      return res;
+      return batch_res;
     }
   };
   template <typename Key, typename T> class lru_cache {
@@ -402,7 +402,7 @@ namespace cyy::algorithm {
         while (!needs_stop()) {
           auto tasks = dict.save_request_queue.batch_pop_front(
               batch_size, std::chrono::minutes(1), st);
-          if (!tasks.empty()) {
+          if (tasks.empty()) {
             continue;
           }
           std::vector<std::pair<key_type, mapped_type>> batch_data;
