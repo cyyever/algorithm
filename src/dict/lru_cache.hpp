@@ -46,15 +46,14 @@ namespace cyy::algorithm {
       }
       return res;
     }
-    virtual std::vector<key_type>
+    virtual std::vector<std::pair<key_type, bool>>
     batch_save_data(std::vector<std::pair<key_type, mapped_type>> batch_data) {
-      std::vector<key_type> fail_keys;
+      std::vector<std::pair<key_type, bool>> batch_res;
       for (auto &[k, v] : batch_data) {
-        if (!save_data(k, std::move(v))) {
-          fail_keys.emplace_back(std::move(k));
-        }
+        auto res = save_data(k, std::move(v))
+                       batch_res.emplace_back(std::move(k), res);
       }
-      return fail_keys;
+      return res;
     }
   };
   template <typename Key, typename T> class lru_cache {
@@ -399,41 +398,57 @@ namespace cyy::algorithm {
 
     private:
       void run(const std::stop_token &st) override {
-        std::optional<lru_cache::save_task> task_opt;
+        auto batch_size = dict.backend->batch_process_size();
         while (!needs_stop()) {
-          task_opt =
-              dict.save_request_queue.pop_front(std::chrono::minutes(1), st);
-          if (!task_opt.has_value()) {
+          auto tasks = dict.save_request_queue.batch_pop_front(
+              batch_size, std::chrono::minutes(1), st);
+          if (!tasks.empty()) {
             continue;
           }
-          auto &key = task_opt.value();
+          std::vector<std::pair<key_type, mapped_type>> batch_data;
+          batch_data.reserve(tasks.size());
+          std::vector<std::pair<key_type, bool>> res;
+          res.reserve(tasks.size());
           std::unique_lock lk(dict.data_mutex);
-          if (!dict.change_state(key, data_state::PRE_SAVING,
-                                 data_state::SAVING)) {
-            continue;
+          for (auto key : tasks) {
+            if (!dict.change_state(key, data_state::PRE_SAVING,
+                                   data_state::SAVING)) {
+              continue;
+            }
+            res.emplace_back(key, false);
+            if (auto it = dict.saving_data.find(key);
+                it != dict.saving_data.end()) {
+              batch_data.emplace_back(std::move(key), std::move(it->second));
+            } else if (auto it = dict.data_dict.find(key);
+                       it != dict.data_dict.end()) {
+              batch_data.emplace_back(std::move(key), it->second);
+            } else {
+              throw std::runtime_error(fmt::format(
+                  "can't find data of {} to save, invariant error", key));
+            }
           }
-          std::optional<lru_cache::mapped_type> value_opt{};
-          if (auto it = dict.saving_data.find(key);
-              it != dict.saving_data.end()) {
-            value_opt = it->second;
-          } else if (auto it = dict.data_dict.find(key);
-                     it != dict.data_dict.end()) {
-            value_opt = it->second;
+          if (batch_data.empty()) {
+            continue;
           }
           lk.unlock();
           try {
-            dict.backend->save_data(key, std::move(value_opt.value()));
+            res = dict.backend->batch_save_data(std::move(batch_data));
           } catch (const std::exception &e) {
-            LOG_ERROR("save {} failed,drop it:{}", key, e.what());
-            dict.erase(key);
+            LOG_ERROR("batch save failed:{}", e.what());
           }
           lk.lock();
-          if (dict.change_state(key, data_state::SAVING,
-                                data_state::CONSISTENT)) {
-            dict.dirty_data.erase(key);
-            dict.saving_data.erase(key);
-          } else if (!dict.contains(key)) {
-            dict.backend->erase_data(key);
+          for (auto const &[key, key_res] : res) {
+            if (key_res && dict.change_state(key, data_state::SAVING,
+                                             data_state::CONSISTENT)) {
+              dict.dirty_data.erase(key);
+              dict.saving_data.erase(key);
+            } else if (key_res &&
+                       dict.change_state(key, data_state::SAVING,
+                                         data_state::MEMORY_MODIFIED)) {
+              dict.saving_data.erase(key);
+            } else if (!dict.contains(key)) {
+              dict.backend->erase_data(key);
+            }
           }
         }
       }

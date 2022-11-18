@@ -137,6 +137,30 @@ namespace cyy::algorithm {
       new_element_cv.notify_all();
     }
 
+    template <typename Rep, typename Period>
+    std::vector<value_type>
+    batch_pop_front(size_t batch_size,
+                    const std::chrono::duration<Rep, Period> &rel_time,
+                    std::optional<std::stop_token> st_opt = {}) {
+      std::unique_lock lock(container_mutex);
+      if (wait_for_consumer_condition(
+              lock, rel_time, [this]() { return !container.empty(); },
+              st_opt)) {
+        if (!container.empty()) {
+          std::vector<value_type> res;
+          batch_size = std::min(batch_size, container.size());
+          res.reserve(batch_size);
+          while (res.size() < batch_size) {
+            res.emplace_back(std::move(container.front()));
+            pop_front_wrapper();
+          }
+          notify_less_element();
+          return res;
+        }
+      }
+      return {};
+    }
+
     void pop_front() {
       std::unique_lock lock(container_mutex);
       if (!container.empty()) {

@@ -55,6 +55,12 @@ TEST_CASE("thread_safe_linear_container") {
     container.clear();
     CHECK(container.const_ref()->empty());
   }
+  SUBCASE("batch_pop_front") {
+    container.emplace_back(1);
+    container.emplace_back(2);
+    auto res = container.batch_pop_front(2, std::chrono::milliseconds(1));
+    REQUIRE_EQ(res, std::vector<int>{1, 2});
+  }
   SUBCASE("concurrently pop_front") {
     std::vector<std::jthread> thds;
 
