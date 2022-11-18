@@ -1,5 +1,5 @@
 /*!
- * \file order_dict.hpp
+ * \file ordered_dict.hpp
  *
  * \brief implements python's OrderedDict in C++
  */
@@ -13,7 +13,7 @@
 
 namespace cyy::algorithm {
 
-  template <class Key, class T> class order_dict {
+  template <class Key, class T> class ordered_dict {
   public:
     using key_type = Key;
     using mapped_type = T;

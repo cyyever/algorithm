@@ -5,10 +5,10 @@
  */
 #include <doctest/doctest.h>
 
-#include "dict/order_dict.hpp"
+#include "dict/ordered_dict.hpp"
 
-TEST_CASE("order_dict") {
-  cyy::algorithm::order_dict<int, std::string> container;
+TEST_CASE("ordered_dict") {
+  cyy::algorithm::ordered_dict<int, std::string> container;
 
   CHECK(container.empty());
 

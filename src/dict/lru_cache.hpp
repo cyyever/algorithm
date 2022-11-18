@@ -1,7 +1,7 @@
 /*!
- * \file cache.hpp
+ * \file lru_cache.hpp
  *
- * \brief A dictionary that provides synchronization between memory and storage
+ * \brief LRU cache implementation that provides synchronization between memory and storage
  */
 #pragma once
 #include <chrono>
@@ -20,7 +20,7 @@
 #include <spdlog/fmt/fmt.h>
 
 #include "../thread_safe_container.hpp"
-#include "lru_cache.hpp"
+#include "ordered_dict.hpp"
 
 namespace cyy::algorithm {
   template <typename Key, typename T> class storage_backend {
@@ -30,12 +30,13 @@ namespace cyy::algorithm {
     virtual ~storage_backend() = default;
     virtual std::vector<key_type> get_keys() = 0;
     virtual bool contains(const key_type &key) = 0;
+    virtual bool support_batch_process()  const {return false;}
     virtual mapped_type load_data(const key_type &key) = 0;
-    virtual void clear_data() = 0;
+    virtual void clear() = 0;
     virtual void erase_data(const key_type &key) = 0;
     virtual void save_data(const key_type &key, mapped_type value) = 0;
   };
-  template <typename Key, typename T> class cache {
+  template <typename Key, typename T> class lru_cache {
   public:
     using key_type = Key;
     using mapped_type = T;
@@ -43,8 +44,8 @@ namespace cyy::algorithm {
     class value_reference final {
     public:
       value_reference(key_type key_, mapped_type value_,
-                      cache<key_type, mapped_type> *cache_ptr_)
-          : key(key_), value{value_}, cache_ptr{cache_ptr_} {}
+                      lru_cache<key_type, mapped_type> *lru_cache_ptr_)
+          : key(key_), value{value_}, lru_cache_ptr{lru_cache_ptr_} {}
 
       value_reference(const value_reference &) = delete;
       value_reference &operator=(const value_reference &) = delete;
@@ -55,28 +56,28 @@ namespace cyy::algorithm {
       value_reference &operator=(value_reference &&rhs) noexcept {
         key = std::move(rhs.key);
         value = std::move(rhs.value);
-        cache_ptr = rhs.cache_ptr;
-        rhs.cache_ptr = nullptr;
+        lru_cache_ptr = rhs.lru_cache_ptr;
+        rhs.lru_cache_ptr = nullptr;
         return *this;
       }
 
       ~value_reference() {
-        if (cache_ptr) {
-          cache_ptr->emplace(key, value);
+        if (lru_cache_ptr) {
+          lru_cache_ptr->emplace(key, value);
         }
       }
       const key_type &get_key() const { return key; }
-      void cancel_writeback() { cache_ptr = nullptr; }
+      void cancel_writeback() { lru_cache_ptr = nullptr; }
       mapped_type &operator->() { return value; }
 
     private:
       key_type key;
       mapped_type value;
-      cache<key_type, mapped_type> *cache_ptr{};
+      lru_cache<key_type, mapped_type> *lru_cache_ptr{};
     };
 
   public:
-    cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
+    lru_cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
         : backend(std::move(backend_)) {
       auto cpu_num = std::jthread::hardware_concurrency();
       set_saving_thread_number(cpu_num);
@@ -84,13 +85,13 @@ namespace cyy::algorithm {
       LOG_WARN("saving_thread_num and fetch_thread_num {}", cpu_num);
     }
 
-    cache(const cache &) { LOG_WARN("stub function"); }
-    cache &operator=(const cache &) = default;
+    lru_cache(const lru_cache &) { LOG_WARN("stub function"); }
+    lru_cache &operator=(const lru_cache &) = default;
 
-    cache(cache &&) noexcept = delete;
-    cache &operator=(cache &&) noexcept = delete;
+    lru_cache(lru_cache &&) noexcept = delete;
+    lru_cache &operator=(lru_cache &&) noexcept = delete;
 
-    virtual ~cache() { release(); }
+    virtual ~lru_cache() { release(); }
 
     void release() {
       if (permanent) {
@@ -98,23 +99,23 @@ namespace cyy::algorithm {
       }
       fetch_request_queue.clear();
       save_request_queue.clear();
-      data_cache.clear();
+      data_dict.clear();
       data_info.clear();
       saving_data.clear();
 
       if (!permanent) {
-        backend->clear_data();
+        backend->clear();
       }
     }
 
     void emplace(const key_type &key, mapped_type value) {
       std::unique_lock lk(data_mutex);
-      data_cache.emplace(key, std::move(value));
+      data_dict.emplace(key, std::move(value));
       data_info[key] = data_state::MEMORY_MODIFIED;
       dirty_data.emplace(key);
       hold_data.erase(key);
       saving_data.erase(key);
-      if (data_cache.size() > in_memory_number) {
+      if (data_dict.size() > in_memory_number) {
         auto wait_threshold =
             static_cast<size_t>(in_memory_number * wait_flush_ratio);
         lk.unlock();
@@ -171,7 +172,7 @@ namespace cyy::algorithm {
       }
       dirty_data.erase(key);
       hold_data.erase(key);
-      data_cache.erase(key);
+      data_dict.erase(key);
       saving_data.erase(key);
       backend->erase_data(key);
     }
@@ -209,8 +210,8 @@ namespace cyy::algorithm {
     std::vector<key_type> in_memory_keys() const {
       std::vector<key_type> res;
       std::lock_guard lk(data_mutex);
-      res.reserve(data_cache.size());
-      for (auto const &[key, _] : data_cache) {
+      res.reserve(data_dict.size());
+      for (auto const &[key, _] : data_dict) {
         res.emplace_back(key);
       }
       return res;
@@ -250,7 +251,7 @@ namespace cyy::algorithm {
     void clear() {
       std::lock_guard lk(data_mutex);
       data_info.clear();
-      data_cache.clear();
+      data_dict.clear();
       saving_data.clear();
       backend->clear_data();
     }
@@ -323,7 +324,7 @@ namespace cyy::algorithm {
     };
     class fetch_thread final : public cyy::naive_lib::runnable {
     public:
-      fetch_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {
+      fetch_thread(lru_cache &dict_, size_t id_) : dict(dict_), id(id_) {
         start(fmt::format("fetch_thread {}", id));
       }
       ~fetch_thread() override { stop(); }
@@ -351,7 +352,7 @@ namespace cyy::algorithm {
               std::lock_guard lk(dict.data_mutex);
               if (dict.change_state(key, data_state::LOADING,
                                     data_state::CONSISTENT)) {
-                dict.data_cache.emplace(key, std::move(value));
+                dict.data_dict.emplace(key, std::move(value));
               }
             }
             dict.new_data_cv.notify_all();
@@ -369,20 +370,20 @@ namespace cyy::algorithm {
       }
 
     private:
-      cache &dict;
+      lru_cache &dict;
       size_t id;
     };
 
     class save_thread final : public cyy::naive_lib::runnable {
     public:
-      save_thread(cache &dict_, size_t id_) : dict(dict_), id(id_) {
+      save_thread(lru_cache &dict_, size_t id_) : dict(dict_), id(id_) {
         start(fmt::format("saving_thread {}", id));
       }
       ~save_thread() override { stop(); }
 
     private:
       void run(const std::stop_token &st) override {
-        std::optional<cache::save_task> task_opt;
+        std::optional<lru_cache::save_task> task_opt;
         while (!needs_stop()) {
           task_opt =
               dict.save_request_queue.pop_front(std::chrono::minutes(1), st);
@@ -396,12 +397,12 @@ namespace cyy::algorithm {
                                    data_state::SAVING)) {
               continue;
             }
-            std::optional<cache::mapped_type> value_opt{};
+            std::optional<lru_cache::mapped_type> value_opt{};
             if (auto it = dict.saving_data.find(key);
                 it != dict.saving_data.end()) {
               value_opt = it->second;
-            } else if (auto it = dict.data_cache.find(key);
-                       it != dict.data_cache.end()) {
+            } else if (auto it = dict.data_dict.find(key);
+                       it != dict.data_dict.end()) {
               value_opt = it->second;
             }
             lk.unlock();
@@ -424,7 +425,7 @@ namespace cyy::algorithm {
       }
 
     private:
-      cache &dict;
+      lru_cache &dict;
       size_t id;
     };
 
@@ -467,7 +468,7 @@ namespace cyy::algorithm {
             it->second == data_state::SAVING) {
           return {1, saving_data[key]};
         }
-        if (auto data_it = data_cache.find(key); data_it != data_cache.end()) {
+        if (auto data_it = data_dict.find(key); data_it != data_dict.end()) {
           return {1, data_it->second};
         }
         if (it->second == data_state::LOAD_FAILED) {
@@ -491,18 +492,18 @@ namespace cyy::algorithm {
       return {0, {}};
     }
     using save_task = key_type;
-    std::list<cache::save_task> pop_expired_data(size_t max_number) {
+    std::list<lru_cache::save_task> pop_expired_data(size_t max_number) {
       std::list<save_task> expired_data;
       while (expired_data.size() < max_number) {
         key_type key;
         T value;
         {
           std::unique_lock lk(data_mutex);
-          if (data_cache.empty() || (max_number != SIZE_MAX &&
-                                     data_cache.size() <= in_memory_number)) {
+          if (data_dict.empty() || (max_number != SIZE_MAX &&
+                                     data_dict.size() <= in_memory_number)) {
             break;
           }
-          std::tie(key, value) = data_cache.pop_oldest();
+          std::tie(key, value) = data_dict.pop_oldest();
           auto it = data_info.find(key);
           if (it == data_info.end()) {
             throw std::runtime_error(std::string("can't find info :" + key));
@@ -511,7 +512,7 @@ namespace cyy::algorithm {
             continue;
           }
           if (hold_data.contains(key)) {
-            data_cache.emplace(std::move(key), std::move(value));
+            data_dict.emplace(std::move(key), std::move(value));
             continue;
           }
           if (it->second != data_state::MEMORY_MODIFIED) {
@@ -533,7 +534,7 @@ namespace cyy::algorithm {
       }
     }
 
-    cyy::algorithm::lru_cache<key_type, mapped_type> data_cache;
+    cyy::algorithm::ordered_dict<key_type, mapped_type> data_dict;
     std::unordered_map<key_type, mapped_type> saving_data;
     std::unordered_set<key_type> hold_data;
     std::unordered_set<key_type> dirty_data;
