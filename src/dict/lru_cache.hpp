@@ -1,14 +1,14 @@
 /*!
  * \file lru_cache.hpp
  *
- * \brief LRU cache implementation that provides synchronization between memory and storage
+ * \brief LRU cache implementation that provides synchronization between memory
+ * and storage
  */
 #pragma once
 #include <chrono>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <span>
 #include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
@@ -30,11 +30,32 @@ namespace cyy::algorithm {
     virtual ~storage_backend() = default;
     virtual std::vector<key_type> get_keys() = 0;
     virtual bool contains(const key_type &key) = 0;
-    virtual bool support_batch_process()  const {return false;}
-    virtual mapped_type load_data(const key_type &key) = 0;
-    virtual void clear() = 0;
+    virtual std::optional<mapped_type> load_data(const key_type &key) = 0;
+    virtual bool save_data(const key_type &key, mapped_type value) = 0;
     virtual void erase_data(const key_type &key) = 0;
-    virtual void save_data(const key_type &key, mapped_type value) = 0;
+    virtual void clear() = 0;
+    virtual size_t batch_process_size() const { return 1; }
+    virtual std::unordered_map<key_type, mapped_type>
+    batch_load_data(const std::vector<key_type> &keys) {
+      std::unordered_map<key_type, mapped_type> res;
+      for (auto const &key : keys) {
+        auto data_opt = load_data(key);
+        if (data_opt.has_value()) {
+          res.emplace(key, std::move(data_opt.value()));
+        }
+      }
+      return res;
+    }
+    virtual std::vector<key_type>
+    batch_save_data(std::vector<std::pair<key_type, mapped_type>> batch_data) {
+      std::vector<key_type> fail_keys;
+      for (auto &[k, v] : batch_data) {
+        if (!save_data(k, std::move(v))) {
+          fail_keys.emplace_back(std::move(k));
+        }
+      }
+      return fail_keys;
+    }
   };
   template <typename Key, typename T> class lru_cache {
   public:
@@ -332,40 +353,35 @@ namespace cyy::algorithm {
     private:
       void run(const std::stop_token &st) override {
         while (!needs_stop()) {
-          auto value_opt =
+          auto key_opt =
               dict.fetch_request_queue.pop_front(std::chrono::minutes(1), st);
-          if (!value_opt.has_value()) {
+          if (!key_opt.has_value()) {
             continue;
           }
-          auto const &key = value_opt.value();
-          try {
-            {
-              std::lock_guard lk(dict.data_mutex);
-              if (!dict.change_state(key, data_state::PRE_LOAD,
-                                     data_state::LOADING)) {
-                dict.new_data_cv.notify_all();
-                continue;
-              }
-            }
-            auto value = dict.backend->load_data(key);
-            {
-              std::lock_guard lk(dict.data_mutex);
-              if (dict.change_state(key, data_state::LOADING,
-                                    data_state::CONSISTENT)) {
-                dict.data_dict.emplace(key, std::move(value));
-              }
-            }
+          auto const &key = key_opt.value();
+          std::unique_lock lk(dict.data_mutex);
+          if (!dict.change_state(key, data_state::PRE_LOAD,
+                                 data_state::LOADING)) {
             dict.new_data_cv.notify_all();
-          } catch (const std::exception &e) {
-            LOG_ERROR("load {} failed:{}", key, e.what());
-            {
-              std::lock_guard lk(dict.data_mutex);
-              if (!dict.change_state(key, data_state::LOADING,
-                                     data_state::LOAD_FAILED)) {
-                continue;
-              }
-            }
+            continue;
           }
+          lk.unlock();
+          std::optional<lru_cache::mapped_type> data_opt;
+          try {
+            data_opt = dict.backend->load_data(key);
+          } catch (const std::exception &e) {
+            LOG_ERROR("load {} raised exception:{}", key, e.what());
+          }
+          lk.lock();
+          if (!data_opt.has_value()) {
+            LOG_ERROR("load {} failed", key);
+            dict.change_state(key, data_state::LOADING,
+                              data_state::LOAD_FAILED);
+          } else if (dict.change_state(key, data_state::LOADING,
+                                       data_state::CONSISTENT)) {
+            dict.data_dict.emplace(key, std::move(data_opt.value()));
+          }
+          dict.new_data_cv.notify_all();
         }
       }
 
@@ -391,35 +407,33 @@ namespace cyy::algorithm {
             continue;
           }
           auto &key = task_opt.value();
+          std::unique_lock lk(dict.data_mutex);
+          if (!dict.change_state(key, data_state::PRE_SAVING,
+                                 data_state::SAVING)) {
+            continue;
+          }
+          std::optional<lru_cache::mapped_type> value_opt{};
+          if (auto it = dict.saving_data.find(key);
+              it != dict.saving_data.end()) {
+            value_opt = it->second;
+          } else if (auto it = dict.data_dict.find(key);
+                     it != dict.data_dict.end()) {
+            value_opt = it->second;
+          }
+          lk.unlock();
           try {
-            std::unique_lock lk(dict.data_mutex);
-            if (!dict.change_state(key, data_state::PRE_SAVING,
-                                   data_state::SAVING)) {
-              continue;
-            }
-            std::optional<lru_cache::mapped_type> value_opt{};
-            if (auto it = dict.saving_data.find(key);
-                it != dict.saving_data.end()) {
-              value_opt = it->second;
-            } else if (auto it = dict.data_dict.find(key);
-                       it != dict.data_dict.end()) {
-              value_opt = it->second;
-            }
-            lk.unlock();
-            if (value_opt.has_value()) {
-              dict.backend->save_data(key, std::move(value_opt.value()));
-            }
-            lk.lock();
-            if (dict.change_state(key, data_state::SAVING,
-                                  data_state::CONSISTENT)) {
-              dict.dirty_data.erase(key);
-              dict.saving_data.erase(key);
-            } else if (!dict.contains(key)) {
-              dict.backend->erase_data(key);
-            }
+            dict.backend->save_data(key, std::move(value_opt.value()));
           } catch (const std::exception &e) {
             LOG_ERROR("save {} failed,drop it:{}", key, e.what());
             dict.erase(key);
+          }
+          lk.lock();
+          if (dict.change_state(key, data_state::SAVING,
+                                data_state::CONSISTENT)) {
+            dict.dirty_data.erase(key);
+            dict.saving_data.erase(key);
+          } else if (!dict.contains(key)) {
+            dict.backend->erase_data(key);
           }
         }
       }
@@ -500,7 +514,7 @@ namespace cyy::algorithm {
         {
           std::unique_lock lk(data_mutex);
           if (data_dict.empty() || (max_number != SIZE_MAX &&
-                                     data_dict.size() <= in_memory_number)) {
+                                    data_dict.size() <= in_memory_number)) {
             break;
           }
           std::tie(key, value) = data_dict.pop_oldest();
