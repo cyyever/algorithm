@@ -1,15 +1,14 @@
 /*!
- * \file container_test.cpp
+ * \file ordered_dict_test.cpp
  *
- * \brief 测试container相关函数
  * \author cyy
  */
 #include <doctest/doctest.h>
 
-#include "dict/lru_cache.hpp"
+#include "dict/order_dict.hpp"
 
-TEST_CASE("lru_cache") {
-  cyy::algorithm::lru_cache<int, std::string> container;
+TEST_CASE("order_dict") {
+  cyy::algorithm::order_dict<int, std::string> container;
 
   CHECK(container.empty());
 
@@ -58,5 +57,4 @@ TEST_CASE("lru_cache") {
     CHECK(container.empty());
     CHECK_THROWS(container.pop_oldest());
   }
-
 }

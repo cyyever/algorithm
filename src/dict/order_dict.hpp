@@ -1,5 +1,5 @@
 /*!
- * \file lru_cache.hpp
+ * \file order_dict.hpp
  *
  * \brief implements python's OrderedDict in C++
  */
@@ -13,7 +13,7 @@
 
 namespace cyy::algorithm {
 
-  template <class Key, class T> class lru_cache {
+  template <class Key, class T> class order_dict {
   public:
     using key_type = Key;
     using mapped_type = T;
@@ -100,7 +100,6 @@ namespace cyy::algorithm {
       data_index.erase(key);
       return {key, value};
     }
-
 
   private:
     iterator move_to_end(iterator it) {
