@@ -35,12 +35,14 @@ namespace cyy::algorithm {
     virtual void erase_data(const key_type &key) = 0;
     virtual void clear() = 0;
     virtual size_t batch_process_size() const { return 1; }
-    virtual std::unordered_map<key_type, std::optional<mapped_type>>
+    virtual std::unordered_map<key_type, mapped_type>
     batch_load_data(const std::vector<key_type> &keys) {
-      std::unordered_map<key_type, std::optional<mapped_type>> res;
+      std::unordered_map<key_type, mapped_type> res;
       for (auto const &key : keys) {
         auto data_opt = load_data(key);
-        res.emplace(key, std::move(data_opt));
+        if (data_opt.has_value()) {
+          res.emplace(key, std::move(data_opt.value()));
+        }
       }
       return res;
     }
@@ -373,24 +375,21 @@ namespace cyy::algorithm {
             continue;
           }
 
-          std::unordered_map<key_type, std::optional<mapped_type>> res;
+          std::unordered_map<key_type, mapped_type> res;
           try {
             res = dict.backend->batch_load_data(fetched_keys);
           } catch (const std::exception &e) {
             LOG_ERROR("load raised exception:{}", e.what());
-            for (const auto &key : fetched_keys) {
-              res.emplace(key, std::optional<mapped_type>{});
-            }
           }
           lk.lock();
-          for (auto &[key, data_opt] : res) {
-            if (!data_opt.has_value()) {
+          for (const auto &key : fetched_keys) {
+            if (!res.contains(key)) {
               LOG_ERROR("load {} failed", key);
               dict.change_state(key, data_state::LOADING,
                                 data_state::LOAD_FAILED);
             } else if (dict.change_state(key, data_state::LOADING,
                                          data_state::CONSISTENT)) {
-              dict.data_dict.emplace(key, std::move(data_opt.value()));
+              dict.data_dict.emplace(key, std::move(res[key]));
             }
           }
           dict.new_data_cv.notify_all();
