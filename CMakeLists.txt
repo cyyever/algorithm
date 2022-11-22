@@ -32,7 +32,10 @@ if(BUILD_PYTHON_BINDING)
 endif()
 
 # test
-add_subdirectory(test)
+option(BUILD_TEST "Build test" OFF)
+if(BUILD_TEST)
+  add_subdirectory(test)
+endif()
 
 option(BUILD_FUZZING "Build fuzzing" OFF)
 if(BUILD_FUZZING)
