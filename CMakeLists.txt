@@ -7,14 +7,19 @@ include(cmake/all.cmake)
 option(BUILD_PYTHON_BINDING "Build python binding" OFF)
 file(GLOB_RECURSE SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
 
-find_package(Boost REQUIRED)
+find_package(Boost)
 find_package(spdlog REQUIRED)
 find_package(Eigen3)
 find_package(CyyNaiveLib REQUIRED)
 
 add_library(CyyAlgorithmLib ${SOURCE})
 
-target_link_libraries(CyyAlgorithmLib PUBLIC Boost::headers)
+if(TARGET Eigen3::eigen)
+  target_link_libraries(CyyAlgorithmLib INTERFACE Eigen3::eigen)
+endif()
+if(TARGET Boost::headers)
+  target_link_libraries(CyyAlgorithmLib INTERFACE Boost::headers)
+endif()
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::util)
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::log)
 
