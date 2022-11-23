@@ -430,7 +430,7 @@ namespace cyy::algorithm {
             res.emplace_back(key, false);
             if (auto it = dict.saving_data.find(key);
                 it != dict.saving_data.end()) {
-              batch_data.emplace_back(std::move(key), std::move(it->second));
+              batch_data.emplace_back(std::move(key), it->second);
             } else if (auto it = dict.data_dict.find(key);
                        it != dict.data_dict.end()) {
               batch_data.emplace_back(std::move(key), it->second);
