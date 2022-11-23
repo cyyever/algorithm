@@ -87,7 +87,10 @@ namespace cyy::algorithm {
         }
       }
       const key_type &get_key() const { return key; }
-      void cancel_writeback() { lru_cache_ptr = nullptr; }
+      void cancel_writeback() {
+        lru_cache_ptr->cancel_hold(key);
+        lru_cache_ptr = nullptr;
+      }
       mapped_type &operator->() { return value; }
 
     private:
@@ -128,14 +131,24 @@ namespace cyy::algorithm {
       }
     }
 
+    void cancel_hold(const key_type &key) {
+      std::unique_lock lk(data_mutex);
+      if (hold_data.contains(key)) {
+        hold_data[key]--;
+        if (hold_data[key] == 0) {
+          hold_data.erase(key);
+        }
+      }
+    }
+
     void emplace(const key_type &key, mapped_type value) {
       std::unique_lock lk(data_mutex);
       data_dict.emplace(key, std::move(value));
       data_info[key] = data_state::MEMORY_MODIFIED;
       dirty_data.emplace(key);
-      if(hold_data.contains(key)) {
+      if (hold_data.contains(key)) {
         hold_data[key]--;
-        if(hold_data[key]==0) {
+        if (hold_data[key] == 0) {
           hold_data.erase(key);
         }
       }
@@ -196,7 +209,7 @@ namespace cyy::algorithm {
         return;
       }
       dirty_data.erase(key);
-      /* hold_data.erase(key); */
+      hold_data.erase(key);
       data_dict.erase(key);
       saving_data.erase(key);
       backend->erase_data(key);
@@ -267,6 +280,9 @@ namespace cyy::algorithm {
             it->second = data_state::PRE_SAVING;
             dirty_tasks.emplace_back(save_task{key});
           }
+        }
+        if (!hold_data.empty()) {
+          LOG_WARN("hold {} data", hold_data.size());
         }
       }
       flush_tasks(dirty_tasks);
@@ -518,7 +534,7 @@ namespace cyy::algorithm {
         if (it->second == data_state::PRE_SAVING ||
             it->second == data_state::SAVING) {
           assert(saving_data.contains(key));
-          return {1, saving_data[key]};
+          return {1, saving_data.at(key)};
         }
         if (it->second == data_state::LOAD_FAILED) {
           return {-1, {}};
@@ -585,7 +601,7 @@ namespace cyy::algorithm {
 
     cyy::algorithm::ordered_dict<key_type, mapped_type> data_dict;
     std::unordered_map<key_type, mapped_type> saving_data;
-    std::unordered_map<key_type,size_t> hold_data;
+    std::unordered_map<key_type, size_t> hold_data;
     std::unordered_set<key_type> dirty_data;
     size_t in_memory_number{128};
     bool permanent{true};
