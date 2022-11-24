@@ -114,17 +114,13 @@ namespace cyy::algorithm {
     lru_cache(lru_cache &&) noexcept = delete;
     lru_cache &operator=(lru_cache &&) noexcept = delete;
 
-    virtual ~lru_cache() { release(); }
-
-    void release() {
+    virtual ~lru_cache() {
+      hold_data.clear();
       if (permanent) {
         flush(true);
       }
-      fetch_request_queue.clear();
-      save_request_queue.clear();
-      data_dict.clear();
-      data_info.clear();
-      saving_data.clear();
+      fetch_threads.clear();
+      saving_threads.clear();
 
       if (!permanent) {
         backend->clear();
@@ -293,9 +289,13 @@ namespace cyy::algorithm {
 
     void clear() {
       std::lock_guard lk(data_mutex);
+      dirty_data.clear();
+      hold_data.clear();
       data_info.clear();
       data_dict.clear();
       saving_data.clear();
+      save_request_queue.clear();
+      fetch_request_queue.clear();
       backend->clear();
     }
     void prefetch(const std::vector<key_type> &keys) {
