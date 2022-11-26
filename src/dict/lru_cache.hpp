@@ -105,7 +105,7 @@ namespace cyy::algorithm {
       auto cpu_num = std::jthread::hardware_concurrency();
       set_saving_thread_number(cpu_num);
       set_fetch_thread_number(cpu_num);
-      LOG_WARN("saving_thread_num and fetch_thread_num {}", cpu_num);
+      LOG_DEBUG("saving_thread_num and fetch_thread_num {}", cpu_num);
     }
 
     lru_cache(const lru_cache &) { LOG_WARN("stub function"); }

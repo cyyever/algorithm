@@ -101,7 +101,7 @@ namespace cyy::algorithm {
       if (!weighted_adjacent_list.empty()) {
         throw std::runtime_error("this graph has some edge");
       }
-      vertex_indices = new_vertices;
+      vertex_indices = std::move(new_vertices);
       next_vertex_index = 0;
       for (auto const idx : get_vertex_indices()) {
         next_vertex_index = std::max(next_vertex_index, idx + 1);
