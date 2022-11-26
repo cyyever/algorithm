@@ -493,7 +493,7 @@ namespace cyy::algorithm {
       size_t id;
     };
 
-    std::unordered_map<key_type, data_state> data_info;
+    mutable std::unordered_map<key_type, data_state> data_info;
 
     bool change_state(const key_type &key, data_state old_state,
                       data_state new_state) {
