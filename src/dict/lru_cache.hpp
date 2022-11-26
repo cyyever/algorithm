@@ -526,6 +526,8 @@ namespace cyy::algorithm {
             } else {
               return {1, {}};
             }
+          } else {
+            return {1, {}};
           }
         }
         if (auto data_it = data_dict.find(key); data_it != data_dict.end()) {
