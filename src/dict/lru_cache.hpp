@@ -234,22 +234,22 @@ namespace cyy::algorithm {
         return res;
       }
 
-      res.reserve(data_info.size());
-      for (auto const &[key, __] : data_info) {
-        res.emplace_back(key);
+      res.resize(data_info.size());
+      auto it = res.begin();
+      auto it2 = res.rbegin();
+      for (auto const &[key, state] : data_info) {
+        if (state == data_state::MEMORY_MODIFIED ||
+            state == data_state::PRE_SAVING || state == data_state::SAVING) {
+          *it = key;
+          ++it;
+        } else {
+          *it2 = key;
+          ++it2;
+        }
       }
       return res;
     }
 
-    std::vector<key_type> in_memory_keys() const {
-      std::vector<key_type> res;
-      std::lock_guard lk(data_mutex);
-      res.reserve(data_dict.size());
-      for (auto const &[key, _] : data_dict) {
-        res.emplace_back(key);
-      }
-      return res;
-    }
     void flush_expired_data(bool wait = false) {
       auto tasks = pop_expired_data(SIZE_MAX);
       flush_tasks(tasks);
