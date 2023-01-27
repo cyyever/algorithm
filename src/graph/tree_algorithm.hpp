@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cassert>
+#include <set>
 #include <functional>
 #include <iostream>
 #include <vector>
