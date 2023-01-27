@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <set>
+#include <map>
 #include <functional>
 #include <iostream>
 #include <vector>
