@@ -142,7 +142,7 @@ namespace cyy::algorithm {
         if (it == b.end()) {
           return basis;
         }
-        int pivot_row = std::distance(b.begin(), it) + 1;
+        auto pivot_row = std::distance(b.begin(), it) + 1;
         number_type min_lambda = -1;
         std::vector<int> pivot_cols;
         for (auto col_idx = 0; col_idx + 1 < tableau.cols(); col_idx++) {
