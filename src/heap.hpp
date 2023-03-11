@@ -16,10 +16,7 @@ namespace cyy::algorithm {
   public:
     simple_heap() = default;
     void reserve(size_t n) { items.reserve(n); }
-    const data_type &top() const {
-      assert(!empty());
-      return items[0];
-    }
+    const data_type &top() const { return items.at(0); }
     size_t size() const { return items.size(); }
     void pop() {
       if (items.empty()) {
@@ -29,27 +26,27 @@ namespace cyy::algorithm {
         items.clear();
         return;
       }
-      std::swap(items[0], items.back());
+      items[0] = std::move(items.back());
       items.pop_back();
       heapify_down(0);
     }
-    void change_data(size_t idx, data_type data) {
+    size_t change_data(size_t idx, data_type data) {
       if (idx >= items.size()) {
-        throw std::invalid_argument("not data");
+        throw std::range_error("out of range");
       }
 
       items[idx] = std::move(data);
       auto new_idx = heapify_up(idx);
       if (idx != new_idx) {
-        return;
+        return new_idx;
       }
-      heapify_down(idx);
+      return heapify_down(idx);
     }
     bool empty() const { return items.empty(); }
 
-    void insert(data_type data) {
+    size_t insert(data_type data) {
       items.emplace_back(std::move(data));
-      heapify_up(items.size() - 1);
+      return heapify_up(items.size() - 1);
     }
 
   private:
@@ -63,11 +60,11 @@ namespace cyy::algorithm {
       }
       return i;
     }
-    void heapify_down(size_t i) {
+    size_t heapify_down(size_t i) {
       auto left_child_index = 2 * (i + 1) - 1;
       auto n = items.size();
       if (left_child_index >= n) {
-        return;
+        return i;
       }
       auto min_child_index = left_child_index;
       auto right_child_index = left_child_index + 1;
@@ -78,8 +75,9 @@ namespace cyy::algorithm {
       }
       if (!compare{}(items[i], items[min_child_index])) {
         std::swap(items[i], items[min_child_index]);
-        heapify_down(min_child_index);
+        return heapify_down(min_child_index);
       }
+      return i;
     }
 
   private:
