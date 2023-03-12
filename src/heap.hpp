@@ -6,6 +6,8 @@
 
 #pragma once
 #include <cassert>
+#include <functional>
+#include <optional>
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
@@ -22,13 +24,10 @@ namespace cyy::algorithm {
       if (items.empty()) {
         return;
       }
-      if (items.size() == 1) {
-        items.clear();
-        return;
-      }
       items[0] = std::move(items.back());
       items.pop_back();
       heapify_down(0);
+      return;
     }
     size_t change_data(size_t idx, data_type data) {
       if (idx >= items.size()) {
@@ -54,7 +53,7 @@ namespace cyy::algorithm {
       if (i > 0) {
         auto parent_idx = (i + 1) / 2 - 1;
         if (compare{}(items[i], items[parent_idx])) {
-          std::swap(items[i], items[parent_idx]);
+          swap_items(i, parent_idx);
           return heapify_up(parent_idx);
         }
       }
@@ -74,13 +73,16 @@ namespace cyy::algorithm {
         }
       }
       if (!compare{}(items[i], items[min_child_index])) {
-        std::swap(items[i], items[min_child_index]);
+        swap_items(i, min_child_index);
         return heapify_down(min_child_index);
       }
       return i;
     }
 
   private:
+    void swap_items(size_t i, size_t j) { std::swap(items[i], items[j]); }
+
+  protected:
     std::vector<data_type> items;
   };
   template <typename data_type>
@@ -88,77 +90,65 @@ namespace cyy::algorithm {
 
   template <typename data_type, typename key_type = data_type,
             class compare = std::less<key_type>>
-  class heap {
+  class heap : public simple_heap<key_type, compare> {
   public:
     heap() = default;
     void reserve(size_t n) {
-      items.reserve(n);
+      simple_heap<data_type, compare>::reserve(n);
+      data_vec.reserve(n);
       position.reserve(n);
     }
     const key_type &top_key() const {
-      assert(!empty());
-      return items[0].key;
+      return simple_heap<key_type, compare>::top();
     }
-    const data_type &top_data() const {
-      assert(!empty());
-      return items[0].data;
-    }
-    size_t size() const { return items.size(); }
+    const data_type &top_data() const { return data_vec.at(0).data; }
     void pop() {
-      if (items.empty()) {
+      if (data_vec.empty()) {
         return;
       }
-      if (items.size() == 1) {
-        items.clear();
-        position.clear();
-        return;
-      }
-      assert(position[items[0].data] == 0);
-      position.erase(items[0].data);
-      position[items.back().data] = 0;
-      std::swap(items[0], items.back());
-
-      items.pop_back();
-      heapify_down(0);
+      position.erase(data_vec[0]);
+      data_vec[0] = std::move(data_vec.back());
+      data_vec.pop_back();
+      simple_heap<key_type, compare>::pop();
     }
     void change_key(const data_type &data, key_type key) {
       auto idx = position.at(data);
-      assert(data == items[idx].data);
-      items[idx].key = std::move(key);
+      assert(data == data_vec[idx]);
+      this->items[idx].key = std::move(key);
       auto new_idx = heapify_up(idx);
       if (idx != new_idx) {
         return;
       }
       heapify_down(idx);
     }
-    void change_data(const data_type &old_data, data_type data, key_type key) {
-      auto it = position.find(old_data);
-      if (it == position.end()) {
-        throw std::invalid_argument("not data");
-      }
-      auto idx = it->second;
-      position.erase(it);
+    /* void change_data(const data_type &old_data, data_type data, key_type key)
+     * { */
+    /*   auto it = position.at(old_data); */
+    /*   if (it == position.end()) { */
+    /*     throw std::invalid_argument("not data"); */
+    /*   } */
+    /*   auto idx = it->second; */
+    /*   position.erase(it); */
 
-      items[idx].data = data;
-      items[idx].key = std::move(key);
-      position.emplace(std::move(data), idx);
-      auto new_idx = heapify_up(idx);
-      if (idx != new_idx) {
-        return;
-      }
-      heapify_down(idx);
-    }
-    template <typename = std::is_same<data_type, key_type>>
-    void change_data(const data_type &old_data, data_type data) {
-      change_data(old_data, data, data);
-    }
-    bool empty() const { return items.empty(); }
+    /*   items[idx].data = data; */
+    /*   items[idx].key = std::move(key); */
+    /*   position.emplace(std::move(data), idx); */
+    /*   auto new_idx = heapify_up(idx); */
+    /*   if (idx != new_idx) { */
+    /*     return; */
+    /*   } */
+    /*   heapify_down(idx); */
+    /* } */
+    /* template <typename = std::is_same<data_type, key_type>> */
+    /* void change_data(const data_type &old_data, data_type data) { */
+    /*   change_data(old_data, data, data); */
+    /* } */
     bool contains(const data_type &data) const {
       return position.contains(data);
     }
     template <typename = std::is_same<data_type, key_type>>
     void insert(data_type data) {
-      insert(data, data);
+      insert(data, std::move(data));
     }
 
     void insert(data_type data, key_type key) {
@@ -166,9 +156,9 @@ namespace cyy::algorithm {
       if (!has_insertion) {
         return;
       }
-      items.emplace_back(std::move(data), std::move(key));
-      it->second = items.size() - 1;
-      heapify_up(items.size() - 1);
+      data_vec.emplace_back(std::move(data));
+      it->second = data_vec.size() - 1;
+      simple_heap<key_type>::insert(std::move(key));
     }
 
   private:
@@ -206,11 +196,7 @@ namespace cyy::algorithm {
     }
 
   private:
-    struct item {
-      data_type data;
-      key_type key;
-    };
-    std::vector<item> items;
+    std::vector<data_type> data_vec;
     std::unordered_map<data_type, size_t> position;
   };
   template <typename data_type, typename key_type = data_type>
