@@ -48,7 +48,7 @@ namespace cyy::algorithm {
       return heapify_up(items.size() - 1);
     }
 
-  private:
+  protected:
     size_t heapify_up(size_t i) {
       if (i > 0) {
         auto parent_idx = (i + 1) / 2 - 1;
@@ -85,64 +85,45 @@ namespace cyy::algorithm {
   protected:
     std::vector<data_type> items;
   };
-  template <typename data_type>
-  using simple_max_heap = simple_heap<data_type, std::greater<data_type>>;
+  template <typename key_type>
+  using simple_max_heap = simple_heap<key_type, std::greater<key_type>>;
 
-  template <typename data_type, typename key_type = data_type,
-            class compare = std::less<key_type>>
-  class heap : public simple_heap<key_type, compare> {
+  template <typename key_type, typename data_type> struct key_and_data {
+    key_type key;
+    data_type data;
+
+    auto operator<=>(const key_and_data &rhs) const { return key <=> rhs.key; }
+  };
+
+  template <typename data_type, typename key_type,
+            class compare = std::less<key_and_data<key_type, data_type>>>
+  class heap : public simple_heap<key_and_data<key_type, data_type>, compare> {
   public:
     heap() = default;
+    using parent_heap_type =
+        simple_heap<key_and_data<key_type, data_type>, compare>;
     void reserve(size_t n) {
       simple_heap<data_type, compare>::reserve(n);
-      data_vec.reserve(n);
       position.reserve(n);
     }
-    const key_type &top_key() const {
-      return simple_heap<key_type, compare>::top();
-    }
-    const data_type &top_data() const { return data_vec.at(0).data; }
+    const key_type &top_key() const { return parent_heap_type::top().key; }
+    const data_type &top_data() const { return parent_heap_type::top().data; }
     void pop() {
-      if (data_vec.empty()) {
+      if (parent_heap_type::empty()) {
         return;
       }
-      position.erase(data_vec[0]);
-      data_vec[0] = std::move(data_vec.back());
-      data_vec.pop_back();
-      simple_heap<key_type, compare>::pop();
+      position.erase(top_data());
+      parent_heap_type::pop();
     }
     void change_key(const data_type &data, key_type key) {
       auto idx = position.at(data);
-      assert(data == data_vec[idx]);
       this->items[idx].key = std::move(key);
-      auto new_idx = heapify_up(idx);
+      auto new_idx = this->heapify_up(idx);
       if (idx != new_idx) {
         return;
       }
-      heapify_down(idx);
+      this->heapify_down(idx);
     }
-    /* void change_data(const data_type &old_data, data_type data, key_type key)
-     * { */
-    /*   auto it = position.at(old_data); */
-    /*   if (it == position.end()) { */
-    /*     throw std::invalid_argument("not data"); */
-    /*   } */
-    /*   auto idx = it->second; */
-    /*   position.erase(it); */
-
-    /*   items[idx].data = data; */
-    /*   items[idx].key = std::move(key); */
-    /*   position.emplace(std::move(data), idx); */
-    /*   auto new_idx = heapify_up(idx); */
-    /*   if (idx != new_idx) { */
-    /*     return; */
-    /*   } */
-    /*   heapify_down(idx); */
-    /* } */
-    /* template <typename = std::is_same<data_type, key_type>> */
-    /* void change_data(const data_type &old_data, data_type data) { */
-    /*   change_data(old_data, data, data); */
-    /* } */
     bool contains(const data_type &data) const {
       return position.contains(data);
     }
@@ -156,49 +137,15 @@ namespace cyy::algorithm {
       if (!has_insertion) {
         return;
       }
-      data_vec.emplace_back(std::move(data));
-      it->second = data_vec.size() - 1;
-      simple_heap<key_type>::insert(std::move(key));
+      auto idx = parent_heap_type::insert(
+          key_and_data{std::move(key), std::move(data)});
+      it->second = idx;
     }
 
   private:
-    size_t heapify_up(size_t i) {
-      if (i > 0) {
-        auto parent_idx = (i + 1) / 2 - 1;
-        if (compare{}(items[i].key, items[parent_idx].key)) {
-          std::swap(position[items[i].data], position[items[parent_idx].data]);
-          std::swap(items[i], items[parent_idx]);
-          return heapify_up(parent_idx);
-        }
-      }
-      return i;
-    }
-    void heapify_down(size_t i) {
-      auto left_child_index = 2 * (i + 1) - 1;
-      auto n = items.size();
-      if (left_child_index >= n) {
-        return;
-      }
-      auto min_child_index = left_child_index;
-      auto right_child_index = left_child_index + 1;
-      if (right_child_index < n) {
-        if (compare{}(items[right_child_index].key,
-                      items[left_child_index].key)) {
-          min_child_index = right_child_index;
-        }
-      }
-      if (!compare{}(items[i].key, items[min_child_index].key)) {
-        std::swap(position[items[i].data],
-                  position[items[min_child_index].data]);
-        std::swap(items[i], items[min_child_index]);
-        heapify_down(min_child_index);
-      }
-    }
-
-  private:
-    std::vector<data_type> data_vec;
     std::unordered_map<data_type, size_t> position;
   };
   template <typename data_type, typename key_type = data_type>
-  using max_heap = heap<data_type, key_type, std::greater<key_type>>;
+  using max_heap = heap<data_type, key_type,
+                        std::greater<key_and_data<key_type, data_type>>>;
 } // namespace cyy::algorithm
