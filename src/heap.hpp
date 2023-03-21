@@ -17,6 +17,7 @@ namespace cyy::algorithm {
   class simple_heap {
   public:
     simple_heap() = default;
+    virtual ~simple_heap() = default;
     void reserve(size_t n) { items.reserve(n); }
     const data_type &top() const { return items.at(0); }
     size_t size() const { return items.size(); }
@@ -28,18 +29,6 @@ namespace cyy::algorithm {
       items.pop_back();
       heapify_down(0);
       return;
-    }
-    size_t change_data(size_t idx, data_type data) {
-      if (idx >= items.size()) {
-        throw std::range_error("out of range");
-      }
-
-      items[idx] = std::move(data);
-      auto new_idx = heapify_up(idx);
-      if (idx != new_idx) {
-        return new_idx;
-      }
-      return heapify_down(idx);
     }
     bool empty() const { return items.empty(); }
 
@@ -72,15 +61,17 @@ namespace cyy::algorithm {
           min_child_index = right_child_index;
         }
       }
-      if (!compare{}(items[i], items[min_child_index])) {
+      if (compare{}(items[min_child_index], items[i])) {
         swap_items(i, min_child_index);
         return heapify_down(min_child_index);
       }
       return i;
     }
 
-  private:
-    void swap_items(size_t i, size_t j) { std::swap(items[i], items[j]); }
+  protected:
+    virtual void swap_items(size_t i, size_t j) {
+      std::swap(items[i], items[j]);
+    }
 
   protected:
     std::vector<data_type> items;
@@ -92,6 +83,8 @@ namespace cyy::algorithm {
     key_type key;
     data_type data;
 
+    auto operator<(const key_and_data &rhs) const { return key < rhs.key; }
+    auto operator>(const key_and_data &rhs) const { return key > rhs.key; }
     auto operator<=>(const key_and_data &rhs) const { return key <=> rhs.key; }
   };
 
@@ -103,43 +96,79 @@ namespace cyy::algorithm {
     using parent_heap_type =
         simple_heap<key_and_data<key_type, data_type>, compare>;
     void reserve(size_t n) {
-      simple_heap<data_type, compare>::reserve(n);
+      parent_heap_type::reserve(n);
       position.reserve(n);
     }
     const key_type &top_key() const { return parent_heap_type::top().key; }
     const data_type &top_data() const { return parent_heap_type::top().data; }
     void pop() {
+      check_consistency();
       if (parent_heap_type::empty()) {
         return;
       }
       position.erase(top_data());
-      parent_heap_type::pop();
-    }
-    void change_key(const data_type &data, key_type key) {
-      auto idx = position.at(data);
-      this->items[idx].key = std::move(key);
-      auto new_idx = this->heapify_up(idx);
-      if (idx != new_idx) {
-        return;
+      if (parent_heap_type::size() > 1) {
+        position.at(this->items.back().data) = 0;
       }
-      this->heapify_down(idx);
+      parent_heap_type::pop();
+      check_consistency();
     }
     bool contains(const data_type &data) const {
       return position.contains(data);
     }
-    template <typename = std::is_same<data_type, key_type>>
-    void insert(data_type data) {
-      insert(data, std::move(data));
+    void change_key(const data_type &data, key_type key) {
+      check_consistency();
+      auto it = position.find(data);
+      auto idx = it->second;
+      assert(this->items[idx].data == data);
+      this->items[idx].key = std::move(key);
+      auto new_idx = this->heapify_up(idx);
+      if (idx != new_idx) {
+        it->second = new_idx;
+        check_consistency();
+        return;
+      }
+      new_idx = this->heapify_down(idx);
+      it->second = new_idx;
+      check_consistency();
+    }
+    size_t change_data(const data_type &old_data, data_type data) {
+      auto idx = position.at(old_data);
+      position.erase(old_data);
+      position[data] = idx;
+      this->items[idx].data = std::move(data);
+      check_consistency();
+      return idx;
+    }
+    void swap_items(size_t i, size_t j) override {
+      printf("swap items %d %d\n", (int)i, (int)j);
+      assert(position.at(this->items[i].data) == i);
+      assert(position.at(this->items[j].data) == j);
+      position[this->items[j].data] = i;
+      position[this->items[i].data] = j;
+      parent_heap_type::swap_items(i, j);
     }
 
     void insert(data_type data, key_type key) {
+      check_consistency();
       auto [it, has_insertion] = position.try_emplace(data, SIZE_MAX);
       if (!has_insertion) {
         return;
       }
+      it->second = this->items.size();
+
       auto idx = parent_heap_type::insert(
           key_and_data{std::move(key), std::move(data)});
-      it->second = idx;
+      printf("new idx is %d\n", (int)idx);
+      check_consistency();
+    }
+
+  private:
+    void check_consistency() {
+      assert(position.size() == this->items.size());
+      for (size_t i = 0; i < this->items.size(); i++) {
+        assert(position.at(this->items[i].data) == i);
+      }
     }
 
   private:

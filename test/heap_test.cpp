@@ -29,12 +29,6 @@ TEST_CASE("simple_heap") {
     h.pop();
     REQUIRE(h.empty());
   }
-  SUBCASE("change data") {
-    h.insert(5);
-    REQUIRE_EQ(h.top(), 5);
-    h.change_data(0, 1);
-    REQUIRE_EQ(h.top(), 1);
-  }
 }
 
 TEST_CASE("heap") {
@@ -78,8 +72,8 @@ TEST_CASE("max_heap") {
   REQUIRE(h.empty());
 
   SUBCASE("top_data") {
-    h.insert(5);
-    h.insert(1);
+    h.insert(5, 5);
+    h.insert(1, 1);
     REQUIRE_EQ(h.top_data(), 5);
   }
 }
