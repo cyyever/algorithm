@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <list>
 #include <optional>
 #include <ranges>
