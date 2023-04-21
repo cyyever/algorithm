@@ -82,9 +82,6 @@ namespace cyy::algorithm {
   template <typename key_type, typename data_type> struct key_and_data {
     key_type key;
     data_type data;
-
-    auto operator<(const key_and_data &rhs) const { return key < rhs.key; }
-    auto operator>(const key_and_data &rhs) const { return key > rhs.key; }
     auto operator<=>(const key_and_data &rhs) const { return key <=> rhs.key; }
   };
 
@@ -141,11 +138,10 @@ namespace cyy::algorithm {
       return idx;
     }
     void swap_items(size_t i, size_t j) override {
-      printf("swap items %d %d\n", (int)i, (int)j);
       assert(position.at(this->items[i].data) == i);
       assert(position.at(this->items[j].data) == j);
-      position[this->items[j].data] = i;
-      position[this->items[i].data] = j;
+      position.at(this->items[j].data) = i;
+      position.at(this->items[i].data) = j;
       parent_heap_type::swap_items(i, j);
     }
 
@@ -157,9 +153,7 @@ namespace cyy::algorithm {
       }
       it->second = this->items.size();
 
-      auto idx = parent_heap_type::insert(
-          key_and_data{std::move(key), std::move(data)});
-      printf("new idx is %d\n", (int)idx);
+      parent_heap_type::insert(key_and_data{std::move(key), std::move(data)});
       check_consistency();
     }
 
