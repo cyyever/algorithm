@@ -64,7 +64,7 @@ namespace cyy::algorithm {
     distance[s] = 0;
     std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
     parent[s] = s;
-    heap<size_t, weight_type> h;
+    priority_queue<size_t, weight_type> h;
     h.insert(s, 0);
 
     while (!h.empty()) {

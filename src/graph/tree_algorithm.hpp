@@ -8,10 +8,10 @@
 #pragma once
 
 #include <cassert>
-#include <set>
-#include <map>
 #include <functional>
 #include <iostream>
+#include <map>
+#include <set>
 #include <vector>
 
 #include "graph.hpp"
@@ -27,7 +27,7 @@ namespace cyy::algorithm {
     std::vector<std::optional<weight_type>> weights(g.get_next_vertex_index());
     std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
     graph<vertex_type> MST;
-    heap<size_t, weight_type> h;
+    priority_queue<size_t, weight_type> h;
     auto s = *g.get_vertex_indices().begin();
     weights[s] = 0;
     h.insert(s, 0);
