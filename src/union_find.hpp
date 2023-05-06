@@ -16,7 +16,7 @@ namespace cyy::algorithm {
 
   public:
     template <std::ranges::input_range U>
-    requires std::same_as<data_type, std::ranges::range_value_t<U>>
+      requires std::same_as<data_type, std::ranges::range_value_t<U>>
     explicit union_find(U data) {
       if (data.size() == 0) {
         throw std::logic_error("data is empty");

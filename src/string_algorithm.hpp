@@ -19,9 +19,9 @@ namespace cyy::algorithm {
 
   // find word from str
   template <std::ranges::input_range U, std::ranges::input_range V>
-  requires std::same_as<std::ranges::range_value_t<U>,
-                        std::ranges::range_value_t<V>>
-      std::optional<size_t> KMP(U word, V str) {
+    requires std::same_as<std::ranges::range_value_t<U>,
+                          std::ranges::range_value_t<V>>
+  std::optional<size_t> KMP(U word, V str) {
     if (word.size() > str.size()) {
       return {};
     }

@@ -14,10 +14,10 @@
 namespace cyy::algorithm {
 
   template <typename data_type, class compare = std::less<data_type>>
-  class simple_heap {
+  class heap {
   public:
-    simple_heap() = default;
-    virtual ~simple_heap() = default;
+    heap() = default;
+    virtual ~heap() = default;
     void reserve(size_t n) { items.reserve(n); }
     const data_type &top() const { return items.at(0); }
     size_t size() const { return items.size(); }
@@ -77,7 +77,9 @@ namespace cyy::algorithm {
     std::vector<data_type> items;
   };
   template <typename key_type>
-  using simple_max_heap = simple_heap<key_type, std::greater<key_type>>;
+  using max_heap = heap<key_type, std::greater<key_type>>;
+
+  template <typename key_type> using min_heap = heap<key_type>;
 
   template <typename key_type, typename data_type> struct key_and_data {
     key_type key;
@@ -87,11 +89,11 @@ namespace cyy::algorithm {
 
   template <typename data_type, typename key_type,
             class compare = std::less<key_and_data<key_type, data_type>>>
-  class heap : public simple_heap<key_and_data<key_type, data_type>, compare> {
+  class priority_queue
+      : public heap<key_and_data<key_type, data_type>, compare> {
   public:
-    heap() = default;
-    using parent_heap_type =
-        simple_heap<key_and_data<key_type, data_type>, compare>;
+    priority_queue() = default;
+    using parent_heap_type = heap<key_and_data<key_type, data_type>, compare>;
     void reserve(size_t n) {
       parent_heap_type::reserve(n);
       position.reserve(n);
@@ -169,6 +171,7 @@ namespace cyy::algorithm {
     std::unordered_map<data_type, size_t> position;
   };
   template <typename data_type, typename key_type = data_type>
-  using max_heap = heap<data_type, key_type,
-                        std::greater<key_and_data<key_type, data_type>>>;
+  using max_priority_queue =
+      priority_queue<data_type, key_type,
+                     std::greater<key_and_data<key_type, data_type>>>;
 } // namespace cyy::algorithm
