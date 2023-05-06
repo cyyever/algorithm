@@ -131,14 +131,6 @@ namespace cyy::algorithm {
       it->second = new_idx;
       check_consistency();
     }
-    size_t change_data(const data_type &old_data, data_type data) {
-      auto idx = position.at(old_data);
-      position.erase(old_data);
-      position[data] = idx;
-      this->items[idx].data = std::move(data);
-      check_consistency();
-      return idx;
-    }
     void swap_items(size_t i, size_t j) override {
       assert(position.at(this->items[i].data) == i);
       assert(position.at(this->items[j].data) == j);
