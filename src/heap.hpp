@@ -81,19 +81,19 @@ namespace cyy::algorithm {
 
   template <typename key_type> using min_heap = heap<key_type>;
 
-  template <typename key_type, typename data_type> struct key_and_data {
+  template <typename key_type, typename data_type> struct priority_queue_item {
     key_type key;
     data_type data;
-    auto operator<=>(const key_and_data &rhs) const { return key <=> rhs.key; }
+    auto operator<=>(const priority_queue_item &rhs) const { return key <=> rhs.key; }
   };
 
   template <typename data_type, typename key_type,
-            class compare = std::less<key_and_data<key_type, data_type>>>
+            class compare = std::less<priority_queue_item<key_type, data_type>>>
   class priority_queue
-      : public heap<key_and_data<key_type, data_type>, compare> {
+      : public heap<priority_queue_item<key_type, data_type>, compare> {
   public:
     priority_queue() = default;
-    using parent_heap_type = heap<key_and_data<key_type, data_type>, compare>;
+    using parent_heap_type = heap<priority_queue_item<key_type, data_type>, compare>;
     void reserve(size_t n) {
       parent_heap_type::reserve(n);
       position.reserve(n);
@@ -134,8 +134,7 @@ namespace cyy::algorithm {
     void swap_items(size_t i, size_t j) override {
       assert(position.at(this->items[i].data) == i);
       assert(position.at(this->items[j].data) == j);
-      position.at(this->items[j].data) = i;
-      position.at(this->items[i].data) = j;
+      std::swap(position[this->items[j].data],position[this->items[i].data]);
       parent_heap_type::swap_items(i, j);
     }
 
@@ -147,7 +146,7 @@ namespace cyy::algorithm {
       }
       it->second = this->items.size();
 
-      parent_heap_type::insert(key_and_data{std::move(key), std::move(data)});
+      parent_heap_type::insert(priority_queue_item{std::move(key), std::move(data)});
       check_consistency();
     }
 
@@ -165,5 +164,5 @@ namespace cyy::algorithm {
   template <typename data_type, typename key_type = data_type>
   using max_priority_queue =
       priority_queue<data_type, key_type,
-                     std::greater<key_and_data<key_type, data_type>>>;
+                     std::greater<priority_queue_item<key_type, data_type>>>;
 } // namespace cyy::algorithm
