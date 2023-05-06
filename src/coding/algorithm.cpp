@@ -5,7 +5,7 @@
  */
 #include "algorithm.hpp"
 
-#include "heap.hpp"
+#include "priority_queue.hpp"
 #include "iostream"
 namespace cyy::algorithm {
   std::unordered_map<symbol_type, std::string> huffman_code(

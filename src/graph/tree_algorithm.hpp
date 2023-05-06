@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "graph.hpp"
-#include "heap.hpp"
+#include "priority_queue.hpp"
 #include "tree.hpp"
 #include "union_find.hpp"
 

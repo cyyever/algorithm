@@ -7,7 +7,7 @@
 
 #include <doctest/doctest.h>
 
-#include "heap.hpp"
+#include "priority_queue.hpp"
 
 using namespace cyy::algorithm;
 

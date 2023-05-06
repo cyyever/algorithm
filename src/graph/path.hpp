@@ -11,7 +11,7 @@
 #include <functional>
 
 #include "graph_base.hpp"
-#include "heap.hpp"
+#include "priority_queue.hpp"
 
 namespace cyy::algorithm {
   inline path_type
