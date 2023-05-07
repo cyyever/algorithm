@@ -82,12 +82,7 @@ namespace cyy::algorithm {
     void change_key(const data_type &data, key_type key) {
       auto idx = position.find(data)->second;
       this->items[idx].key = std::move(key);
-      auto new_idx = this->heapify_up(idx);
-      if (idx != new_idx) {
-        check_consistency();
-        return;
-      }
-      new_idx = this->heapify_down(idx);
+      this->heapify(idx);
       check_consistency();
     }
 
@@ -97,15 +92,15 @@ namespace cyy::algorithm {
       if (!has_insertion) {
         return;
       }
-      it->second = this->items.size();
+      it->second = this->size();
       heap_type::insert(priority_queue_item{std::move(key), it});
       check_consistency();
     }
 
   private:
     void check_consistency() {
-      assert(position.size() == this->items.size());
-      for (size_t i = 0; i < this->items.size(); i++) {
+      assert(position.size() == this->size());
+      for (size_t i = 0; i < this->size(); i++) {
         assert(this->items[i].heap_index == i);
         assert(position.at(this->items[i].get_data()) == i);
       }

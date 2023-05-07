@@ -38,39 +38,55 @@ namespace cyy::algorithm {
     }
 
   protected:
-    size_t heapify_up(size_t i) {
-      if (i > 0) {
-        auto parent_idx = (i + 1) / 2 - 1;
-        if (compare{}(items[i], items[parent_idx])) {
-          swap_items(i, parent_idx);
-          return heapify_up(parent_idx);
-        }
+    void heapify(size_t i) {
+      if (heapify_up(i) != i) {
+        return;
       }
-      return i;
-    }
-    size_t heapify_down(size_t i) {
-      auto left_child_index = 2 * (i + 1) - 1;
-      auto n = items.size();
-      if (left_child_index >= n) {
-        return i;
-      }
-      auto min_child_index = left_child_index;
-      auto right_child_index = left_child_index + 1;
-      if (right_child_index < n) {
-        if (compare{}(items[right_child_index], items[left_child_index])) {
-          min_child_index = right_child_index;
-        }
-      }
-      if (compare{}(items[min_child_index], items[i])) {
-        swap_items(i, min_child_index);
-        return heapify_down(min_child_index);
-      }
-      return i;
+      heapify_down(i);
     }
 
-  protected:
-    void swap_items(size_t i, size_t j) {
-      std::swap(items[i], items[j]);
+  private:
+    size_t heapify_up(size_t i) {
+      if (i == 0) {
+        return i;
+      }
+      auto tmp = std::move(items[i]);
+      while (i > 0) {
+        auto parent_idx = (i + 1) / 2 - 1;
+        if (compare{}(tmp, items[parent_idx])) {
+          items[i] = std::move(items[parent_idx]);
+          i = parent_idx;
+        } else {
+          break;
+        }
+      }
+      items[i] = std::move(tmp);
+      return i;
+    }
+    void heapify_down(size_t i) {
+      auto left_child_index = 2 * (i + 1) - 1;
+      if (left_child_index >= size()) {
+        return;
+      }
+      auto tmp = std::move(items[i]);
+      do {
+        auto min_child_index = left_child_index;
+        auto right_child_index = left_child_index + 1;
+        if (right_child_index < size()) {
+          if (compare{}(items[right_child_index], items[left_child_index])) {
+            min_child_index = right_child_index;
+          }
+        }
+        if (compare{}(items[min_child_index], tmp)) {
+          items[i] = std::move(items[min_child_index]);
+          i = min_child_index;
+        } else {
+          break;
+        }
+        left_child_index = 2 * (i + 1) - 1;
+      } while (left_child_index < size());
+      items[i] = std::move(tmp);
+      return;
     }
 
   protected:
