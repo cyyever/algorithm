@@ -7,9 +7,6 @@
 #pragma once
 #include <cassert>
 #include <functional>
-#include <optional>
-#include <stdexcept>
-#include <unordered_map>
 #include <vector>
 namespace cyy::algorithm {
 
@@ -19,7 +16,7 @@ namespace cyy::algorithm {
     heap() = default;
     ~heap() = default;
     void reserve(size_t n) { items.reserve(n); }
-    const data_type &top() const { return items.at(0); }
+    const data_type &top() const { return get_item(0); }
     size_t size() const { return items.size(); }
     void pop() {
       if (items.empty()) {
@@ -36,8 +33,14 @@ namespace cyy::algorithm {
       items.emplace_back(std::move(data));
       return heapify_up(items.size() - 1);
     }
+    void change_item(size_t index, std::function<void(data_type &)> cb) {
+      assert(index < this->size());
+      cb(items[index]);
+      heapify(index);
+    }
+    const data_type &get_item(size_t index) const { return items.at(index); }
 
-  protected:
+  private:
     void heapify(size_t i) {
       if (heapify_up(i) != i) {
         return;
@@ -45,7 +48,6 @@ namespace cyy::algorithm {
       heapify_down(i);
     }
 
-  private:
     size_t heapify_up(size_t i) {
       if (i == 0) {
         return i;
@@ -89,7 +91,6 @@ namespace cyy::algorithm {
       return;
     }
 
-  protected:
     std::vector<data_type> items;
   };
   template <typename key_type>

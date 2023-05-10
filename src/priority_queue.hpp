@@ -6,9 +6,6 @@
 
 #pragma once
 #include <cassert>
-#include <functional>
-#include <iostream>
-#include <stdexcept>
 #include <unordered_map>
 
 #include "heap.hpp"
@@ -42,7 +39,6 @@ namespace cyy::algorithm {
       iterator->second = old_heap_index;
       return *this;
     }
-
     const auto &get_data() const { return iterator->first; }
   };
 
@@ -80,29 +76,29 @@ namespace cyy::algorithm {
       return position.contains(data);
     }
     void change_key(const data_type &data, key_type key) {
-      auto idx = position.find(data)->second;
-      this->items[idx].key = std::move(key);
-      this->heapify(idx);
+      auto idx = position.at(data);
+      this->change_item(idx, [&key](auto &item) { item.key = std::move(key); });
       check_consistency();
     }
 
-    void insert(data_type data, key_type key) {
+    bool insert(data_type data, key_type key) {
       check_consistency();
-      auto [it, has_insertion] = position.try_emplace(data, SIZE_MAX);
+      auto [it, has_insertion] = position.try_emplace(data, this->size());
       if (!has_insertion) {
-        return;
+        return false;
       }
-      it->second = this->size();
       heap_type::insert(priority_queue_item{std::move(key), it});
       check_consistency();
+      return true;
     }
 
   private:
     void check_consistency() {
       assert(position.size() == this->size());
       for (size_t i = 0; i < this->size(); i++) {
-        assert(this->items[i].heap_index == i);
-        assert(position.at(this->items[i].get_data()) == i);
+        auto const &item = this->get_item(i);
+        assert(item.heap_index == i);
+        assert(position.at(item.get_data()) == i);
       }
     }
 
