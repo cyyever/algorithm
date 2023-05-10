@@ -10,7 +10,7 @@
 #include <vector>
 namespace cyy::algorithm {
 
-  template <typename data_type, class compare = std::less<data_type>>
+  template <typename data_type, template <typename T> class compare = std::less>
   class heap {
   public:
     heap() = default;
@@ -55,7 +55,7 @@ namespace cyy::algorithm {
       auto tmp = std::move(items[i]);
       while (i > 0) {
         auto parent_idx = (i + 1) / 2 - 1;
-        if (compare{}(tmp, items[parent_idx])) {
+        if (comparator(tmp, items[parent_idx])) {
           items[i] = std::move(items[parent_idx]);
           i = parent_idx;
         } else {
@@ -75,11 +75,11 @@ namespace cyy::algorithm {
         auto min_child_index = left_child_index;
         auto right_child_index = left_child_index + 1;
         if (right_child_index < size()) {
-          if (compare{}(items[right_child_index], items[left_child_index])) {
+          if (comparator(items[right_child_index], items[left_child_index])) {
             min_child_index = right_child_index;
           }
         }
-        if (compare{}(items[min_child_index], tmp)) {
+        if (comparator(items[min_child_index], tmp)) {
           items[i] = std::move(items[min_child_index]);
           i = min_child_index;
         } else {
@@ -91,10 +91,10 @@ namespace cyy::algorithm {
       return;
     }
 
+    compare<data_type> comparator;
     std::vector<data_type> items;
   };
-  template <typename key_type>
-  using max_heap = heap<key_type, std::greater<key_type>>;
+  template <typename key_type> using max_heap = heap<key_type, std::greater>;
 
   template <typename key_type> using min_heap = heap<key_type>;
 

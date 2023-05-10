@@ -11,41 +11,8 @@
 #include "heap.hpp"
 namespace cyy::algorithm {
 
-  template <typename key_type> using min_heap = heap<key_type>;
-
-  template <typename key_type, typename iterator_type>
-  struct priority_queue_item {
-    key_type key;
-    iterator_type iterator;
-    size_t heap_index;
-    priority_queue_item(const priority_queue_item &rhs) = delete;
-    priority_queue_item &operator=(const priority_queue_item &rhs) = delete;
-
-    auto operator<=>(const priority_queue_item &rhs) const {
-      return key <=> rhs.key;
-    }
-    priority_queue_item(key_type key_, iterator_type iterator_)
-        : key(std::move(key_)),
-          iterator(iterator_), heap_index{iterator_->second} {}
-    priority_queue_item(priority_queue_item &&rhs) {
-      key = std::move(rhs.key);
-      iterator = std::move(rhs.iterator);
-      heap_index = iterator->second;
-    }
-    priority_queue_item &operator=(priority_queue_item &&rhs) {
-      key = std::move(rhs.key);
-      auto old_heap_index = heap_index;
-      iterator = std::move(rhs.iterator);
-      iterator->second = old_heap_index;
-      return *this;
-    }
-    const auto &get_data() const { return iterator->first; }
-  };
-
-  template <
-      typename data_type, typename key_type,
-      class compare = std::less<priority_queue_item<
-          key_type, typename std::unordered_map<data_type, size_t>::iterator>>>
+  template <typename data_type, typename key_type,
+            template <typename T> class compare = std::less>
   class priority_queue {
   public:
     priority_queue() = default;
@@ -99,14 +66,37 @@ namespace cyy::algorithm {
 
   private:
     std::unordered_map<data_type, size_t> position;
-    using heap_type = heap<
-        priority_queue_item<key_type, typename decltype(position)::iterator>,
-        compare>;
+    using iterator_type = typename decltype(position)::iterator;
+    struct priority_queue_item {
+      key_type key;
+      iterator_type iterator;
+      size_t heap_index;
+      priority_queue_item(const priority_queue_item &rhs) = delete;
+      priority_queue_item &operator=(const priority_queue_item &rhs) = delete;
+
+      auto operator<=>(const priority_queue_item &rhs) const {
+        return key <=> rhs.key;
+      }
+      priority_queue_item(key_type key_, iterator_type iterator_)
+          : key(std::move(key_)),
+            iterator(iterator_), heap_index{iterator_->second} {}
+      priority_queue_item(priority_queue_item &&rhs) {
+        key = std::move(rhs.key);
+        iterator = std::move(rhs.iterator);
+        heap_index = iterator->second;
+      }
+      priority_queue_item &operator=(priority_queue_item &&rhs) {
+        key = std::move(rhs.key);
+        auto old_heap_index = heap_index;
+        iterator = std::move(rhs.iterator);
+        iterator->second = old_heap_index;
+        return *this;
+      }
+      const auto &get_data() const { return iterator->first; }
+    };
+    using heap_type = heap<priority_queue_item, compare>;
     heap_type item_heap;
   };
   template <typename data_type, typename key_type>
-  using max_priority_queue = priority_queue<
-      data_type, key_type,
-      std::greater<priority_queue_item<
-          key_type, typename std::unordered_map<data_type, size_t>::iterator>>>;
+  using max_priority_queue = priority_queue<data_type, key_type, std::greater>;
 } // namespace cyy::algorithm
