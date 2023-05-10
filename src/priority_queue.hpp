@@ -46,29 +46,23 @@ namespace cyy::algorithm {
       typename data_type, typename key_type,
       class compare = std::less<priority_queue_item<
           key_type, typename std::unordered_map<data_type, size_t>::iterator>>>
-  class priority_queue
-      : public heap<
-            priority_queue_item<key_type, typename std::unordered_map<
-                                              data_type, size_t>::iterator>,
-            compare> {
+  class priority_queue {
   public:
     priority_queue() = default;
-    using heap_type =
-        heap<priority_queue_item<key_type, typename std::unordered_map<
-                                               data_type, size_t>::iterator>,
-             compare>;
+    size_t size() const { return item_heap.size(); }
     void reserve(size_t n) {
-      heap_type::reserve(n);
       position.reserve(n);
+      item_heap.reserve(n);
     }
-    const key_type &top_key() const { return this->top().key; }
-    const data_type &top_data() const { return this->top().get_data(); }
+    const key_type &top_key() const { return item_heap.top().key; }
+    const data_type &top_data() const { return item_heap.top().get_data(); }
+    bool empty() const { return item_heap.empty(); }
     void pop() {
       if (this->empty()) {
         return;
       }
-      auto it = this->top().iterator;
-      heap_type::pop();
+      auto it = item_heap.top().iterator;
+      item_heap.pop();
       position.erase(it);
       check_consistency();
     }
@@ -77,7 +71,8 @@ namespace cyy::algorithm {
     }
     void change_key(const data_type &data, key_type key) {
       auto idx = position.at(data);
-      this->change_item(idx, [&key](auto &item) { item.key = std::move(key); });
+      item_heap.change_item(idx,
+                            [&key](auto &item) { item.key = std::move(key); });
       check_consistency();
     }
 
@@ -87,7 +82,7 @@ namespace cyy::algorithm {
       if (!has_insertion) {
         return false;
       }
-      heap_type::insert(priority_queue_item{std::move(key), it});
+      item_heap.insert(priority_queue_item{std::move(key), it});
       check_consistency();
       return true;
     }
@@ -96,7 +91,7 @@ namespace cyy::algorithm {
     void check_consistency() {
       assert(position.size() == this->size());
       for (size_t i = 0; i < this->size(); i++) {
-        auto const &item = this->get_item(i);
+        auto const &item = item_heap.get_item(i);
         assert(item.heap_index == i);
         assert(position.at(item.get_data()) == i);
       }
@@ -104,6 +99,10 @@ namespace cyy::algorithm {
 
   private:
     std::unordered_map<data_type, size_t> position;
+    using heap_type = heap<
+        priority_queue_item<key_type, typename decltype(position)::iterator>,
+        compare>;
+    heap_type item_heap;
   };
   template <typename data_type, typename key_type>
   using max_priority_queue = priority_queue<
