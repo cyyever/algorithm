@@ -57,7 +57,7 @@ namespace cyy::algorithm {
     auto operator<=>(const auto &rhs) const {
       return std::tuple(first, second) <=> std::tuple(rhs.first, rhs.second);
     }
-    bool contains(size_t v) const { return first == v || second == v; }
+    bool contains(size_t v) const noexcept { return first == v || second == v; }
     indexed_edge reverse() const { return indexed_edge(second, first); }
   };
   using path_type = std::vector<size_t>;
@@ -158,20 +158,20 @@ namespace cyy::algorithm {
       next_vertex_index = vertex_indices.size();
     }
 
-    auto get_next_vertex_index() const { return next_vertex_index; }
+    auto get_next_vertex_index() const noexcept { return next_vertex_index; }
 
-    auto foreach_edge_with_weight() const {
+    auto foreach_edge_with_weight() const noexcept {
       if constexpr (directed) {
-        return std::views::join(
-            std::views::transform(weighted_adjacent_list, [](const auto &p) {
+        return std::views::join(std::views::transform(
+            weighted_adjacent_list, [](const auto &p) noexcept {
               return std::ranges::views::transform(
                   p.second, [&p](auto const &t) {
                     return std::pair(indexed_edge{p.first, t.first}, t.second);
                   });
             }));
       } else {
-        return std::views::join(
-            std::views::transform(weighted_adjacent_list, [](const auto &p) {
+        return std::views::join(std::views::transform(
+            weighted_adjacent_list, [](const auto &p) noexcept {
               return std::ranges::views::filter(
                          p.second,
                          [&p](const std::pair<size_t, weight_type> &e) -> bool {
@@ -185,7 +185,7 @@ namespace cyy::algorithm {
       }
     }
 
-    auto foreach_edge() const {
+    auto foreach_edge() const noexcept{
       return foreach_edge_with_weight() | std::views::keys;
     }
 
@@ -325,7 +325,7 @@ namespace cyy::algorithm {
       return adjacent_matrix;
     }
 
-    auto get_vertex_indices() const {
+    auto get_vertex_indices() const noexcept {
       return std::views::transform(vertex_indices.right,
                                    [](auto const &it) { return it.first; });
     }
@@ -429,7 +429,7 @@ namespace cyy::algorithm {
       std::vector<size_t> parent(get_next_vertex_index(), 0);
 
       while (!stack.empty()) {
-        auto [u, weight] = stack.back();
+        auto const [u, weight] = stack.back();
         stack.pop_back();
         if (explored[u]) {
           continue;
@@ -474,7 +474,7 @@ namespace cyy::algorithm {
 
   protected:
     void add_directed_edge(const edge_type &e) {
-      auto first_index = add_vertex(e.first);
+      auto const first_index = add_vertex(e.first);
       auto second_index = add_vertex(e.second);
       auto &neighbors = weighted_adjacent_list[first_index];
 #ifndef NDEBUG
@@ -516,10 +516,10 @@ namespace cyy::algorithm {
 
   template <typename T>
   concept IsGraph = requires(T a) {
-                      { a.get_vertices() };
-                      { a.is_directed };
-                      { a.foreach_edge_with_weight() };
-                    };
+    { a.get_vertices() };
+    { a.is_directed };
+    { a.foreach_edge_with_weight() };
+  };
 } // namespace cyy::algorithm
 
 #ifdef __cpp_lib_format
