@@ -42,8 +42,8 @@ namespace cyy::algorithm {
     symbol_type get_max_symbol() const;
     bool contain(const ALPHABET &subset) const;
 
-    virtual bool contain(symbol_type s) const = 0;
-    virtual size_t size() const = 0;
+    virtual bool contain(symbol_type s) const noexcept = 0;
+    virtual size_t size() const noexcept = 0;
     std::string to_string(symbol_type symbol) const {
       if (symbol == endmarker) {
         return "$";

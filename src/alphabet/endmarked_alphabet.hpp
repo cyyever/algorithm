@@ -38,14 +38,14 @@ namespace cyy::algorithm {
     bool support_ASCII_escape_sequence() const override {
       return alphabet->support_ASCII_escape_sequence();
     }
-    auto original_alphabet() const { return alphabet; }
+    auto original_alphabet() const noexcept { return alphabet; }
 
   private:
     std::string __to_string(symbol_type symbol) const override {
       return alphabet->to_string(symbol);
     }
 
-    symbol_type get_symbol(size_t index) const noexcept override {
+    symbol_type get_symbol(size_t index) const override {
       if (index + 1 == size()) {
         return ALPHABET::endmarker;
       }

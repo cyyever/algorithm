@@ -51,7 +51,7 @@ namespace cyy::algorithm {
     }
 
   private:
-    std::shared_ptr<node> find(std::shared_ptr<node> &node_ptr) {
+    std::shared_ptr<node> find(std::shared_ptr<node> &node_ptr) const {
       assert(node_ptr);
       if (!node_ptr->representative) {
         return node_ptr;

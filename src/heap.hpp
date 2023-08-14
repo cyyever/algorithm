@@ -17,7 +17,7 @@ namespace cyy::algorithm {
     ~heap() = default;
     void reserve(size_t n) { items.reserve(n); }
     const data_type &top() const { return get_item(0); }
-    size_t size() const { return items.size(); }
+    size_t size() const noexcept { return items.size(); }
     void pop() {
       if (items.empty()) {
         return;
@@ -27,7 +27,7 @@ namespace cyy::algorithm {
       heapify_down(0);
       return;
     }
-    bool empty() const { return items.empty(); }
+    bool empty() const noexcept { return items.empty(); }
 
     size_t insert(data_type data) {
       items.emplace_back(std::move(data));
@@ -73,7 +73,7 @@ namespace cyy::algorithm {
       auto tmp = std::move(items[i]);
       do {
         auto min_child_index = left_child_index;
-        auto right_child_index = left_child_index + 1;
+        auto const right_child_index = left_child_index + 1;
         if (right_child_index < size()) {
           if (comparator(items[right_child_index], items[left_child_index])) {
             min_child_index = right_child_index;
