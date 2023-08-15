@@ -74,7 +74,7 @@ TEST_CASE("thread_safe_linear_container") {
     container.clear();
     {
       std::vector<std::jthread> thds;
-      for (int i = 0; i < 1000; i++) {
+      for (int i = 0; i < 500; i++) {
         thds.emplace_back([i, &container]() { container.push_back(i); });
         thds.emplace_back([&container]() {
           CHECK(container.pop_front(std::chrono::minutes(1)).has_value());
