@@ -37,7 +37,6 @@ namespace cyy::algorithm {
     thread_safe_container &
     operator=(thread_safe_container &&) noexcept = default;
 
-  public:
     class const_reference final {
     public:
       const_reference(const container_type &container_, mutex_type &mutex_)
@@ -53,10 +52,13 @@ namespace cyy::algorithm {
 
       ~const_reference() { mutex.unlock(); }
       explicit operator const container_type &() const { return container; }
+      // NOLINTNEXTLINE(fuchsia-overloaded-operator)
       const container_type *operator->() const { return &container; }
 
     private:
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
       const container_type &container;
+      // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
       mutex_type &mutex;
     };
 
@@ -79,9 +81,6 @@ namespace cyy::algorithm {
     using size_type = typename ContainerType::size_type;
     using thread_safe_container<ContainerType>::container;
     using thread_safe_container<ContainerType>::container_mutex;
-
-    thread_safe_linear_container() = default;
-    ~thread_safe_linear_container() = default;
 
     template <typename Rep, typename Period>
     std::optional<value_type>
@@ -147,10 +146,10 @@ namespace cyy::algorithm {
               lock, rel_time, [this]() { return !container.empty(); },
               st_opt)) {
         if (!container.empty()) {
-          std::vector<value_type> res;
           batch_size = std::min(batch_size, container.size());
+          std::vector<value_type> res;
           res.reserve(batch_size);
-          while (res.size() < batch_size) {
+          for (size_t i = 0; i < batch_size; i++) {
             res.emplace_back(std::move(container.front()));
             pop_front_wrapper();
           }
@@ -188,7 +187,7 @@ namespace cyy::algorithm {
     }
 
     void clear() {
-      std::unique_lock lk(container_mutex);
+      std::unique_lock lock(container_mutex);
       container.clear();
       notify_less_element();
     }
@@ -254,7 +253,6 @@ namespace cyy::algorithm {
       less_element_cv_map.erase(first_it, less_element_cv_map.end());
     }
 
-  private:
     mutable std::vector<std::unique_ptr<std::condition_variable_any>> cv_pool;
     mutable std::map<size_t, std::unique_ptr<std::condition_variable_any>>
         less_element_cv_map;
@@ -272,9 +270,9 @@ namespace cyy::algorithm {
     using thread_safe_container<ContainerType>::container_mutex;
 
     template <typename CallBackType>
-    void modify_value(const key_type &key, CallBackType cb) {
+    void modify_value(const key_type &key, CallBackType callback) {
       std::unique_lock lock(container_mutex);
-      cb(container[key]);
+      callback(container[key]);
     }
   };
 } // namespace cyy::algorithm

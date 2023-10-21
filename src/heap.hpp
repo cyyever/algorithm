@@ -13,11 +13,9 @@ namespace cyy::algorithm {
   template <typename data_type, template <typename T> class compare = std::less>
   class heap {
   public:
-    heap() = default;
-    ~heap() = default;
     void reserve(size_t n) { items.reserve(n); }
     const data_type &top() const { return get_item(0); }
-    size_t size() const noexcept { return items.size(); }
+    [[nodiscard]] size_t size() const noexcept { return items.size(); }
     void pop() {
       if (items.empty()) {
         return;
@@ -25,53 +23,52 @@ namespace cyy::algorithm {
       items[0] = std::move(items.back());
       items.pop_back();
       heapify_down(0);
-      return;
     }
-    bool empty() const noexcept { return items.empty(); }
+    [[nodiscard]] bool empty() const noexcept { return items.empty(); }
 
     size_t insert(data_type data) {
       items.emplace_back(std::move(data));
       return heapify_up(items.size() - 1);
     }
-    void change_item(size_t index, std::function<void(data_type &)> cb) {
+    void change_item(size_t index, std::function<void(data_type &)> callback) {
       assert(index < this->size());
-      cb(items[index]);
+      callback(items[index]);
       heapify(index);
     }
     const data_type &get_item(size_t index) const { return items.at(index); }
 
   private:
-    void heapify(size_t i) {
-      if (heapify_up(i) != i) {
+    void heapify(size_t index) {
+      if (heapify_up(index) != index) {
         return;
       }
-      heapify_down(i);
+      heapify_down(index);
     }
 
-    size_t heapify_up(size_t i) {
-      if (i == 0) {
-        return i;
+    size_t heapify_up(size_t index) {
+      if (index == 0) {
+        return index;
       }
-      auto tmp = std::move(items[i]);
-      while (i > 0) {
-        auto parent_idx = (i + 1) / 2 - 1;
+      auto tmp = std::move(items[index]);
+      while (index > 0) {
+        auto parent_idx = (index + 1) / 2 - 1;
         if (comparator(tmp, items[parent_idx])) {
-          items[i] = std::move(items[parent_idx]);
-          i = parent_idx;
+          items[index] = std::move(items[parent_idx]);
+          index = parent_idx;
         } else {
           break;
         }
       }
-      items[i] = std::move(tmp);
-      return i;
+      items[index] = std::move(tmp);
+      return index;
     }
-    void heapify_down(size_t i) {
-      auto left_child_index = 2 * (i + 1) - 1;
+    void heapify_down(size_t index) {
+      auto left_child_index = 2 * (index + 1) - 1;
       if (left_child_index >= size()) {
         return;
       }
-      auto tmp = std::move(items[i]);
-      do {
+      auto tmp = std::move(items[index]);
+      while (left_child_index < size()) {
         auto min_child_index = left_child_index;
         auto const right_child_index = left_child_index + 1;
         if (right_child_index < size()) {
@@ -80,15 +77,14 @@ namespace cyy::algorithm {
           }
         }
         if (comparator(items[min_child_index], tmp)) {
-          items[i] = std::move(items[min_child_index]);
-          i = min_child_index;
+          items[index] = std::move(items[min_child_index]);
+          index = min_child_index;
         } else {
           break;
         }
-        left_child_index = 2 * (i + 1) - 1;
-      } while (left_child_index < size());
-      items[i] = std::move(tmp);
-      return;
+        left_child_index = 2 * (index + 1) - 1;
+      }
+      items[index] = std::move(tmp);
     }
 
     compare<data_type> comparator;
