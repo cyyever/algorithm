@@ -5,7 +5,7 @@
  */
 
 #pragma once
-
+#define _LIBCPP_ENABLE_EXPERIMENTAL
 #include <algorithm>
 #include <concepts>
 #include <iostream>
@@ -48,7 +48,7 @@ namespace cyy::algorithm {
     size_t second;
     indexed_edge() = default;
     indexed_edge(size_t first_, size_t second_)
-        : first(std::move(first_)), second(std::move(second_)) {
+        : first(first_), second(second_) {
       if (first == second) {
         throw std::runtime_error("not an edge");
       }

@@ -12,7 +12,7 @@ namespace cyy::algorithm {
       const std::unordered_map<symbol_type, double> &symbol_frequency) {
     assert(!symbol_frequency.empty());
     priority_queue<symbol_type, double> queue;
-    for (auto const [symbol, frequency] : symbol_frequency) {
+    for (auto const& [symbol, frequency] : symbol_frequency) {
       queue.insert(symbol, frequency);
     }
 
