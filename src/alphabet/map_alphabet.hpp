@@ -9,8 +9,11 @@
 
 #include <format>
 #include <map>
+#include <ranges>
 #include <string>
 #include <unordered_map>
+#include <type_traits>
+#include <utility>
 
 #include <boost/bimap.hpp>
 
@@ -18,27 +21,17 @@
 #include "exception.hpp"
 
 namespace cyy::algorithm {
-  template <typename T>
-  concept MapType =
-      std::same_as<
-          T, std::map<typename T::key_type, typename T::mapped_type,
-                      typename T::key_compare, typename T::allocator_type>> ||
-      std::same_as<
-          T, std::unordered_map<typename T::key_type, typename T::mapped_type,
-                                typename T::hasher, typename T::key_equal,
-                                typename T::allocator_type>>;
-
   template <typename data_type = std::string>
   class map_alphabet final : public ALPHABET {
   public:
-    template <MapType T>
-    map_alphabet(const T &symbol_map_, std::string_view name_)
-        : ALPHABET(name_) {
+    template <std::ranges::input_range T>
+    requires std::is_same_v<std::ranges::range_value_t<T>,std::pair<const symbol_type, data_type>>
+    map_alphabet(T &&symbol_map_, std::string_view name_) : ALPHABET(name_) {
       if (symbol_map_.empty()) {
         throw exception::empty_alphabet("symbol map is empty");
       }
-      for (auto const &[symbol, data] : symbol_map_) {
-        symbol_map.insert({symbol, data});
+      for (auto &&[symbol, data] : std::ranges::forward_range<T>(symbol_map_)) {
+        symbol_map.insert({symbol, std::forward<data_type>(data)});
       }
     }
     bool contain(symbol_type s) const noexcept override {
