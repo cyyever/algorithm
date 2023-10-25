@@ -1,26 +1,5 @@
 ---
-Checks:          '
-*,
--abseil*,
--altera*,
--android*,
--bugprone-easily-swappable-parameters,
--cppcoreguidelines-avoid-magic-numbers,
--cppcoreguidelines-pro-type-reinterpret-cast,
--cppcoreguidelines-non-private-member-variables-in-classes,
--fuchsia-default-arguments-declarations,
--google-default-arguments,
--google-readability-namespace-comments,
--hicpp-braces-around-statements,
--hicpp-uppercase-literal-suffix,
--hicpp-use-auto,
--hicpp-vararg,
--llvmlibc*,
--misc-non-private-member-variables-in-classes,
--misc-no-recursion,
--modernize-use-trailing-return-type,
--readability-magic-numbers,
--hicpp-named-parameter'
+Checks: ' *, -altera*, -abseil*, -bugprone-easily-swappable-parameters, -bugprone-swapped-arguments,
+  -cppcoreguidelines-non-private-member-variables-in-classes,-fuchsia-overloaded-operator,-readability-identifier-length, -llvmlibc*, -misc-non-private-member-variables-in-classes, -modernize-use-nodiscard,-modernize-use-trailing-return-type, -*default-argument* '
 AnalyzeTemporaryDtors: false
-UseColor: false
-FormatStyle:     file
+WarningsAsErrors: '*'
