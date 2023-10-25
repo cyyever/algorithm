@@ -42,7 +42,7 @@ namespace cyy::algorithm {
       }
     };
 
-    bool empty() const noexcept { return data.empty(); }
+    [[nodiscard]] bool empty() const noexcept { return data.empty(); }
     auto size() const noexcept { return data.size(); }
     void clear() noexcept {
       data.clear();
