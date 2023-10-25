@@ -64,7 +64,6 @@ namespace cyy::algorithm {
       return alphabet->get_symbol(index);
     }
 
-  private:
     ALPHABET_ptr alphabet;
     bool has_blank_symbol{false};
     bool has_endmarker{false};

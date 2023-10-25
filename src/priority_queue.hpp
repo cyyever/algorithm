@@ -80,8 +80,8 @@ namespace cyy::algorithm {
         return key <=> rhs.key;
       }
       priority_queue_item(key_type key_, iterator_type iterator_)
-          : key(std::move(key_)),
-            iterator(iterator_), heap_index{iterator_->second} {}
+          : key(std::move(key_)), iterator(iterator_),
+            heap_index{iterator_->second} {}
       priority_queue_item(priority_queue_item &&rhs) noexcept {
         key = std::move(rhs.key);
         iterator = std::move(rhs.iterator);

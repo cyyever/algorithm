@@ -35,7 +35,6 @@ namespace cyy::algorithm {
       return symbols[index];
     }
 
-  private:
     std::vector<symbol_type> symbols{};
   };
 

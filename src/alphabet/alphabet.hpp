@@ -45,14 +45,14 @@ namespace cyy::algorithm {
     virtual bool contain(symbol_type s) const noexcept = 0;
     virtual size_t size() const noexcept = 0;
     std::string to_string(symbol_type symbol) const {
+      if (contain(symbol)) {
+        return __to_string(symbol);
+      }
       if (symbol == endmarker) {
         return "$";
       }
       if (symbol == blank_symbol) {
         return "blank";
-      }
-      if (contain(symbol)) {
-        return __to_string(symbol);
       }
       return "(unknown symbol)";
     }

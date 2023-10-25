@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <format>
 #include <map>
 #include <string>
 #include <unordered_map>
@@ -45,8 +46,8 @@ namespace cyy::algorithm {
     }
     size_t size() const noexcept override { return symbol_map.size(); }
 
-    data_type MMA_draw_set() const {
-      data_type cmd = "{";
+    std::string MMA_draw_set() const {
+      std::string cmd = "{";
       for (auto const &[s, _] : symbol_map) {
         cmd += MMA_draw(s);
         cmd.push_back(',');
@@ -64,11 +65,7 @@ namespace cyy::algorithm {
 
   private:
     std::string __to_string(symbol_type symbol) const override {
-      if constexpr (std::is_same_v<data_type, std::string>) {
-        return get_data(symbol);
-      } else {
-        throw std::runtime_error("can't convert to string");
-      }
+      return std::format("{}", get_data(symbol));
     }
     symbol_type get_symbol(size_t index) const noexcept override {
       auto it = symbol_map.left.begin();
@@ -76,7 +73,6 @@ namespace cyy::algorithm {
       return it->first;
     }
 
-  private:
     boost::bimap<symbol_type, data_type> symbol_map;
   };
 

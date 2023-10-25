@@ -14,8 +14,8 @@ namespace cyy::algorithm {
   public:
     union_alphabet(ALPHABET_ptr alphabet1_, ALPHABET_ptr alphabet2_,
                    std::string_view name_ = "")
-        : ALPHABET("placeholder"), alphabet1{alphabet1_}, alphabet2{
-                                                              alphabet2_} {
+        : ALPHABET("placeholder"), alphabet1{alphabet1_},
+          alphabet2{alphabet2_} {
       auto alphabet1_max = alphabet1->get_max_symbol();
       auto alphabet2_min = alphabet2->get_min_symbol();
       if (alphabet1_max >= alphabet2_min) {

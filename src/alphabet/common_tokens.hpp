@@ -24,11 +24,12 @@ namespace cyy::algorithm {
     __end,
   };
 
-  class common_tokens final : public range_alphabet {
+  class common_tokens final : public interval_alphabet {
   public:
     common_tokens() noexcept
-        : range_alphabet(0, static_cast<symbol_type>(common_token::__end) - 1,
-                         "common_tokens") {}
+        : interval_alphabet(0,
+                            static_cast<symbol_type>(common_token::__end) - 1,
+                            "common_tokens") {}
 
   private:
     std::string __to_string(symbol_type symbol) const override;

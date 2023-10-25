@@ -15,7 +15,6 @@
 #include "common_tokens.hpp"
 #include "endmarked_alphabet.hpp"
 #include "exception.hpp"
-#include "set_alphabet.hpp"
 
 namespace cyy::algorithm {
 
