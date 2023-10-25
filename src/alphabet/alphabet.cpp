@@ -7,6 +7,7 @@
 
 #include "alphabet.hpp"
 
+#include <format>
 #include <limits>
 #include <ranges>
 #include <string_view>
@@ -31,7 +32,7 @@ namespace cyy::algorithm {
     }
     return get_symbol(size() - 1);
   }
-  bool ALPHABET::contain(const ALPHABET &subset) const {
+  bool ALPHABET::contain_alphabet(const ALPHABET &subset) const {
     for (auto s : subset.get_view()) {
       if (!contain(s)) {
         return false;
@@ -68,17 +69,17 @@ namespace cyy::algorithm {
     for (const auto &alphabet : std::initializer_list<ALPHABET_ptr>{
              std::make_shared<common_tokens>(), std::make_shared<ASCII>(),
              std::make_shared<printable_ASCII>(),
-             std::make_shared<set_alphabet>(symbol_set_type{'a', 'b'},
+             std::make_shared<set_alphabet>(symbol_init_list{'a', 'b'},
                                             "ab_set"),
-             std::make_shared<set_alphabet>(symbol_set_type{'(', ')'},
+             std::make_shared<set_alphabet>(symbol_init_list{'(', ')'},
                                             "parentheses"),
 
-             std::make_shared<set_alphabet>(symbol_set_type{'0'}, "0_set"),
-             std::make_shared<set_alphabet>(symbol_set_type{'0', '1'},
+             std::make_shared<set_alphabet>(symbol_init_list{'0'}, "0_set"),
+             std::make_shared<set_alphabet>(symbol_init_list{'0', '1'},
                                             "01_set"),
-             std::make_shared<set_alphabet>(symbol_set_type{'0', '1', '#'},
+             std::make_shared<set_alphabet>(symbol_init_list{'0', '1', '#'},
                                             "01#_set"),
-             std::make_shared<set_alphabet>(symbol_set_type{'0', '1', '#', 'x'},
+             std::make_shared<set_alphabet>(symbol_init_list{'0', '1', '#', 'x'},
                                             "01x#_set")}) {
       factory.emplace(alphabet->get_name(), alphabet);
     }
@@ -92,7 +93,7 @@ namespace cyy::algorithm {
       cmd[0] = '\"';
       cmd.back() = '\"';
     }
-    cmd = std::string("Style[") + cmd + ",Bold,Purple]";
+    cmd = std::format("Style[{},Bold,Purple]",cmd);
     return cmd;
   }
 } // namespace cyy::algorithm

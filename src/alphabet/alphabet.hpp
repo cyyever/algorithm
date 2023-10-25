@@ -40,7 +40,7 @@ namespace cyy::algorithm {
 
     symbol_type get_min_symbol() const { return get_symbol(0); }
     symbol_type get_max_symbol() const;
-    bool contain(const ALPHABET &subset) const;
+    bool contain_alphabet(const ALPHABET &subset) const;
 
     virtual bool contain(symbol_type s) const noexcept = 0;
     virtual size_t size() const noexcept = 0;

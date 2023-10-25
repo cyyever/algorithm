@@ -10,11 +10,13 @@
 #include <set>
 #include <string>
 #include <string_view>
+#include <initializer_list>
 
 namespace cyy::algorithm {
 
   using symbol_type = char32_t;
   using symbol_set_type = std::set<symbol_type>;
+  using symbol_init_list = std::initializer_list<symbol_type>;
   using symbol_string = std::basic_string<symbol_type>;
   using symbol_string_view = std::basic_string_view<symbol_type>;
 } // namespace cyy::algorithm
