@@ -223,9 +223,11 @@ namespace cyy::algorithm {
     void pop_front_wrapper() { container.erase(container.begin()); }
 
     void recycle_cv(std::unique_ptr<std::condition_variable_any> &ptr) const {
+      std::lock_guard lock(cv_mutex);
       cv_pool.emplace_back(std::move(ptr));
     }
     std::unique_ptr<std::condition_variable_any> get_cv() const {
+      std::lock_guard lock(cv_mutex);
       if (!cv_pool.empty()) {
         auto cv_ptr = std::move(cv_pool.back());
         cv_pool.pop_back();
@@ -254,10 +256,11 @@ namespace cyy::algorithm {
       less_element_cv_map.erase(first_it, less_element_cv_map.end());
     }
 
-    mutable std::list<std::unique_ptr<std::condition_variable_any>> cv_pool;
     mutable std::map<size_t, std::unique_ptr<std::condition_variable_any>>
         less_element_cv_map;
     mutable std::condition_variable_any new_element_cv;
+    static inline std::mutex cv_mutex;
+    static inline std::list<std::unique_ptr<std::condition_variable_any>> cv_pool;
   };
 
   //! \brief thread_safe_linear_container 線程安全的map容器模板

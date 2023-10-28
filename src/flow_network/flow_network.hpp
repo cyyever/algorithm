@@ -192,7 +192,6 @@ namespace cyy::algorithm {
       }
     }
 
-  private:
     directed_graph<vertex_type, weight_type> graph;
     size_t source{};
     size_t sink{};
