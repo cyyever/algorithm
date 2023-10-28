@@ -17,6 +17,7 @@
 #include <stop_token>
 #include <type_traits>
 #include <vector>
+#include <list>
 
 namespace cyy::algorithm {
 
@@ -253,7 +254,7 @@ namespace cyy::algorithm {
       less_element_cv_map.erase(first_it, less_element_cv_map.end());
     }
 
-    mutable std::vector<std::unique_ptr<std::condition_variable_any>> cv_pool;
+    mutable std::list<std::unique_ptr<std::condition_variable_any>> cv_pool;
     mutable std::map<size_t, std::unique_ptr<std::condition_variable_any>>
         less_element_cv_map;
     mutable std::condition_variable_any new_element_cv;
