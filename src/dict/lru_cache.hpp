@@ -16,8 +16,13 @@
 #include <utility>
 #include <vector>
 
+#if __has_include(<cyy/naive_lib/log/log.hpp>)
 #include <cyy/naive_lib/log/log.hpp>
 #include <cyy/naive_lib/util/runnable.hpp>
+#else
+#include "naive_cpp_lib/log/log.hpp"
+#include "naive_cpp_lib/util/runnable.hpp"
+#endif
 #include <spdlog/fmt/fmt.h>
 
 #include "../thread_safe_container.hpp"
@@ -575,7 +580,7 @@ namespace cyy::algorithm {
           if (it->second != data_state::MEMORY_MODIFIED) {
             throw std::runtime_error(
                 fmt::format("invalid state {} of key:{}",
-                            std::to_string(static_cast<int>(it->second)), key));
+                            static_cast<int>(it->second), key));
           }
           it->second = data_state::PRE_SAVING;
           saving_data[key] = value;
