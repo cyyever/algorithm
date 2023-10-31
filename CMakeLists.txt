@@ -12,7 +12,13 @@ find_package(spdlog REQUIRED)
 find_package(Eigen3)
 find_package(CyyNaiveLib REQUIRED)
 
-add_library(CyyAlgorithmLib ${SOURCE})
+option(BUILD_OBJECT_LIB "Build CMake object libraries" OFF)
+
+if(BUILD_OBJECT_LIB)
+  add_library(CyyAlgorithmLib ${SOURCE})
+else()
+  add_library(CyyAlgorithmLib OBJECT ${SOURCE})
+endif()
 
 if(TARGET Eigen3::eigen)
   target_link_libraries(CyyAlgorithmLib INTERFACE Eigen3::eigen)
@@ -22,7 +28,7 @@ if(TARGET Boost::headers)
 endif()
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::util)
 target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::log)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   target_compile_options(CyyAlgorithmLib PUBLIC -fexperimental-library)
 endif()
 
