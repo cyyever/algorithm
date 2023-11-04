@@ -21,7 +21,7 @@ namespace cyy::algorithm {
     using data_index_type =
         std::unordered_map<key_type, typename data_list_type::iterator>;
     struct iterator : public data_list_type::iterator {
-      explicit iterator(typename data_list_type::iterator rhs)
+      explicit iterator(typename data_list_type::iterator rhs) noexcept
           : data_list_type::iterator{rhs} {}
       auto &operator*() const { return data_list_type::iterator::operator*(); }
     };

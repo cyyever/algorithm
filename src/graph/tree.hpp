@@ -35,7 +35,7 @@ namespace cyy::algorithm {
     }
     size_t get_root() const { return root.value(); }
     void set_root(vertex_type root_) { root = this->get_vertex_index(root_); }
-    void set_root_by_index(size_t root_) { root = root_; }
+    void set_root_by_index(size_t root_) noexcept { root = root_; }
     size_t get_adjacent_vertex(size_t u) const {
       return this->get_adjacent_list(u).begin()->first;
     }
