@@ -43,7 +43,7 @@ namespace cyy::algorithm {
       }
       return alphabet2->get_symbol(index - alphabet1_size);
     }
-    bool support_ASCII_escape_sequence() const override {
+    bool support_ASCII_escape_sequence() const noexcept override {
       return alphabet1->support_ASCII_escape_sequence() ||
              alphabet2->support_ASCII_escape_sequence();
     }
