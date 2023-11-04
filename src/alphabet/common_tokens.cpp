@@ -32,7 +32,7 @@ namespace cyy::algorithm {
         return "\"record\"";
       case common_token::CLASS:
         return "\"class\"";
-      case common_token::__end:
+      case common_token::_end:
         return "";
     }
     return ASCII().to_string(symbol);

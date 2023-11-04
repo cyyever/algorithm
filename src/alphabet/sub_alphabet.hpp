@@ -7,27 +7,23 @@
  */
 #pragma once
 
-#include "set_alphabet.hpp"
+#include "range_alphabet.hpp"
 
 namespace cyy::algorithm {
   class sub_alphabet final : public set_alphabet {
   public:
     sub_alphabet(ALPHABET_ptr parent_alphabet_,
-                 const symbol_set_type &symbol_set, std::string_view name_ = "")
+                 const symbol_set_type &symbol_set)
         : set_alphabet(symbol_set, std::string("sub_alphabet_of_") +
                                        parent_alphabet_->get_name()),
-          parent_alphabet(parent_alphabet_) {
-      if (!name_.empty()) {
-        set_name(name_);
-      }
+          parent_alphabet(std::move(parent_alphabet_)) {
     }
 
   private:
-    std::string __to_string(symbol_type symbol) const override {
+    std::string _to_string(symbol_type symbol) const override {
       return parent_alphabet->to_string(symbol);
     }
 
-  private:
     ALPHABET_ptr parent_alphabet;
   };
 
