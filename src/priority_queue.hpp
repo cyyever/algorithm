@@ -94,7 +94,7 @@ namespace cyy::algorithm {
         iterator->second = old_heap_index;
         return *this;
       }
-      const auto &get_data() const { return iterator->first; }
+      const auto &get_data() const noexcept { return iterator->first; }
     };
     using heap_type = heap<priority_queue_item, compare>;
     heap_type item_heap;

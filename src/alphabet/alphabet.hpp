@@ -32,7 +32,7 @@ namespace cyy::algorithm {
     virtual ~ALPHABET() = default;
     bool operator==(const ALPHABET &rhs) const = default;
 
-    auto get_view() const {
+    auto get_view() const noexcept {
       return std::ranges::views::iota(static_cast<size_t>(0), size()) |
              std::ranges::views::transform(
                  [this](auto idx) { return get_symbol(idx); });
@@ -57,7 +57,7 @@ namespace cyy::algorithm {
       return "(unknown symbol)";
     }
 
-    const std::string &get_name() const { return name; }
+    const std::string &get_name() const noexcept { return name; }
 
     virtual bool support_ASCII_escape_sequence() const { return false; }
 

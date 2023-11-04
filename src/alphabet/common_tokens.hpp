@@ -33,7 +33,7 @@ namespace cyy::algorithm {
 
   private:
     std::string _to_string(symbol_type symbol) const override;
-    bool support_ASCII_escape_sequence() const override { return true; }
+    bool support_ASCII_escape_sequence() const noexcept override { return true; }
   };
 
 } // namespace cyy::algorithm

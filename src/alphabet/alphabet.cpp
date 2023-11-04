@@ -33,7 +33,7 @@ namespace cyy::algorithm {
     return get_symbol(size() - 1);
   }
   bool ALPHABET::contain_alphabet(const ALPHABET &subset) const {
-    for (auto s : subset.get_view()) {
+    for (const auto s : subset.get_view()) {
       if (!contain(s)) {
         return false;
       }
