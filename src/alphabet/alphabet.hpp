@@ -97,10 +97,10 @@ namespace cyy::algorithm {
     using std::shared_ptr<ALPHABET>::shared_ptr;
 template <typename T>
     ALPHABET_ptr(T strv) : ALPHABET_ptr(ALPHABET::get(strv)) {}
-    ALPHABET_ptr(const std::shared_ptr<ALPHABET> &ptr) : shared_ptr(ptr) {}
+    ALPHABET_ptr(const std::shared_ptr<ALPHABET> &ptr) noexcept : shared_ptr(ptr) {}
   };
 
-  inline auto endmarked_symbol_string(symbol_string_view str) {
+  inline auto endmarked_symbol_string(symbol_string_view str) noexcept {
     auto size = str.size() + 1;
     return std::ranges::views::iota(static_cast<size_t>(0), size) |
            std::ranges::views::transform([str, size](auto idx) {

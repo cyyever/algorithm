@@ -16,14 +16,14 @@ namespace cyy::algorithm {
   class priority_queue {
   public:
     priority_queue() = default;
-    size_t size() const { return item_heap.size(); }
+    size_t size() const noexcept { return item_heap.size(); }
     void reserve(size_t n) {
       position.reserve(n);
       item_heap.reserve(n);
     }
     const key_type &top_key() const { return item_heap.top().key; }
     const data_type &top_data() const { return item_heap.top().get_data(); }
-    bool empty() const { return item_heap.empty(); }
+    bool empty() const noexcept { return item_heap.empty(); }
     void pop() {
       if (this->empty()) {
         return;
@@ -73,13 +73,13 @@ namespace cyy::algorithm {
       key_type key;
       iterator_type iterator;
       size_t heap_index;
+      priority_queue_item() = delete;
       priority_queue_item(const priority_queue_item &rhs) = delete;
       priority_queue_item &operator=(const priority_queue_item &rhs) = delete;
-
       auto operator<=>(const priority_queue_item &rhs) const noexcept {
         return key <=> rhs.key;
       }
-      priority_queue_item(key_type key_, iterator_type iterator_)
+      priority_queue_item(key_type key_, iterator_type iterator_) noexcept
           : key(std::move(key_)), iterator(iterator_),
             heap_index{iterator_->second} {}
 
@@ -88,7 +88,7 @@ namespace cyy::algorithm {
         iterator = std::move(rhs.iterator);
         heap_index = iterator->second;
       }
-      priority_queue_item &operator=(priority_queue_item &&rhs) noexcept {
+      priority_queue_item& operator=(priority_queue_item &&rhs) noexcept {
         if (this ==&rhs) {
           return *this;
         }

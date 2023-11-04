@@ -16,7 +16,7 @@ namespace cyy::algorithm {
     void reserve(size_t n) { items.reserve(n); }
     const data_type &top() const { return get_item(0); }
     [[nodiscard]] size_t size() const noexcept { return items.size(); }
-    void pop() {
+    void pop() noexcept {
       if (items.empty()) {
         return;
       }
@@ -38,20 +38,20 @@ namespace cyy::algorithm {
     const data_type &get_item(size_t index) const { return items.at(index); }
 
   private:
-    void heapify(size_t index) {
+    void heapify(size_t index) noexcept {
       if (heapify_up(index) != index) {
         return;
       }
       heapify_down(index);
     }
 
-    size_t heapify_up(size_t index) {
+    size_t heapify_up(size_t index) noexcept {
       if (index == 0) {
         return index;
       }
       auto tmp = std::move(items[index]);
       while (index > 0) {
-        auto parent_idx = (index + 1) / 2 - 1;
+        const auto parent_idx = (index + 1) / 2 - 1;
         if (comparator(tmp, items[parent_idx])) {
           items[index] = std::move(items[parent_idx]);
           index = parent_idx;
@@ -62,7 +62,7 @@ namespace cyy::algorithm {
       items[index] = std::move(tmp);
       return index;
     }
-    void heapify_down(size_t index) {
+    void heapify_down(size_t index) noexcept {
       auto left_child_index = 2 * (index + 1) - 1;
       if (left_child_index >= size()) {
         return;
