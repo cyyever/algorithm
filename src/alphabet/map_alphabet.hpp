@@ -30,7 +30,7 @@ namespace cyy::algorithm {
       if (symbol_map_.empty()) {
         throw exception::empty_alphabet("symbol map is empty");
       }
-      for (auto &&[symbol, data] : std::ranges::forward_range<T>(symbol_map_)) {
+      for (auto &&[symbol, data] : std::forward<T>(symbol_map_)) {
         symbol_map.insert({symbol, std::forward<data_type>(data)});
       }
     }
