@@ -95,7 +95,8 @@ namespace cyy::algorithm {
   class ALPHABET_ptr : public std::shared_ptr<ALPHABET> {
   public:
     using std::shared_ptr<ALPHABET>::shared_ptr;
-    ALPHABET_ptr(std::string_view strv) : ALPHABET_ptr(ALPHABET::get(strv)) {}
+template <typename T>
+    ALPHABET_ptr(T strv) : ALPHABET_ptr(ALPHABET::get(strv)) {}
     ALPHABET_ptr(const std::shared_ptr<ALPHABET> &ptr) : shared_ptr(ptr) {}
   };
 
