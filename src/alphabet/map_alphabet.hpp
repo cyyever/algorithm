@@ -57,7 +57,7 @@ namespace cyy::algorithm {
     }
 
   private:
-    std::string __to_string(symbol_type symbol) const override {
+    std::string _to_string(symbol_type symbol) const override {
       return std::format("{}", get_data(symbol));
     }
     symbol_type get_symbol(size_t index) const noexcept override {

@@ -20,5 +20,6 @@ namespace cyy::algorithm {
   class printable_ASCII final : public interval_alphabet {
   public:
     printable_ASCII() : interval_alphabet(32, 126, "printable-ASCII") {}
+    bool support_ASCII_escape_sequence() const override { return true; }
   };
 } // namespace cyy::algorithm
