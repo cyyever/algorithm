@@ -46,7 +46,7 @@ namespace cyy::algorithm {
     virtual size_t size() const noexcept = 0;
     std::string to_string(symbol_type symbol) const {
       if (contain(symbol)) {
-        return __to_string(symbol);
+        return _to_string(symbol);
       }
       if (symbol == endmarker) {
         return "$";
@@ -80,29 +80,23 @@ namespace cyy::algorithm {
     void set_name(std::string_view name_);
 
   private:
-    virtual std::string __to_string(symbol_type symbol) const {
+    virtual std::string _to_string(symbol_type symbol) const {
       return {'\'', static_cast<char>(symbol), '\''};
     }
 
-    static void register_factory();
+    static  std::unordered_map<std::string, std::shared_ptr<ALPHABET>>& get_factory();
 
-  private:
     std::shared_ptr<std::function<std::string(const ALPHABET &, symbol_type)>>
         MMA_draw_fun_ptr;
     std::string name;
 
-  private:
-    static inline std::unordered_map<std::string, std::shared_ptr<ALPHABET>>
-        factory;
   };
 
   class ALPHABET_ptr : public std::shared_ptr<ALPHABET> {
   public:
     using std::shared_ptr<ALPHABET>::shared_ptr;
-    ALPHABET_ptr(const std::shared_ptr<ALPHABET> &ptr) : shared_ptr(ptr) {}
-    ALPHABET_ptr(const char *str) : ALPHABET_ptr(ALPHABET::get(str)) {}
     ALPHABET_ptr(std::string_view strv) : ALPHABET_ptr(ALPHABET::get(strv)) {}
-    ALPHABET_ptr(const std::string &str) : ALPHABET_ptr(str.c_str()) {}
+    ALPHABET_ptr(const std::shared_ptr<ALPHABET> &ptr) : shared_ptr(ptr) {}
   };
 
   inline auto endmarked_symbol_string(symbol_string_view str) {

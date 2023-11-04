@@ -41,7 +41,7 @@ namespace cyy::algorithm {
     auto original_alphabet() const noexcept { return alphabet; }
 
   private:
-    std::string __to_string(symbol_type symbol) const override {
+    std::string _to_string(symbol_type symbol) const override {
       return alphabet->to_string(symbol);
     }
 
@@ -52,7 +52,6 @@ namespace cyy::algorithm {
       return alphabet->get_symbol(index);
     }
 
-  private:
     ALPHABET_ptr alphabet;
     bool has_endmarker{false};
   };

@@ -70,7 +70,7 @@ namespace cyy::algorithm {
     using set_alphabet::set_alphabet;
 
   private:
-    std::string __to_string(symbol_type symbol) const override {
+    std::string _to_string(symbol_type symbol) const override {
       return std::to_string(static_cast<uint64_t>(symbol));
     }
   };

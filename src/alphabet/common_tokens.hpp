@@ -32,7 +32,7 @@ namespace cyy::algorithm {
                             "common_tokens") {}
 
   private:
-    std::string __to_string(symbol_type symbol) const override;
+    std::string _to_string(symbol_type symbol) const override;
     bool support_ASCII_escape_sequence() const override { return true; }
   };
 

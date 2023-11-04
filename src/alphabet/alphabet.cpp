@@ -43,7 +43,7 @@ namespace cyy::algorithm {
 
   std::shared_ptr<ALPHABET> ALPHABET::get(std::string_view name,
                                           bool endmarked) {
-    register_factory();
+    const auto &factory=get_factory();
     auto it = factory.find(std::string(name));
     if (it == factory.end()) {
       throw exception::unexisted_alphabet(std::string(name));
@@ -57,15 +57,14 @@ namespace cyy::algorithm {
   }
 
   void ALPHABET::set(const std::shared_ptr<ALPHABET> &alphabet) {
-    register_factory();
+    auto &factory=get_factory();
     factory[alphabet->get_name()] = alphabet;
   }
 
-  void ALPHABET::register_factory() {
-    if (!factory.empty()) {
-      return;
-    }
-
+  std::unordered_map<std::string, std::shared_ptr<ALPHABET>>& ALPHABET::get_factory() {
+    static std::unordered_map<std::string, std::shared_ptr<ALPHABET>>
+        factory;
+    if (factory.empty()) {
     for (const auto &alphabet : std::initializer_list<ALPHABET_ptr>{
              std::make_shared<common_tokens>(), std::make_shared<ASCII>(),
              std::make_shared<printable_ASCII>(),
@@ -83,6 +82,10 @@ namespace cyy::algorithm {
                                             "01x#_set")}) {
       factory.emplace(alphabet->get_name(), alphabet);
     }
+
+    }
+
+    return factory;
   }
   std::string ALPHABET::MMA_draw(symbol_type symbol) const {
     if (MMA_draw_fun_ptr) {
