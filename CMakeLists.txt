@@ -15,9 +15,9 @@ find_package(CyyNaiveLib REQUIRED)
 option(BUILD_OBJECT_LIB "Build CMake object libraries" OFF)
 
 if(BUILD_OBJECT_LIB)
-  add_library(CyyAlgorithmLib ${SOURCE})
-else()
   add_library(CyyAlgorithmLib OBJECT ${SOURCE})
+else()
+  add_library(CyyAlgorithmLib ${SOURCE})
 endif()
 
 if(TARGET Eigen3::eigen)
