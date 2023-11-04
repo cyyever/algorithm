@@ -59,7 +59,7 @@ namespace cyy::algorithm {
 
     const std::string &get_name() const noexcept { return name; }
 
-    virtual bool support_ASCII_escape_sequence() const { return false; }
+    virtual bool support_ASCII_escape_sequence() const noexcept { return false; }
 
     virtual symbol_type get_symbol(size_t index) const = 0;
     void set_MMA_draw_fun(

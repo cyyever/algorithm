@@ -35,7 +35,7 @@ namespace cyy::algorithm {
       real_size += alphabet->size();
       return real_size;
     }
-    bool support_ASCII_escape_sequence() const override {
+    bool support_ASCII_escape_sequence() const noexcept override {
       return alphabet->support_ASCII_escape_sequence();
     }
     auto original_alphabet() const noexcept { return alphabet; }
