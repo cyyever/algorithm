@@ -27,16 +27,19 @@ namespace cyy::algorithm {
         nodes.emplace(item, p);
       }
     }
-    std::shared_ptr<node> find(const data_type &item) {
-      assert(nodes.contains(item));
-      return find(nodes[item]);
+    node *find(const data_type &item) {
+      auto it = nodes.find(item);
+      if (it == nodes.end()) {
+        return nullptr;
+      }
+      return find(it->second.get());
     }
 
     void UNION(const data_type &a, const data_type &b) {
       UNION(find(a), find(b));
     }
 
-    void UNION(std::shared_ptr<node> a, std::shared_ptr<node> b) {
+    void UNION(node *a, node *b) {
       if (a == b) {
         return;
       }
@@ -51,8 +54,7 @@ namespace cyy::algorithm {
     }
 
   private:
-    std::shared_ptr<node> find(std::shared_ptr<node> &node_ptr) const {
-      assert(node_ptr);
+    node *find(node *node_ptr) const {
       if (!node_ptr->representative) {
         return node_ptr;
       }
@@ -62,7 +64,7 @@ namespace cyy::algorithm {
 
     struct node {
       size_t rank{};
-      std::shared_ptr<node> representative = {};
+      node *representative = {};
     };
     std::unordered_map<data_type, std::shared_ptr<node>> nodes;
   };
