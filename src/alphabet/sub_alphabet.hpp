@@ -12,12 +12,12 @@
 namespace cyy::algorithm {
   class sub_alphabet final : public set_alphabet {
   public:
-    sub_alphabet(ALPHABET_ptr parent_alphabet_,
-                 const symbol_set_type &symbol_set)
-        : set_alphabet(symbol_set, std::string("sub_alphabet_of_") +
-                                       parent_alphabet_->get_name()),
-          parent_alphabet(std::move(parent_alphabet_)) {
-    }
+    template <std::ranges::input_range T>
+    sub_alphabet(ALPHABET_ptr parent_alphabet_, T symbol_set)
+        : set_alphabet(std::forward<T>(symbol_set),
+                       std::string("sub_alphabet_of_") +
+                           parent_alphabet_->get_name()),
+          parent_alphabet(std::move(parent_alphabet_)) {}
 
   private:
     std::string _to_string(symbol_type symbol) const override {
