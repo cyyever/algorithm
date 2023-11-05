@@ -38,7 +38,6 @@ namespace cyy::algorithm {
       UNION(find(a), find(b));
     }
 
-  private:
     void UNION(node *a, node *b) {
       if (a == b) {
         return;
@@ -52,6 +51,8 @@ namespace cyy::algorithm {
         b->rank++;
       }
     }
+
+  private:
     node *find(node *node_ptr) const {
       if (!node_ptr->representative) {
         return node_ptr;
