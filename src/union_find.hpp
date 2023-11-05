@@ -23,8 +23,7 @@ namespace cyy::algorithm {
       }
       nodes.reserve(data.size());
       for (auto const &item : data) {
-        auto p = std::make_shared<node>();
-        nodes.emplace(item, p);
+        nodes.emplace(item, std::make_unique<node>());
       }
     }
     node *find(const data_type &item) {
@@ -66,6 +65,6 @@ namespace cyy::algorithm {
       size_t rank{};
       node *representative = {};
     };
-    std::unordered_map<data_type, std::shared_ptr<node>> nodes;
+    std::unordered_map<data_type, std::unique_ptr<node>> nodes;
   };
 } // namespace cyy::algorithm
