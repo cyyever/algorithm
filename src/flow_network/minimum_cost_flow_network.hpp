@@ -377,7 +377,6 @@ namespace cyy::algorithm {
       return reduced_costs;
     }
 
-  private:
     directed_graph<vertex_type, weight_type> graph;
     flow_fun_type upper_capacities;
     flow_fun_type lower_capacities;

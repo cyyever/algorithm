@@ -11,14 +11,15 @@
 
 namespace cyy::algorithm {
 
-  class ASCII final : public range_alphabet {
+  class ASCII final : public interval_alphabet {
   public:
-    ASCII() : range_alphabet(0, 127, "ASCII") {}
-    bool support_ASCII_escape_sequence() const override { return true; }
+    ASCII() : interval_alphabet(0, 127, "ASCII") {}
+    bool support_ASCII_escape_sequence() const noexcept override { return true; }
   };
 
-  class printable_ASCII final : public range_alphabet {
+  class printable_ASCII final : public interval_alphabet {
   public:
-    printable_ASCII() : range_alphabet(32, 126, "printable-ASCII") {}
+    printable_ASCII() : interval_alphabet(32, 126, "printable-ASCII") {}
+    bool support_ASCII_escape_sequence() const noexcept override { return true; }
   };
 } // namespace cyy::algorithm

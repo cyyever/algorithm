@@ -5,7 +5,7 @@
  */
 
 #pragma once
-
+#define _LIBCPP_ENABLE_EXPERIMENTAL
 #include <algorithm>
 #include <concepts>
 #include <iostream>
@@ -34,8 +34,10 @@ namespace cyy::algorithm {
         throw std::runtime_error("not an edge");
       }
     }
-    auto operator<=>(const auto &rhs) const { return weight <=> rhs.weight; }
-    auto operator==(const auto &rhs) const {
+    auto operator<=>(const auto &rhs) const noexcept {
+      return weight <=> rhs.weight;
+    }
+    auto operator==(const auto &rhs) const noexcept {
       return first == rhs.first && second == rhs.second;
     }
     edge reverse() const { return edge(second, first, weight); }
@@ -46,15 +48,15 @@ namespace cyy::algorithm {
     size_t second;
     indexed_edge() = default;
     indexed_edge(size_t first_, size_t second_)
-        : first(std::move(first_)), second(std::move(second_)) {
+        : first(first_), second(second_) {
       if (first == second) {
         throw std::runtime_error("not an edge");
       }
     }
-    auto operator==(const auto &rhs) const {
+    auto operator==(const auto &rhs) const noexcept {
       return first == rhs.first && second == rhs.second;
     }
-    auto operator<=>(const auto &rhs) const {
+    auto operator<=>(const auto &rhs) const noexcept {
       return std::tuple(first, second) <=> std::tuple(rhs.first, rhs.second);
     }
     bool contains(size_t v) const noexcept { return first == v || second == v; }
@@ -185,7 +187,7 @@ namespace cyy::algorithm {
       }
     }
 
-    auto foreach_edge() const noexcept{
+    auto foreach_edge() const noexcept {
       return foreach_edge_with_weight() | std::views::keys;
     }
 
@@ -492,16 +494,13 @@ namespace cyy::algorithm {
       return remove_directed_edge({get_vertex(e.first), get_vertex(e.second)});
     }
     bool remove_directed_edge(const indexed_edge &e) {
-      auto first_index = e.first;
-      auto second_index = e.second;
-      auto it = weighted_adjacent_list.find(first_index);
+      auto it = weighted_adjacent_list.find(e.first);
       if (it == weighted_adjacent_list.end()) {
         return false;
       }
       auto &vertices = it->second;
-      return vertices.remove_if([second_index](auto const &a) {
-        return a.first == second_index;
-      }) != 0;
+      return vertices.remove_if(
+                 [&](auto const &a) { return a.first == e.second; }) != 0;
     }
 
   protected:

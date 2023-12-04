@@ -12,8 +12,8 @@ namespace cyy::algorithm {
 
   class alphabet_with_blank_symbol final : public ALPHABET {
   public:
-    alphabet_with_blank_symbol(ALPHABET_ptr alphabet_)
-        : ALPHABET("placeholder"), alphabet{alphabet_} {
+    explicit alphabet_with_blank_symbol(ALPHABET_ptr alphabet_)
+        : ALPHABET("placeholder"), alphabet{std::move(alphabet_)} {
       if (alphabet->contain(ALPHABET::blank_symbol)) {
         has_blank_symbol = true;
         set_name(alphabet->get_name());
@@ -36,13 +36,13 @@ namespace cyy::algorithm {
       real_size += alphabet->size();
       return real_size;
     }
-    bool support_ASCII_escape_sequence() const override {
+    bool support_ASCII_escape_sequence() const noexcept override {
       return alphabet->support_ASCII_escape_sequence();
     }
     auto original_alphabet() const { return alphabet; }
 
   private:
-    std::string __to_string(symbol_type symbol) const override {
+    std::string _to_string(symbol_type symbol) const override {
       return alphabet->to_string(symbol);
     }
 
@@ -64,7 +64,6 @@ namespace cyy::algorithm {
       return alphabet->get_symbol(index);
     }
 
-  private:
     ALPHABET_ptr alphabet;
     bool has_blank_symbol{false};
     bool has_endmarker{false};

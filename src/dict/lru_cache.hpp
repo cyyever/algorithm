@@ -10,13 +10,19 @@
 #include <mutex>
 #include <optional>
 #include <stdexcept>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
+#if __has_include(<cyy/naive_lib/log/log.hpp>)
 #include <cyy/naive_lib/log/log.hpp>
 #include <cyy/naive_lib/util/runnable.hpp>
+#else
+#include "naive_cpp_lib/log/log.hpp"
+#include "naive_cpp_lib/util/runnable.hpp"
+#endif
 #include <spdlog/fmt/fmt.h>
 
 #include "../thread_safe_container.hpp"
@@ -109,16 +115,17 @@ namespace cyy::algorithm {
       LOG_DEBUG("saving_thread_num and fetch_thread_num {}", cpu_num);
     }
 
-    lru_cache(const lru_cache &) { LOG_WARN("stub function"); }
-    lru_cache &operator=(const lru_cache &) = default;
+    lru_cache(const lru_cache &) = delete;
+    lru_cache &operator=(const lru_cache &) = delete;
 
-    lru_cache(lru_cache &&) noexcept = delete;
-    lru_cache &operator=(lru_cache &&) noexcept = delete;
+    lru_cache(lru_cache &&) noexcept = default;
+    lru_cache &operator=(lru_cache &&) noexcept = default;
 
     virtual ~lru_cache() {
       hold_data.clear();
       if (permanent) {
-        flush(true);
+        flush();
+        save_request_queue.wait_for_less_size(0, std::chrono::years(1));
       }
       fetch_threads.clear();
       saving_threads.clear();
@@ -143,10 +150,11 @@ namespace cyy::algorithm {
       data_dict.emplace(key, std::move(value));
       data_info[key] = data_state::MEMORY_MODIFIED;
       dirty_data.emplace(key);
-      if (hold_data.contains(key)) {
-        hold_data[key]--;
-        if (hold_data[key] == 0) {
-          hold_data.erase(key);
+      auto it=hold_data.find(key);
+      if (it!=hold_data.end()) {
+        it->second--;
+        if ( it->second == 0) {
+          hold_data.erase(it);
         }
       }
       saving_data.erase(key);
@@ -251,17 +259,7 @@ namespace cyy::algorithm {
       return res;
     }
 
-    void flush_expired_data(bool wait = false) {
-      auto tasks = pop_expired_data(SIZE_MAX);
-      flush_tasks(tasks);
-
-      if (wait) {
-        save_request_queue.wait_for_less_size(0, std::chrono::minutes(1));
-      }
-      return;
-    }
-
-    void flush(bool wait = false) {
+    void flush() {
       std::list<save_task> dirty_tasks;
       {
         std::unique_lock lk(data_mutex);
@@ -283,9 +281,6 @@ namespace cyy::algorithm {
         }
       }
       flush_tasks(dirty_tasks);
-      if (wait) {
-        save_request_queue.wait_for_less_size(0, std::chrono::years(1));
-      }
     }
 
     void clear() {
@@ -586,7 +581,7 @@ namespace cyy::algorithm {
           if (it->second != data_state::MEMORY_MODIFIED) {
             throw std::runtime_error(
                 fmt::format("invalid state {} of key:{}",
-                            std::to_string(static_cast<int>(it->second)), key));
+                            static_cast<int>(it->second), key));
           }
           it->second = data_state::PRE_SAVING;
           saving_data[key] = value;
@@ -601,6 +596,12 @@ namespace cyy::algorithm {
         save_request_queue.emplace_back(std::move(task));
       }
     }
+
+    void flush_expired_data() {
+      auto tasks = pop_expired_data(SIZE_MAX);
+      flush_tasks(tasks);
+    }
+
 
     cyy::algorithm::ordered_dict<key_type, mapped_type> data_dict;
     std::unordered_map<key_type, mapped_type> saving_data;

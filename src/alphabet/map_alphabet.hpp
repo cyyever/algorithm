@@ -7,9 +7,13 @@
  */
 #pragma once
 
+#include <format>
 #include <map>
+#include <ranges>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
+#include <utility>
 
 #include <boost/bimap.hpp>
 
@@ -17,27 +21,17 @@
 #include "exception.hpp"
 
 namespace cyy::algorithm {
-  template <typename T>
-  concept MapType =
-      std::same_as<
-          T, std::map<typename T::key_type, typename T::mapped_type,
-                      typename T::key_compare, typename T::allocator_type>> ||
-      std::same_as<
-          T, std::unordered_map<typename T::key_type, typename T::mapped_type,
-                                typename T::hasher, typename T::key_equal,
-                                typename T::allocator_type>>;
-
   template <typename data_type = std::string>
   class map_alphabet final : public ALPHABET {
   public:
-    template <MapType T>
-    map_alphabet(const T &symbol_map_, std::string_view name_)
-        : ALPHABET(name_) {
+    template <std::ranges::input_range T>
+    requires std::is_same_v<std::ranges::range_value_t<T>,std::pair<const symbol_type, data_type>>
+    map_alphabet(T &&symbol_map_, std::string_view name_) : ALPHABET(name_) {
       if (symbol_map_.empty()) {
         throw exception::empty_alphabet("symbol map is empty");
       }
-      for (auto const &[symbol, data] : symbol_map_) {
-        symbol_map.insert({symbol, data});
+      for (auto &&[symbol, data] : std::forward<T>(symbol_map_)) {
+        symbol_map.insert({symbol, std::forward<data_type>(data)});
       }
     }
     bool contain(symbol_type s) const noexcept override {
@@ -45,8 +39,8 @@ namespace cyy::algorithm {
     }
     size_t size() const noexcept override { return symbol_map.size(); }
 
-    data_type MMA_draw_set() const {
-      data_type cmd = "{";
+    std::string MMA_draw_set() const {
+      std::string cmd = "{";
       for (auto const &[s, _] : symbol_map) {
         cmd += MMA_draw(s);
         cmd.push_back(',');
@@ -63,12 +57,8 @@ namespace cyy::algorithm {
     }
 
   private:
-    std::string __to_string(symbol_type symbol) const override {
-      if constexpr (std::is_same_v<data_type, std::string>) {
-        return get_data(symbol);
-      } else {
-        throw std::runtime_error("can't convert to string");
-      }
+    std::string _to_string(symbol_type symbol) const override {
+      return std::format("{}", get_data(symbol));
     }
     symbol_type get_symbol(size_t index) const noexcept override {
       auto it = symbol_map.left.begin();
@@ -76,7 +66,6 @@ namespace cyy::algorithm {
       return it->first;
     }
 
-  private:
     boost::bimap<symbol_type, data_type> symbol_map;
   };
 

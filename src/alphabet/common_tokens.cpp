@@ -10,7 +10,7 @@
 #include "ascii.hpp"
 
 namespace cyy::algorithm {
-  std::string common_tokens::__to_string(symbol_type symbol) const {
+  std::string common_tokens::_to_string(symbol_type symbol) const {
     switch (static_cast<common_token>(symbol)) {
       case common_token::ascii_char:
         return "\"ascii char\"";
@@ -32,7 +32,7 @@ namespace cyy::algorithm {
         return "\"record\"";
       case common_token::CLASS:
         return "\"class\"";
-      case common_token::__end:
+      case common_token::_end:
         return "";
     }
     return ASCII().to_string(symbol);

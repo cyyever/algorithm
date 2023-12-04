@@ -21,7 +21,7 @@ namespace cyy::algorithm {
     using data_index_type =
         std::unordered_map<key_type, typename data_list_type::iterator>;
     struct iterator : public data_list_type::iterator {
-      explicit iterator(typename data_list_type::iterator rhs)
+      explicit iterator(typename data_list_type::iterator rhs) noexcept
           : data_list_type::iterator{rhs} {}
       auto &operator*() const { return data_list_type::iterator::operator*(); }
     };
@@ -42,7 +42,7 @@ namespace cyy::algorithm {
       }
     };
 
-    bool empty() const noexcept { return data.empty(); }
+    [[nodiscard]] bool empty() const noexcept { return data.empty(); }
     auto size() const noexcept { return data.size(); }
     void clear() noexcept {
       data.clear();
@@ -74,12 +74,12 @@ namespace cyy::algorithm {
       return true;
     }
     auto begin() noexcept { return iterator(data.begin()); }
-    auto rbegin() noexcept { return reverse_iterator(data.rbegin()); }
-    auto begin() const noexcept { return const_iterator(data.begin()); }
-    auto cbegin() const noexcept { return const_iterator(data.cbegin()); }
     auto end() noexcept { return iterator(data.end()); }
+    auto rbegin() noexcept { return reverse_iterator(data.rbegin()); }
     auto rend() noexcept { return reverse_iterator(data.rend()); }
+    auto begin() const noexcept { return const_iterator(data.begin()); }
     auto end() const noexcept { return const_iterator(data.end()); }
+    auto cbegin() const noexcept { return const_iterator(data.cbegin()); }
     auto cend() const noexcept { return const_iterator(data.cend()); }
     iterator find(const Key &key) {
       auto it = data_index.find(key);
@@ -92,7 +92,7 @@ namespace cyy::algorithm {
     std::pair<key_type, mapped_type> pop_oldest() {
       auto it = data.begin();
       if (it == data.end()) {
-        throw std::out_of_range("pop_oldest empty");
+        throw std::out_of_range("data is empty");
       }
       auto key = std::move(it->first);
       auto value = std::move(it->second);

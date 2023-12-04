@@ -32,7 +32,7 @@ namespace cyy::algorithm {
     virtual ~ALPHABET() = default;
     bool operator==(const ALPHABET &rhs) const = default;
 
-    auto get_view() const {
+    auto get_view() const noexcept {
       return std::ranges::views::iota(static_cast<size_t>(0), size()) |
              std::ranges::views::transform(
                  [this](auto idx) { return get_symbol(idx); });
@@ -40,26 +40,26 @@ namespace cyy::algorithm {
 
     symbol_type get_min_symbol() const { return get_symbol(0); }
     symbol_type get_max_symbol() const;
-    bool contain(const ALPHABET &subset) const;
+    bool contain_alphabet(const ALPHABET &subset) const;
 
-    virtual bool contain(symbol_type s) const = 0;
-    virtual size_t size() const = 0;
+    virtual bool contain(symbol_type s) const noexcept = 0;
+    virtual size_t size() const noexcept = 0;
     std::string to_string(symbol_type symbol) const {
+      if (contain(symbol)) {
+        return _to_string(symbol);
+      }
       if (symbol == endmarker) {
         return "$";
       }
       if (symbol == blank_symbol) {
         return "blank";
       }
-      if (contain(symbol)) {
-        return __to_string(symbol);
-      }
       return "(unknown symbol)";
     }
 
-    const std::string &get_name() const { return name; }
+    const std::string &get_name() const noexcept { return name; }
 
-    virtual bool support_ASCII_escape_sequence() const { return false; }
+    virtual bool support_ASCII_escape_sequence() const noexcept { return false; }
 
     virtual symbol_type get_symbol(size_t index) const = 0;
     void set_MMA_draw_fun(
@@ -80,32 +80,27 @@ namespace cyy::algorithm {
     void set_name(std::string_view name_);
 
   private:
-    virtual std::string __to_string(symbol_type symbol) const {
+    virtual std::string _to_string(symbol_type symbol) const {
       return {'\'', static_cast<char>(symbol), '\''};
     }
 
-    static void register_factory();
+    static  std::unordered_map<std::string, std::shared_ptr<ALPHABET>>& get_factory();
 
-  private:
     std::shared_ptr<std::function<std::string(const ALPHABET &, symbol_type)>>
         MMA_draw_fun_ptr;
     std::string name;
 
-  private:
-    static inline std::unordered_map<std::string, std::shared_ptr<ALPHABET>>
-        factory;
   };
 
   class ALPHABET_ptr : public std::shared_ptr<ALPHABET> {
   public:
     using std::shared_ptr<ALPHABET>::shared_ptr;
-    ALPHABET_ptr(const std::shared_ptr<ALPHABET> &ptr) : shared_ptr(ptr) {}
-    ALPHABET_ptr(const char *str) : ALPHABET_ptr(ALPHABET::get(str)) {}
-    ALPHABET_ptr(std::string_view strv) : ALPHABET_ptr(ALPHABET::get(strv)) {}
-    ALPHABET_ptr(const std::string &str) : ALPHABET_ptr(str.c_str()) {}
+template <typename T>
+    ALPHABET_ptr(T strv) : ALPHABET_ptr(ALPHABET::get(strv)) {}
+    ALPHABET_ptr(const std::shared_ptr<ALPHABET> &ptr) noexcept : shared_ptr(ptr) {}
   };
 
-  inline auto endmarked_symbol_string(symbol_string_view str) {
+  inline auto endmarked_symbol_string(symbol_string_view str) noexcept {
     auto size = str.size() + 1;
     return std::ranges::views::iota(static_cast<size_t>(0), size) |
            std::ranges::views::transform([str, size](auto idx) {
