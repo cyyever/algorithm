@@ -150,10 +150,10 @@ namespace cyy::algorithm {
       data_dict.emplace(key, std::move(value));
       data_info[key] = data_state::MEMORY_MODIFIED;
       dirty_data.emplace(key);
-      auto it=hold_data.find(key);
-      if (it!=hold_data.end()) {
+      auto it = hold_data.find(key);
+      if (it != hold_data.end()) {
         it->second--;
-        if ( it->second == 0) {
+        if (it->second == 0) {
           hold_data.erase(it);
         }
       }
@@ -579,9 +579,9 @@ namespace cyy::algorithm {
             continue;
           }
           if (it->second != data_state::MEMORY_MODIFIED) {
-            throw std::runtime_error(
-                fmt::format("invalid state {} of key:{}",
-                            static_cast<int>(it->second), key));
+            throw std::runtime_error(fmt::format("invalid state {} of key:{}",
+                                                 static_cast<int>(it->second),
+                                                 key));
           }
           it->second = data_state::PRE_SAVING;
           saving_data[key] = value;
@@ -601,7 +601,6 @@ namespace cyy::algorithm {
       auto tasks = pop_expired_data(SIZE_MAX);
       flush_tasks(tasks);
     }
-
 
     cyy::algorithm::ordered_dict<key_type, mapped_type> data_dict;
     std::unordered_map<key_type, mapped_type> saving_data;
