@@ -100,8 +100,9 @@ namespace cyy::algorithm {
     };
 
   public:
-    lru_cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
-        : backend(std::move(backend_)) {
+    lru_cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_,
+              bool load_all_keys_)
+        : backend(std::move(backend_)), load_all_keys(load_all_keys_) {
       auto cpu_num = std::jthread::hardware_concurrency();
       set_saving_thread_number(cpu_num);
       set_fetch_thread_number(cpu_num);
