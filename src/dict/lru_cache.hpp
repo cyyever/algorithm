@@ -106,9 +106,8 @@ namespace cyy::algorithm {
     };
 
   public:
-    lru_cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_,
-              bool load_all_keys_ = false)
-        : backend(std::move(backend_)), load_all_keys(load_all_keys_) {
+    lru_cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
+        : backend(std::move(backend_)) {
       auto cpu_num = std::jthread::hardware_concurrency();
       set_saving_thread_number(cpu_num);
       set_fetch_thread_number(cpu_num);
@@ -623,7 +622,9 @@ namespace cyy::algorithm {
     std::list<fetch_thread> fetch_threads;
 
     std::condition_variable_any new_data_cv;
-    bool mutable load_all_keys{false};
     float wait_flush_ratio{1.5};
+
+  protected:
+    bool mutable load_all_keys{false};
   };
 } // namespace cyy::algorithm
