@@ -34,6 +34,7 @@ namespace cyy::algorithm {
     using key_type = Key;
     using mapped_type = T;
     virtual ~storage_backend() = default;
+    virtual bool has_initial_keys() const { return false; }
     virtual std::vector<key_type> get_keys() = 0;
     virtual bool contains(const key_type &key) = 0;
     virtual std::optional<mapped_type> load_data(const key_type &key) = 0;
@@ -108,6 +109,7 @@ namespace cyy::algorithm {
   public:
     lru_cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
         : backend(std::move(backend_)) {
+      load_all_keys = !backend->has_initial_keys();
       auto cpu_num = std::jthread::hardware_concurrency();
       set_saving_thread_number(cpu_num);
       set_fetch_thread_number(cpu_num);
@@ -623,8 +625,6 @@ namespace cyy::algorithm {
 
     std::condition_variable_any new_data_cv;
     float wait_flush_ratio{1.5};
-
-  protected:
     bool mutable load_all_keys{false};
   };
 } // namespace cyy::algorithm
