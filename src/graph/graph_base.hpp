@@ -5,22 +5,16 @@
  */
 
 #pragma once
-#define _LIBCPP_ENABLE_EXPERIMENTAL
 #include <algorithm>
-#include <concepts>
 #include <iostream>
 #include <list>
-#include <memory>
 #include <ranges>
 #include <unordered_map>
 #include <vector>
 #include <version>
 
 #include <boost/bimap.hpp>
-
-#ifdef __cpp_lib_format
 #include <format>
-#endif
 
 namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type> struct edge {

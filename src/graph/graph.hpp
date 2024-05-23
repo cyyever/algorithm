@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <algorithm>
-#include <memory>
 #include <vector>
 
 #include "graph_base.hpp"

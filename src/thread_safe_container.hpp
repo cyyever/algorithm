@@ -10,14 +10,13 @@
 
 #include <chrono>
 #include <condition_variable>
+#include <list>
 #include <map>
 #include <memory>
 #include <optional>
 #include <shared_mutex>
 #include <stop_token>
-#include <type_traits>
 #include <vector>
-#include <list>
 
 namespace cyy::algorithm {
 
@@ -260,7 +259,8 @@ namespace cyy::algorithm {
         less_element_cv_map;
     mutable std::condition_variable_any new_element_cv;
     static inline std::mutex cv_mutex;
-    static inline std::list<std::unique_ptr<std::condition_variable_any>> cv_pool;
+    static inline std::list<std::unique_ptr<std::condition_variable_any>>
+        cv_pool;
   };
 
   //! \brief thread_safe_linear_container 線程安全的map容器模板

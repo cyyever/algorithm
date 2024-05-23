@@ -31,12 +31,7 @@ namespace cyy::algorithm {
     return get_symbol(size() - 1);
   }
   bool ALPHABET::contain_alphabet(const ALPHABET &subset) const {
-    for (const auto s : subset.get_view()) {
-      if (!contain(s)) {
-        return false;
-      }
-    }
-    return true;
+    return std::ranges::all_of(subset.get_view(),[this](const auto s){return contain(s);});
   }
 
   std::shared_ptr<ALPHABET> ALPHABET::get(std::string_view name,

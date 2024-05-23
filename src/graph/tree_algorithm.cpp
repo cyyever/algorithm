@@ -6,6 +6,7 @@
 
 #include "tree_algorithm.hpp"
 
+#include <algorithm>
 #include <set>
 namespace cyy::algorithm {
   tree<size_t> recover_tree(const std::vector<size_t> &prufer_code) {

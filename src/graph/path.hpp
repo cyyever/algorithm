@@ -8,7 +8,6 @@
 #pragma once
 
 #include <cassert>
-#include <functional>
 
 #include "graph_base.hpp"
 #include "priority_queue.hpp"

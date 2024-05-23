@@ -10,11 +10,7 @@
 
 #include <cstddef>
 #include <list>
-#include <optional>
 #include <ranges>
-#include <span>
-#include <unordered_map>
-#include <vector>
 
 namespace cyy::algorithm {
 

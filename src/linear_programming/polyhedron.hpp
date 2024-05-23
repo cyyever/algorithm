@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <ranges>
 #include <vector>
+#include <set>
 
 #include <cyy/math/algebra/matrix.hpp>
 
