@@ -16,14 +16,14 @@ namespace cyy::algorithm {
   class priority_queue {
   public:
     priority_queue() = default;
-    size_t size() const noexcept { return item_heap.size(); }
+    [[nodiscard]] size_t size() const noexcept { return item_heap.size(); }
     void reserve(size_t n) {
       position.reserve(n);
       item_heap.reserve(n);
     }
     const key_type &top_key() const { return item_heap.top().key; }
     const data_type &top_data() const { return item_heap.top().get_data(); }
-    bool empty() const noexcept { return item_heap.empty(); }
+    [[nodiscard]] bool empty() const noexcept { return item_heap.empty(); }
     void pop() {
       if (this->empty()) {
         return;
@@ -66,7 +66,6 @@ namespace cyy::algorithm {
 #endif
     }
 
-  private:
     std::unordered_map<data_type, size_t> position;
     using iterator_type = typename decltype(position)::iterator;
     struct priority_queue_item {
@@ -76,6 +75,7 @@ namespace cyy::algorithm {
       priority_queue_item() = delete;
       priority_queue_item(const priority_queue_item &rhs) = delete;
       priority_queue_item &operator=(const priority_queue_item &rhs) = delete;
+      ~priority_queue_item() = default;
       auto operator<=>(const priority_queue_item &rhs) const noexcept {
         return key <=> rhs.key;
       }
@@ -83,13 +83,11 @@ namespace cyy::algorithm {
           : key(std::move(key_)), iterator(iterator_),
             heap_index{iterator_->second} {}
 
-      priority_queue_item(priority_queue_item &&rhs) noexcept {
-        key = std::move(rhs.key);
-        iterator = std::move(rhs.iterator);
-        heap_index = iterator->second;
-      }
-      priority_queue_item& operator=(priority_queue_item &&rhs) noexcept {
-        if (this ==&rhs) {
+      priority_queue_item(priority_queue_item &&rhs) noexcept
+          : key(std::move(rhs.key)), iterator(std::move(rhs.iterator)),
+            heap_index(iterator->second) {}
+      priority_queue_item &operator=(priority_queue_item &&rhs) noexcept {
+        if (this == &rhs) {
           return *this;
         }
         key = std::move(rhs.key);

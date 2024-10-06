@@ -12,8 +12,10 @@ Checks:
 -llvmlibc*,
 -llvm-header-guard,
 -misc-non-private-member-variables-in-classes,
+-misc-include-cleaner,
 -modernize-use-trailing-return-type,
 -readability-identifier-length,
+-readability-math-missing-parentheses,
 -*default-argument*
 '
 WarningsAsErrors: '*'
