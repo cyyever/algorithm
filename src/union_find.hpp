@@ -17,7 +17,7 @@ namespace cyy::algorithm {
       requires std::same_as<data_type, std::ranges::range_value_t<U>>
     explicit union_find(U data) {
       if (data.size() == 0) {
-        throw std::logic_error("data is empty");
+        return;
       }
       nodes.reserve(data.size());
       for (auto const &item : data) {
