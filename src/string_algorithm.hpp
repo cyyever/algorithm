@@ -57,7 +57,7 @@ namespace cyy::algorithm {
       if (word[s] == next_char) {
         s++;
         if (s == word.size()) {
-          return 0 + i - word.size() + 1;
+          return i+1 - word.size() ;
         }
       }
     }
@@ -96,7 +96,7 @@ namespace cyy::algorithm {
     // for each substring w1...ws,compute the longest proper suffix w1...wf(s)
     // that is a prefix of some word
 
-    // so we compute this failure_function by broad first search of tree.
+    // so we compute this failure_function by broad-first search of tree.
     // we find all immediate child of start_state first
     std::vector<size_t> failure_function(trie.size(), 0);
 
