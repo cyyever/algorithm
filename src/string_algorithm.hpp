@@ -34,7 +34,7 @@ namespace cyy::algorithm {
     std::vector<size_t> failure_function(word.size(), 0);
     // f[1] is always empty string,so we begin with w2;
     for (size_t i = 2; i < word.size(); i++) {
-      auto next_char = word[i - 1];
+      auto const &next_char = word[i - 1];
       auto t = failure_function[i - 1];
       while (true) {
         if (word[t] == next_char) {
@@ -57,7 +57,7 @@ namespace cyy::algorithm {
       if (word[s] == next_char) {
         s++;
         if (s == word.size()) {
-          return i+1 - word.size() ;
+          return i + 1 - s;
         }
       }
     }
