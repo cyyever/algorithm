@@ -13,6 +13,7 @@ TEST_CASE("tire construction") {
   SUBCASE("string") {
     cyy::algorithm::trie<char> string_trie(
         std::vector{std::string("abc"), std::string("abd")});
+    static_assert(std::is_same_v<decltype(string_trie)::element_id_type, char>);
     auto view = string_trie.get_level_view(0);
     REQUIRE(std::ranges::size(view) == 1);
     for (auto a : view) {

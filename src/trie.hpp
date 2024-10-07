@@ -10,14 +10,17 @@
 
 #include <concepts>
 #include <ranges>
-#include <unordered_map>
 #include <unordered_set>
-#include <vector>
+
+#include "pool.hpp"
 
 namespace cyy::algorithm {
   template <typename T> class trie {
+  private:
+    object_pool<T> pool;
+
   public:
-    using element_id_type = size_t;
+    using element_id_type = decltype(pool)::element_id_type;
 
     struct trie_node {
       element_id_type element_id{0};
@@ -65,7 +68,7 @@ namespace cyy::algorithm {
         if (levels.size() < level_idx + 1) {
           levels.emplace_back();
         }
-        auto node_id = add_data(e);
+        auto node_id = pool.add_data(e);
         auto &level = levels[level_idx];
         auto it2 = level.emplace(trie_node{node_id, parent_id, false}).first;
         if (level_idx + 1 == sequence_size) {
@@ -74,23 +77,22 @@ namespace cyy::algorithm {
         level_idx++;
       }
     }
-    element_id_type get_data_id(const T &elem) { return node_pool[elem]; }
-    element_id_type add_data(const T &e) {
-      auto [it, emplaced] = node_pool.emplace(e, next_node_id);
-      if (emplaced) {
-        next_node_id++;
-      }
-      return it->second;
+    element_id_type get_data_id(const T &elem) {
+      return pool.get_data_id(elem);
     }
+    // element_id_type add_data(const T &e) {
+    //   auto [it, emplaced] = node_pool.emplace(e, next_node_id);
+    //   if (emplaced) {
+    //     next_node_id++;
+    //   }
+    //   return it->second;
+    // }
     auto get_level_view(size_t level_idx) const {
       return std::views::all(levels.at(level_idx));
     }
 
   private:
     std::vector<std::unordered_set<trie_node, trie_node_hash>> levels;
-    std::unordered_map<T, element_id_type> node_pool;
-    std::vector<T> node_pool_elements;
-    element_id_type next_node_id{0};
   };
 
 } // namespace cyy::algorithm
