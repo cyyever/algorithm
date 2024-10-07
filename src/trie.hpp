@@ -11,6 +11,7 @@
 #include <concepts>
 #include <ranges>
 #include <unordered_set>
+#include <vector>
 
 #include "pool.hpp"
 
@@ -27,7 +28,7 @@ namespace cyy::algorithm {
       element_id_type parent_id{0};
       bool is_end{false};
       bool operator==(const trie_node &rhs) const noexcept {
-        return element_id == rhs.element_id;
+        return element_id == rhs.element_id && parent_id == rhs.parent_id;
       }
     };
 
@@ -38,9 +39,8 @@ namespace cyy::algorithm {
       }
     };
 
-    template <std::ranges::input_range Sequences>
-      requires std::ranges::input_range<
-                   std::ranges::range_value_t<Sequences>> &&
+    template <std::ranges::range Sequences>
+      requires std::ranges::range<std::ranges::range_value_t<Sequences>> &&
                std::same_as<std::ranges::range_value_t<
                                 std::ranges::range_value_t<Sequences>>,
                             T>
@@ -58,7 +58,7 @@ namespace cyy::algorithm {
       }
     }
 
-    template <std::ranges::input_range Sequence>
+    template <std::ranges::range Sequence>
       requires std::same_as<std::ranges::range_value_t<Sequence>, T>
     void insert(Sequence sequence) {
       element_id_type parent_id = 0;
@@ -74,19 +74,13 @@ namespace cyy::algorithm {
         if (level_idx + 1 == sequence_size) {
           const_cast<trie_node &>(*it2).is_end = true;
         }
+        parent_id = node_id;
         level_idx++;
       }
     }
     element_id_type get_data_id(const T &elem) {
       return pool.get_data_id(elem);
     }
-    // element_id_type add_data(const T &e) {
-    //   auto [it, emplaced] = node_pool.emplace(e, next_node_id);
-    //   if (emplaced) {
-    //     next_node_id++;
-    //   }
-    //   return it->second;
-    // }
     auto get_level_view(size_t level_idx) const {
       return std::views::all(levels.at(level_idx));
     }
