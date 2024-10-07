@@ -18,13 +18,16 @@ TEST_CASE("KMP") {
     auto idx_opt = KMP(word, str);
     REQUIRE(idx_opt.has_value());
     auto idx = *idx_opt;
-    REQUIRE(str.substr(idx, word.size()) == word);
+    REQUIRE(idx == 2);
   }
 
   SUBCASE("dismatch") {
     std::string str = "abababbaa";
     std::string word = "ababaa";
     auto idx_opt = KMP(word, str);
+    REQUIRE(!idx_opt.has_value());
+    word = "c";
+    idx_opt = KMP(word, str);
     REQUIRE(!idx_opt.has_value());
   }
 }
