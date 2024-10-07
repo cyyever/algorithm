@@ -9,23 +9,32 @@
 #pragma once
 
 #include <concepts>
-#include <map>
-#include <optional>
 #include <ranges>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 namespace cyy::algorithm {
-
   template <typename T> class trie {
   public:
     using element_id_type = size_t;
+
     struct trie_node {
       element_id_type element_id{0};
       element_id_type parent_id{0};
       bool is_end{false};
+      bool operator==(const trie_node &rhs) const noexcept {
+        return element_id == rhs.element_id;
+      }
     };
+
+    // Custom hash can be a standalone function object.
+    struct trie_node_hash {
+      auto operator()(const trie_node &s) const noexcept {
+        return std::hash<element_id_type>{}(s.element_id);
+      }
+    };
+
     template <std::ranges::input_range Sequences>
       requires std::ranges::input_range<
                    std::ranges::range_value_t<Sequences>> &&
@@ -58,19 +67,15 @@ namespace cyy::algorithm {
         }
         auto node_id = add_data(e);
         auto &level = levels[level_idx];
-        auto it2 =
-            level.try_emplace(node_id, trie_node{node_id, parent_id, false})
-                .first;
+        auto it2 = level.emplace(trie_node{node_id, parent_id, false}).first;
         if (level_idx + 1 == sequence_size) {
-          it2->second.is_end = true;
+          const_cast<trie_node &>(*it2).is_end = true;
         }
         level_idx++;
       }
     }
-    static element_id_type get_data_id(const T &elem) {
-      return node_pool[elem];
-    }
-    static element_id_type add_data(const T &e) {
+    element_id_type get_data_id(const T &elem) { return node_pool[elem]; }
+    element_id_type add_data(const T &e) {
       auto [it, emplaced] = node_pool.emplace(e, next_node_id);
       if (emplaced) {
         next_node_id++;
@@ -78,14 +83,14 @@ namespace cyy::algorithm {
       return it->second;
     }
     auto get_level_view(size_t level_idx) const {
-      return std::views::keys(levels.at(level_idx));
+      return std::views::all(levels.at(level_idx));
     }
 
   private:
-    std::vector<std::unordered_map<element_id_type, trie_node>> levels;
-    static inline std::unordered_map<T, element_id_type> node_pool;
-    static inline std::vector<T> node_pool_elements;
-    static inline element_id_type next_node_id{0};
+    std::vector<std::unordered_set<trie_node, trie_node_hash>> levels;
+    std::unordered_map<T, element_id_type> node_pool;
+    std::vector<T> node_pool_elements;
+    element_id_type next_node_id{0};
   };
 
 } // namespace cyy::algorithm
