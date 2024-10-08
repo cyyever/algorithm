@@ -7,8 +7,8 @@
 
 #include <algorithm>
 #include <ranges>
-#include <vector>
 #include <set>
+#include <vector>
 
 #include <cyy/math/algebra/matrix.hpp>
 
@@ -110,7 +110,7 @@ namespace cyy::algorithm {
 
   private:
     matrix_type A;
-    vector_type b;
+    vector_type b{};
   };
 
 } // namespace cyy::algorithm

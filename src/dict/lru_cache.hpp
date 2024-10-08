@@ -103,11 +103,11 @@ namespace cyy::algorithm {
     private:
       key_type key;
       mapped_type value;
-      lru_cache<key_type, mapped_type> *lru_cache_ptr{};
+      lru_cache<key_type, mapped_type> *lru_cache_ptr{nullptr};
     };
 
-  public:
-    lru_cache(std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
+    explicit lru_cache(
+        std::unique_ptr<storage_backend<key_type, mapped_type>> backend_)
         : backend(std::move(backend_)) {
       load_all_keys = !backend->has_initial_keys();
       auto cpu_num = std::jthread::hardware_concurrency();
@@ -349,7 +349,7 @@ namespace cyy::algorithm {
     void disable_permanent_storage() { permanent = false; }
 
   protected:
-    std::unique_ptr<storage_backend<key_type, mapped_type>> backend;
+    std::unique_ptr<storage_backend<key_type, mapped_type>> backend{};
 
   private:
     mutable std::recursive_mutex data_mutex;
@@ -416,7 +416,6 @@ namespace cyy::algorithm {
         }
       }
 
-    private:
       lru_cache &dict;
       size_t id;
     };
@@ -485,7 +484,6 @@ namespace cyy::algorithm {
         }
       }
 
-    private:
       lru_cache &dict;
       size_t id;
     };

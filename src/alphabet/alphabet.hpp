@@ -15,7 +15,6 @@
 #include <string_view>
 #include <unordered_map>
 
-#include "exception.hpp"
 #include "symbol.hpp"
 
 namespace cyy::algorithm {
@@ -30,7 +29,9 @@ namespace cyy::algorithm {
     ALPHABET(ALPHABET &&) noexcept = default;
     ALPHABET &operator=(ALPHABET &&) noexcept = default;
     virtual ~ALPHABET() = default;
-    bool operator==(const ALPHABET &rhs) const = default;
+    bool operator==(const ALPHABET &rhs) const {
+      return name==rhs.name;
+    }
 
     auto get_view() const noexcept {
       return std::ranges::views::iota(static_cast<size_t>(0), size()) |
@@ -59,12 +60,14 @@ namespace cyy::algorithm {
 
     const std::string &get_name() const noexcept { return name; }
 
-    virtual bool support_ASCII_escape_sequence() const noexcept { return false; }
+    virtual bool support_ASCII_escape_sequence() const noexcept {
+      return false;
+    }
 
     virtual symbol_type get_symbol(size_t index) const = 0;
     void set_MMA_draw_fun(
         std::function<std::string(const ALPHABET &, symbol_type)> fun) {
-      MMA_draw_fun_ptr = std::make_shared<decltype(fun)>(fun);
+      MMA_draw_fun_ptr = std::move(fun);
     }
     virtual std::string MMA_draw(symbol_type symbol) const;
 
@@ -84,20 +87,22 @@ namespace cyy::algorithm {
       return {'\'', static_cast<char>(symbol), '\''};
     }
 
-    static  std::unordered_map<std::string, std::shared_ptr<ALPHABET>>& get_factory();
+    static std::unordered_map<std::string, std::shared_ptr<ALPHABET>> &
+    get_factory();
 
-    std::shared_ptr<std::function<std::string(const ALPHABET &, symbol_type)>>
-        MMA_draw_fun_ptr;
+    std::function<std::string(const ALPHABET &, symbol_type)> MMA_draw_fun_ptr;
     std::string name;
-
   };
 
   class ALPHABET_ptr : public std::shared_ptr<ALPHABET> {
   public:
     using std::shared_ptr<ALPHABET>::shared_ptr;
-template <typename T>
+    template <typename T>
+    // NOLINTNEXTLINE
     ALPHABET_ptr(T strv) : ALPHABET_ptr(ALPHABET::get(strv)) {}
-    ALPHABET_ptr(const std::shared_ptr<ALPHABET> &ptr) noexcept : shared_ptr(ptr) {}
+    // NOLINTNEXTLINE
+    ALPHABET_ptr(const std::shared_ptr<ALPHABET> &ptr) noexcept
+        : shared_ptr(ptr) {}
   };
 
   inline auto endmarked_symbol_string(symbol_string_view str) noexcept {

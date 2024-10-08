@@ -71,7 +71,7 @@ namespace cyy::algorithm {
       while (true) {
         determin_potential(ts);
         bool forward_direction = true;
-        indexed_edge violating_edge;
+        indexed_edge violating_edge{};
         {
           auto reduced_costs = get_reduced_costs();
           auto it = std::ranges::find_if(ts.U, [&reduced_costs](auto const &e) {
@@ -326,7 +326,7 @@ namespace cyy::algorithm {
           }
           max_abs_cost = std::max(abs_cost, max_abs_cost);
         }
-        weight_type C = static_cast<weight_type>(
+        auto C = static_cast<weight_type>(
             max_abs_cost * graph.get_vertex_number() + 1);
 
         auto B = demand;

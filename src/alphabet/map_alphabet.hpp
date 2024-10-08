@@ -25,7 +25,8 @@ namespace cyy::algorithm {
   class map_alphabet final : public ALPHABET {
   public:
     template <std::ranges::input_range T>
-    requires std::is_same_v<std::ranges::range_value_t<T>,std::pair<const symbol_type, data_type>>
+      requires std::is_same_v<std::ranges::range_value_t<T>,
+                              std::pair<const symbol_type, data_type>>
     map_alphabet(T &&symbol_map_, std::string_view name_) : ALPHABET(name_) {
       if (symbol_map_.empty()) {
         throw exception::empty_alphabet("symbol map is empty");

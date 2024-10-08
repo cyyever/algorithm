@@ -33,14 +33,14 @@ namespace cyy::algorithm {
         throw std::logic_error("not a tree");
       }
     }
-    size_t get_root() const { return root.value(); }
+    [[nodiscard]] size_t get_root() const { return root.value(); }
     void set_root(vertex_type root_) { root = this->get_vertex_index(root_); }
     void set_root_by_index(size_t root_) noexcept { root = root_; }
-    size_t get_adjacent_vertex(size_t u) const {
+    [[nodiscard]] size_t get_adjacent_vertex(size_t u) const {
       return this->get_adjacent_list(u).begin()->first;
     }
 
-    std::unordered_set<size_t> get_leaves() const {
+    [[nodiscard]] std::unordered_set<size_t> get_leaves() const {
       std::unordered_set<size_t> leaves;
       leaves.reserve(this->get_vertex_number());
       this->breadth_first_search(this->root.value(),
@@ -69,26 +69,25 @@ namespace cyy::algorithm {
 
     directed_tree_base(directed_graph<vertex_type, weight_type> g,
                        vertex_type root_)
-        : DAG<vertex_type, weight_type>(std::move(g)) {
-      root = this->get_vertex_index(root_);
-    }
+        : DAG<vertex_type, weight_type>(std::move(g)),
+          root(this->get_vertex_index(root_)) {}
     using DAG<vertex_type, weight_type>::get_path;
     // get a path from root to u
-    std::vector<size_t> get_path(size_t u) const {
+    [[nodiscard]] std::vector<size_t> get_path(size_t u) const {
       return this->get_path(root, u);
     }
 
     auto get_root() const { return root; }
 
   protected:
-    size_t root;
+    size_t root{};
   };
 
   template <typename vertex_type, typename weight_type = double>
   class directed_tree : public directed_tree_base<vertex_type, weight_type> {
   public:
     using directed_tree_base<vertex_type, weight_type>::directed_tree_base;
-    directed_tree(tree<vertex_type, weight_type> T) {
+    explicit directed_tree(tree<vertex_type, weight_type> T) {
       this->root = T.get_root();
       this->vertex_indices = T.vertex_indices;
       T.breadth_first_search(this->root, [this](auto u, auto v, auto weight) {
@@ -102,7 +101,7 @@ namespace cyy::algorithm {
   public:
     using directed_tree_base<vertex_type, weight_type>::directed_tree_base;
 
-    in_directed_tree(const tree<vertex_type, weight_type> &T) {
+    explicit in_directed_tree(const tree<vertex_type, weight_type> &T) {
       this->root = T.get_root();
       for (auto [v, idx] : T.get_vertices_and_indices()) {
         this->vertex_indices.insert({std::move(v), idx});
@@ -120,7 +119,7 @@ namespace cyy::algorithm {
           this->get_vertex(this->root));
     }
 
-    std::optional<size_t> parent(size_t u) const {
+    [[nodiscard]] std::optional<size_t> parent(size_t u) const {
       auto const &l = this->get_adjacent_list(u);
       if (l.empty()) {
         return {};
@@ -128,7 +127,7 @@ namespace cyy::algorithm {
       return l.begin()->first;
     }
 
-    std::vector<size_t> get_leaves() const {
+    [[nodiscard]] std::vector<size_t> get_leaves() const {
       std::vector<size_t> leaves;
       auto indegrees = this->get_indegrees();
       for (size_t idx = 0; idx < indegrees.size(); idx++) {
@@ -141,7 +140,7 @@ namespace cyy::algorithm {
       return leaves;
     }
 
-    size_t nearest_ancestor(size_t u, size_t v) const {
+    [[nodiscard]] size_t nearest_ancestor(size_t u, size_t v) const {
       if (u == v) {
         return v;
       }
@@ -149,8 +148,8 @@ namespace cyy::algorithm {
       std::unordered_set<size_t> parents{u, v};
       std::optional<size_t> ancestor_opt;
       while (!ancestor_opt) {
-        for (size_t i = 0; i < frontier.size(); i++) {
-          auto parent_opt = parent(frontier[i]);
+        for (auto &i : frontier) {
+          auto parent_opt = parent(i);
           if (!parent_opt) {
             // root
             continue;
@@ -160,7 +159,7 @@ namespace cyy::algorithm {
             ancestor_opt = parent_opt;
             break;
           }
-          frontier[i] = *parent_opt;
+          i = *parent_opt;
         }
       }
       return *ancestor_opt;

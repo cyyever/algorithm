@@ -7,10 +7,10 @@
 
 #pragma once
 
+#include <initializer_list>
 #include <set>
 #include <string>
 #include <string_view>
-#include <initializer_list>
 
 namespace cyy::algorithm {
 

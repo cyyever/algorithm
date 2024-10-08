@@ -12,7 +12,7 @@ namespace cyy::algorithm {
 
   class endmarked_alphabet final : public ALPHABET {
   public:
-    explicit endmarked_alphabet(ALPHABET_ptr alphabet_)
+    endmarked_alphabet(ALPHABET_ptr alphabet_)
         : ALPHABET("placeholder"), alphabet{std::move(alphabet_)} {
       if (alphabet->contain(ALPHABET::endmarker)) {
         has_endmarker = true;

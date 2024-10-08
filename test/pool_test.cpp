@@ -11,7 +11,7 @@
 using namespace cyy::algorithm;
 TEST_CASE("tire construction") {
   SUBCASE("string") {
-    cyy::algorithm::pool<char> p;
+    cyy::algorithm::object_pool<char> p;
     static_assert(std::is_same_v<decltype(p)::element_id_type, char>);
   }
 }

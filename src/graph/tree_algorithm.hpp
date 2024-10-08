@@ -66,8 +66,8 @@ namespace cyy::algorithm {
 
     for (auto const &edge : edges) {
       auto [u, v] = edge;
-      auto* u_component = connected_components.find(u);
-      auto* v_component = connected_components.find(v);
+      auto *u_component = connected_components.find(u);
+      auto *v_component = connected_components.find(v);
       if (u_component != v_component) {
         MST.add_edge({g.get_edge(edge)});
         connected_components.UNION(u_component, v_component);

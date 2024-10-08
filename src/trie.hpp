@@ -44,7 +44,7 @@ namespace cyy::algorithm {
                std::same_as<std::ranges::range_value_t<
                                 std::ranges::range_value_t<Sequences>>,
                             T>
-    trie(Sequences sequences) {
+    explicit trie(Sequences sequences) {
       size_t level_num = 0;
       for (auto const &r : sequences) {
         level_num = std::max(level_num, std::ranges::size(r));

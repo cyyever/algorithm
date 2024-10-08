@@ -6,15 +6,24 @@
 
 #pragma once
 #include <algorithm>
+#include <cassert>
+#include <concepts>
+#include <cstddef>
+#include <cstdint>
+#include <format>
+#include <functional>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <ranges>
+#include <stdexcept>
+#include <string>
+#include <tuple>
 #include <unordered_map>
+#include <utility>
 #include <vector>
-#include <version>
 
 #include <boost/bimap.hpp>
-#include <format>
 
 namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type> struct edge {
@@ -53,8 +62,10 @@ namespace cyy::algorithm {
     auto operator<=>(const auto &rhs) const noexcept {
       return std::tuple(first, second) <=> std::tuple(rhs.first, rhs.second);
     }
-    bool contains(size_t v) const noexcept { return first == v || second == v; }
-    indexed_edge reverse() const { return indexed_edge(second, first); }
+    [[nodiscard]] bool contains(size_t v) const noexcept {
+      return first == v || second == v;
+    }
+    [[nodiscard]] indexed_edge reverse() const { return {second, first}; }
   };
   using path_type = std::vector<size_t>;
 } // namespace cyy::algorithm
@@ -103,7 +114,7 @@ namespace cyy::algorithm {
         next_vertex_index = std::max(next_vertex_index, idx + 1);
       }
     }
-    bool empty() const { return vertex_indices.empty(); }
+    [[nodiscard]] bool empty() const { return vertex_indices.empty(); }
 
     void print_edges(std::ostream &os) const {
       for (auto const &e : foreach_edge()) {
@@ -111,7 +122,7 @@ namespace cyy::algorithm {
       }
     }
 
-    bool has_continuous_vertices() const {
+    [[nodiscard]] bool has_continuous_vertices() const {
       size_t vertex_index = 0;
       for (auto it = vertex_indices.right.begin();
            it != vertex_indices.right.end(); it++, vertex_index++) {
@@ -222,7 +233,7 @@ namespace cyy::algorithm {
     indexed_edge get_edge(const edge_type &edge) const {
       return {get_vertex_index(edge.first), get_vertex_index(edge.second)};
     }
-    bool has_edge(const indexed_edge &e) const {
+    [[nodiscard]] bool has_edge(const indexed_edge &e) const {
       auto const &l = get_adjacent_list(e.first);
       return std::ranges::find_if(l, [&e](auto const &p) {
                return p.first == e.second;
@@ -249,12 +260,12 @@ namespace cyy::algorithm {
     bool has_vertex(const vertex_type &vertex) const {
       return vertex_indices.left.find(vertex) != vertex_indices.left.end();
     }
-    bool has_vertex_index(size_t vertex_index) const {
+    [[nodiscard]] bool has_vertex_index(size_t vertex_index) const {
       return vertex_indices.right.find(vertex_index) !=
              vertex_indices.right.end();
     }
     // get a path from u to v
-    path_type get_path(size_t u, size_t v) const {
+    [[nodiscard]] path_type get_path(size_t u, size_t v) const {
       path_type path{u};
       while (u != v) {
         auto const &l = this->get_adjacent_list(u);
@@ -268,7 +279,9 @@ namespace cyy::algorithm {
       return path;
     }
     // get a path from u to v
-    bool has_path(size_t u, size_t v) const { return !get_path(u, v).empty(); }
+    [[nodiscard]] bool has_path(size_t u, size_t v) const {
+      return !get_path(u, v).empty();
+    }
     void add_edge(const edge_type &e) {
       add_directed_edge(e);
       if constexpr (!directed) {
@@ -336,8 +349,10 @@ namespace cyy::algorithm {
         return std::pair<const vertex_type &, size_t>{it.first, it.second};
       });
     }
-    size_t get_vertex_number() const { return vertex_indices.size(); }
-    size_t get_edge_number() const {
+    [[nodiscard]] size_t get_vertex_number() const {
+      return vertex_indices.size();
+    }
+    [[nodiscard]] size_t get_edge_number() const {
       return static_cast<size_t>(std::ranges::distance(foreach_edge()));
     }
     const vertex_type &get_vertex(size_t index) const {
@@ -396,7 +411,8 @@ namespace cyy::algorithm {
     // depth first search in g from s
 
     void recursive_depth_first_search(
-        size_t s, std::function<bool(size_t, size_t)> after_edge_fun) const {
+        size_t s,
+        const std::function<bool(size_t, size_t)> &after_edge_fun) const {
       assert(has_vertex_index(s));
 
       std::vector<bool> explored(get_next_vertex_index(), false);
@@ -441,7 +457,7 @@ namespace cyy::algorithm {
       }
     }
 
-    bool is_connected() const {
+    [[nodiscard]] bool is_connected() const {
       // empty graph
       if (vertex_indices.empty()) {
         return false;
@@ -453,7 +469,7 @@ namespace cyy::algorithm {
       return tree_edge_num + 1 == get_vertex_number();
     }
 
-    bool is_tree(size_t root = SIZE_MAX) const {
+    [[nodiscard]] bool is_tree(size_t root = SIZE_MAX) const {
       // empty graph
       if (vertex_indices.empty()) {
         return false;
@@ -482,7 +498,6 @@ namespace cyy::algorithm {
       }
 #endif
       neighbors.emplace_back(second_index, e.weight);
-      return;
     }
     bool remove_directed_edge(const edge_type &e) {
       return remove_directed_edge({get_vertex(e.first), get_vertex(e.second)});
@@ -497,7 +512,6 @@ namespace cyy::algorithm {
                  [&](auto const &a) { return a.first == e.second; }) != 0;
     }
 
-  protected:
     std::unordered_map<size_t, std::list<std::pair<size_t, weight_type>>>
         weighted_adjacent_list;
     boost::bimap<vertex_type, size_t> vertex_indices;
@@ -515,17 +529,17 @@ namespace cyy::algorithm {
   };
 } // namespace cyy::algorithm
 
-#ifdef __cpp_lib_format
 namespace std {
-
   template <cyy::algorithm::IsGraph G> struct formatter<G> {
-    // Parses format specifications
+    // // Parses format specifications
     constexpr auto parse(format_parse_context &ctx) -> decltype(ctx.begin()) {
       // Parse the presentation format and store it in the formatter:
-      auto it = ctx.begin(), end = ctx.end();
+      const auto *it = ctx.begin();
+      const auto *end = ctx.end();
       // Check if reached the end of the range:
-      if (it != end && *it != '}')
+      if (it != end && *it != '}') {
         throw format_error("invalid format");
+      }
       // Return an iterator past the end of the parsed range:
       return it;
     }
@@ -544,4 +558,3 @@ namespace std {
     }
   };
 } // namespace std
-#endif

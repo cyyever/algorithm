@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "alphabet.hpp"
+#include "exception.hpp"
 
 namespace cyy::algorithm {
 
@@ -62,7 +63,7 @@ namespace cyy::algorithm {
       return symbols[index];
     }
 
-    std::vector<symbol_type> symbols{};
+    std::vector<symbol_type> symbols;
   };
 
   class number_set_alphabet final : public set_alphabet {
