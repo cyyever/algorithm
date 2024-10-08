@@ -7,7 +7,7 @@ include(cmake/all.cmake)
 option(BUILD_PYTHON_BINDING "Build python binding" OFF)
 file(GLOB_RECURSE SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
 
-find_package(Boost)
+find_package(Boost CONFIG)
 find_package(Eigen3)
 find_package(spdlog)
 find_package(CyyNaiveLib)

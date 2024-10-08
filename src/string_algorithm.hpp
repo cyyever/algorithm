@@ -19,16 +19,17 @@ namespace cyy::algorithm {
 
   // Create KMP table
   template < std::ranges::random_access_range U>
-   std::vector<size_t> KMP_table(U word,const std::optional<std::ranges::range_value_t<decltype(word)>> & any_char={}) {
+   std::vector<size_t> KMP_table(U word,const std::optional<std::ranges::range_value_t<decltype(word)>> & any_char_opt={}) {
     // for each substring w1...ws,compute the longest proper prefix w1...wf(s)
     // that is a suffix of w1...ws
-    std::vector<size_t> failure_function(word.size(), 0);
+    auto word_size= std::ranges::size(word);
+    std::vector<size_t> failure_function(word_size, 0);
     // f[1] is always empty string,so we begin with w2;
-    for (size_t i = 2; i < word.size(); i++) {
-      auto const &next_char = word[i - 1];
+    for (size_t i = 2; i < word_size; i++) {
+      auto const &w = word[i - 1];
       auto t = failure_function[i - 1];
       while (true) {
-        if (word[t] == next_char) {
+        if (word[t] == w|| word[t]==any_char_opt||w==any_char_opt) {
           failure_function[i] = t + 1;
           break;
         }
@@ -46,23 +47,27 @@ namespace cyy::algorithm {
   template <std::ranges::random_access_range U, std::ranges::random_access_range V>
     requires std::same_as<std::ranges::range_value_t<U>,
                           std::ranges::range_value_t<V>>
-  std::optional<size_t> KMP(U word, V str) {
+  std::optional<size_t> KMP(U word, V str,const std::optional<std::ranges::range_value_t<decltype(word)>> & any_char_opt={}) {
     if (std::ranges::empty(word)) {
       return 0;
     }
     // for each substring w1...ws,compute the longest proper prefix w1...wf(s)
     // that is a suffix of w1...ws
-    std::vector<size_t> failure_function =  KMP_table(word);
+    std::vector<size_t> failure_function =  KMP_table(word,any_char_opt);
     size_t s = 0;
     size_t i=0;
-    for (auto const &next_char:str) {
-      while (s > 0 && word[s] != next_char) {
-        s = failure_function[s];
-      }
-      if (word[s] == next_char) {
+    auto seq_size=std::ranges::size(str);
+    while(i<seq_size) {
+      auto const &c=str[i];
+      if (word[s] == c || any_char_opt==word[s]) {
         s++;
         if (s == word.size()) {
           return i + 1 - s;
+        }
+      } else {
+        if(s>0) {
+          s = failure_function[s];
+          continue;
         }
       }
       i++;
