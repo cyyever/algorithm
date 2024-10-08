@@ -5,11 +5,7 @@
  */
 #pragma once
 
-#include <algorithm>
-#include <iostream>
-#include <memory>
 #include <numeric>
-#include <optional>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -20,7 +16,7 @@ namespace cyy::algorithm {
   template <typename vertex_type = size_t, typename weight_type = double>
   class flow_network {
   private:
-    enum class s_t_path_type { random = 0, shortest };
+    enum class s_t_path_type:std::uint8_t { random = 0, shortest };
 
   public:
     using edge_type = edge<vertex_type, weight_type>;

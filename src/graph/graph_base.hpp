@@ -93,7 +93,7 @@ namespace cyy::algorithm {
     using edge_type = edge<vertexType, weightType>;
     using vertex_type = vertexType;
     using weight_type = weightType;
-    using vertex_index_map_type = std::unordered_map<vertex_type, size_t>;
+    // using vertex_index_map_type = std::unordered_map<vertex_type, size_t>;
     using adjacent_matrix_type = std::vector<std::vector<weight_type>>;
     static constexpr bool is_directed = directed;
     graph_base() = default;
