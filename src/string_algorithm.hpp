@@ -17,18 +17,9 @@
 
 namespace cyy::algorithm {
 
-  // find word from str
-  template <std::ranges::input_range U, std::ranges::input_range V>
-    requires std::same_as<std::ranges::range_value_t<U>,
-                          std::ranges::range_value_t<V>>
-  std::optional<size_t> KMP(U word, V str) {
-    if (word.size() > str.size()) {
-      return {};
-    }
-    if (word.empty()) {
-      return 0;
-    }
-
+  // Create KMP table
+  template < std::ranges::random_access_range U>
+   std::vector<size_t> KMP_table(U word,const std::optional<std::ranges::range_value_t<decltype(word)>> & any_char={}) {
     // for each substring w1...ws,compute the longest proper prefix w1...wf(s)
     // that is a suffix of w1...ws
     std::vector<size_t> failure_function(word.size(), 0);
@@ -47,10 +38,24 @@ namespace cyy::algorithm {
         t = failure_function[t];
       }
     }
+    return failure_function;
+   }
 
+
+  // find word from str
+  template <std::ranges::random_access_range U, std::ranges::random_access_range V>
+    requires std::same_as<std::ranges::range_value_t<U>,
+                          std::ranges::range_value_t<V>>
+  std::optional<size_t> KMP(U word, V str) {
+    if (std::ranges::empty(word)) {
+      return 0;
+    }
+    // for each substring w1...ws,compute the longest proper prefix w1...wf(s)
+    // that is a suffix of w1...ws
+    std::vector<size_t> failure_function =  KMP_table(word);
     size_t s = 0;
-    for (size_t i = 0; i < str.size(); i++) {
-      auto next_char = str[i];
+    size_t i=0;
+    for (auto const &next_char:str) {
       while (s > 0 && word[s] != next_char) {
         s = failure_function[s];
       }
@@ -60,6 +65,7 @@ namespace cyy::algorithm {
           return i + 1 - s;
         }
       }
+      i++;
     }
     return {};
   }
