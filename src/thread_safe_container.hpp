@@ -222,11 +222,11 @@ namespace cyy::algorithm {
     void pop_front_wrapper() { container.erase(container.begin()); }
 
     void recycle_cv(std::unique_ptr<std::condition_variable_any> &ptr) const {
-      std::lock_guard lock(cv_mutex);
+      std::lock_guard const lock(cv_mutex);
       cv_pool.emplace_back(std::move(ptr));
     }
     std::unique_ptr<std::condition_variable_any> get_cv() const {
-      std::lock_guard lock(cv_mutex);
+      std::lock_guard const lock(cv_mutex);
       if (!cv_pool.empty()) {
         auto cv_ptr = std::move(cv_pool.back());
         cv_pool.pop_back();

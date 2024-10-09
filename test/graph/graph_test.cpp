@@ -15,12 +15,10 @@ using namespace cyy::algorithm;
 TEST_CASE("graph") {
   cyy::algorithm::graph<std::string> g;
   cyy::algorithm::directed_graph<std::string> h;
-/* #ifdef __cpp_lib_format */
-/*   SUBCASE("print") { */
-/*     g.add_edge({"1", "2"}); */
-/*     std::cout << std::format("{}", g) << std::endl; */
-/*   } */
-/* #endif */
+  // SUBCASE("print") {
+  //   g.add_edge({"1", "2"});
+  //   std::cout << std::format("{}", g) << std::endl;
+  // }
   SUBCASE("process edge") {
     g.add_edge({"1", "2"});
     g.remove_edge({"1", "2"});

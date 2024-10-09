@@ -259,7 +259,6 @@ namespace cyy::algorithm {
       return *it;
     }
 
-  private:
     vector_type c;
     polyhedron<number_type> A_b;
     std::optional<matrix_type> kernel_space;

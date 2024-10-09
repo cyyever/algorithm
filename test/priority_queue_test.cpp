@@ -11,7 +11,6 @@
 
 using namespace cyy::algorithm;
 
-
 TEST_CASE("priority_queue") {
   cyy::algorithm::priority_queue<int, int> h;
   REQUIRE(h.empty());

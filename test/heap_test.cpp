@@ -30,5 +30,3 @@ TEST_CASE("heap") {
     REQUIRE(h.empty());
   }
 }
-
-

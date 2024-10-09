@@ -27,13 +27,14 @@ namespace cyy::algorithm {
   class common_tokens final : public interval_alphabet {
   public:
     common_tokens()
-        : interval_alphabet(0,
-                            static_cast<symbol_type>(common_token::_end) - 1,
+        : interval_alphabet(0, static_cast<symbol_type>(common_token::_end) - 1,
                             "common_tokens") {}
 
   private:
     std::string _to_string(symbol_type symbol) const override;
-    bool support_ASCII_escape_sequence() const noexcept override { return true; }
+    bool support_ASCII_escape_sequence() const noexcept override {
+      return true;
+    }
   };
 
 } // namespace cyy::algorithm
