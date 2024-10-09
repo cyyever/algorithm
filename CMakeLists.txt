@@ -43,8 +43,8 @@ if(BUILD_PYTHON_BINDING)
 endif()
 
 # test
-option(BUILD_TEST "Build test" OFF)
-if(BUILD_TEST)
+option(BUILD_TESTING "Build test" OFF)
+if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 
