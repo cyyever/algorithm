@@ -21,7 +21,7 @@ namespace cyy::algorithm {
   public:
     template <std::ranges::random_access_range U>
       requires std::same_as<std::ranges::range_value_t<U>, T>
-    explicit KMP(const U& p, const std::optional<T> &any_char_opt_ = {})
+    explicit KMP(const U &p, const std::optional<T> &any_char_opt_ = {})
         : pattern(p), any_char_opt(any_char_opt_) {
       // for each substring w1...ws,compute the longest proper prefix w1...wf(s)
       // that is a suffix of w1...ws
@@ -47,7 +47,7 @@ namespace cyy::algorithm {
 
     template <std::ranges::random_access_range U>
       requires std::same_as<std::ranges::range_value_t<U>, T>
-    std::optional<size_t> search(const U & str) {
+    std::optional<size_t> search(const U &str) {
       if (failure_function.empty()) {
         return 0;
       }

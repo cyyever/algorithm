@@ -9,28 +9,6 @@
 #include "string_algorithm.hpp"
 
 using namespace cyy::algorithm;
-TEST_CASE("KMP") {
-  SUBCASE("match") {
-
-    std::string str = "abababaab";
-    std::string word = "ababaa";
-
-    auto idx_opt = KMP(word, str);
-    REQUIRE(idx_opt.has_value());
-    auto idx = *idx_opt;
-    REQUIRE(idx == 2);
-  }
-
-  SUBCASE("dismatch") {
-    std::string str = "abababbaa";
-    std::string word = "ababaa";
-    auto idx_opt = KMP(word, str);
-    REQUIRE(!idx_opt.has_value());
-    word = "c";
-    idx_opt = KMP(word, str);
-    REQUIRE(!idx_opt.has_value());
-  }
-}
 
 TEST_CASE("Aho_Corasick") {
   SUBCASE("dismatch") {

@@ -29,9 +29,7 @@ namespace cyy::algorithm {
     ALPHABET(ALPHABET &&) noexcept = default;
     ALPHABET &operator=(ALPHABET &&) noexcept = default;
     virtual ~ALPHABET() = default;
-    bool operator==(const ALPHABET &rhs) const {
-      return name==rhs.name;
-    }
+    bool operator==(const ALPHABET &rhs) const { return name == rhs.name; }
 
     auto get_view() const noexcept {
       return std::ranges::views::iota(static_cast<size_t>(0), size()) |

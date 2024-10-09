@@ -12,7 +12,7 @@ using namespace cyy::algorithm;
 TEST_CASE("tire construction") {
   SUBCASE("string") {
     cyy::algorithm::trie<char> string_trie(
-        std::initializer_list{std::string("abc"), std::string("abd")});
+        std::initializer_list<std::string>{std::string("abc"), std::string("abd")});
     auto view = string_trie.get_level_view(0);
     REQUIRE(std::ranges::size(view) == 1);
     for (auto a : view) {
@@ -35,7 +35,7 @@ TEST_CASE("tire construction") {
   }
   SUBCASE("std::vector<int>") {
     cyy::algorithm::trie<int> string_trie(
-        std::initializer_list{std::vector{1, 2, 3}, std::vector{1, 2, 4}});
+        std::vector<std::vector<int>>{std::vector{1, 2, 3}, std::vector{1, 2, 4}});
     auto view = string_trie.get_level_view(0);
     REQUIRE(std::ranges::size(view) == 1);
     for (auto a : view) {
