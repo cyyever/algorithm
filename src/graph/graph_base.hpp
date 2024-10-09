@@ -49,19 +49,14 @@ namespace cyy::algorithm {
   struct indexed_edge {
     size_t first;
     size_t second;
-    indexed_edge() = default;
     indexed_edge(size_t first_, size_t second_)
         : first(first_), second(second_) {
       if (first == second) {
         throw std::runtime_error("not an edge");
       }
     }
-    auto operator==(const auto &rhs) const noexcept {
-      return first == rhs.first && second == rhs.second;
-    }
-    auto operator<=>(const auto &rhs) const noexcept {
-      return std::tuple(first, second) <=> std::tuple(rhs.first, rhs.second);
-    }
+    bool operator==(const indexed_edge &rhs) const noexcept = default;
+    auto operator<=>(const indexed_edge &rhs) const noexcept =default;
     [[nodiscard]] bool contains(size_t v) const noexcept {
       return first == v || second == v;
     }
