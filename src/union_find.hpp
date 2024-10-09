@@ -13,13 +13,10 @@ namespace cyy::algorithm {
     struct node;
 
   public:
-    template <std::ranges::input_range U>
+    template <std::ranges::range U>
       requires std::same_as<data_type, std::ranges::range_value_t<U>>
     explicit union_find(U data) {
-      if (data.size() == 0) {
-        return;
-      }
-      nodes.reserve(data.size());
+      nodes.reserve(std::ranges::size(data));
       for (auto const &item : data) {
         nodes.emplace(item, std::make_unique<node>());
       }
@@ -37,7 +34,7 @@ namespace cyy::algorithm {
     }
 
     void UNION(node *a, node *b) {
-      if (a == b) {
+      if (!a || !b || a==b) {
         return;
       }
       if (a->rank < b->rank) {

@@ -17,7 +17,22 @@ TEST_CASE("KMP") {
 
     KMP<char> kmp(word);
     auto idx_opt = kmp.search(str);
-    REQUIRE(idx_opt ==2);
+    REQUIRE(idx_opt == 2);
+     str = "2111222";
+     word = "111222";
+
+    KMP<char> kmp2(word);
+    idx_opt = kmp2.search(str);
+    REQUIRE(idx_opt == 1);
+  }
+  SUBCASE("match empty") {
+
+    std::string str = "abababaab";
+    std::string word = "";
+
+    KMP<char> kmp(word);
+    auto idx_opt = kmp.search(str);
+    REQUIRE(idx_opt == 0);
   }
 
   SUBCASE("dismatch") {

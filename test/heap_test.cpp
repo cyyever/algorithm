@@ -28,5 +28,7 @@ TEST_CASE("heap") {
     REQUIRE_EQ(h.top(), 5);
     h.pop();
     REQUIRE(h.empty());
+    h.pop();
+    REQUIRE(h.empty());
   }
 }

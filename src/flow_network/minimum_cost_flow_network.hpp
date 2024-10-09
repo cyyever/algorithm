@@ -7,15 +7,12 @@
 #pragma once
 
 #include <algorithm>
-#include <memory>
-#include <numeric>
 #include <optional>
-#include <ranges>
 #include <utility>
 #include <vector>
 
 #include "graph/tree.hpp"
-#include "hash.hpp"
+// #include "hash.hpp"
 namespace cyy::algorithm {
   template <typename vertex_type = size_t, typename weight_type = double>
   class minimum_cost_flow_network {
@@ -71,7 +68,7 @@ namespace cyy::algorithm {
       while (true) {
         determin_potential(ts);
         bool forward_direction = true;
-        indexed_edge violating_edge{};
+        std::optional<indexed_edge> violating_edge;
         {
           auto reduced_costs = get_reduced_costs();
           auto it = std::ranges::find_if(ts.U, [&reduced_costs](auto const &e) {
@@ -93,21 +90,22 @@ namespace cyy::algorithm {
             }
           }
         }
-        assert(costs.contains(violating_edge));
+        assert(violating_edge);
+        assert(costs.contains(violating_edge.value()));
         // create cycle
         in_directed_tree in_T(ts.T);
         auto ancestor =
-            in_T.nearest_ancestor(violating_edge.first, violating_edge.second);
+            in_T.nearest_ancestor(violating_edge->first, violating_edge->second);
         std::vector<size_t> cycle;
         if (forward_direction) {
-          cycle = in_T.get_path(violating_edge.first, size_t(ancestor));
+          cycle = in_T.get_path(violating_edge->first, size_t(ancestor));
           std::ranges::reverse(cycle);
-          auto path = in_T.get_path(violating_edge.second, ancestor);
+          auto path = in_T.get_path(violating_edge->second, ancestor);
           cycle.insert(cycle.end(), path.begin(), path.end());
         } else {
-          cycle = in_T.get_path(violating_edge.second, ancestor);
+          cycle = in_T.get_path(violating_edge->second, ancestor);
           std::ranges::reverse(cycle);
-          auto path = in_T.get_path(violating_edge.first, ancestor);
+          auto path = in_T.get_path(violating_edge->first, ancestor);
           cycle.insert(cycle.end(), path.begin(), path.end());
         }
         std::optional<weight_type> delta_opt;
@@ -163,10 +161,10 @@ namespace cyy::algorithm {
           }
         }
         assert(last_blocking_edge.has_value());
-        assert(costs.contains(violating_edge));
+        assert(costs.contains(violating_edge.value()));
 
         ts.T.remove_edge(last_blocking_edge.value());
-        ts.T.add_edge(graph.get_edge(violating_edge));
+        ts.T.add_edge(graph.get_edge(violating_edge.value()));
       }
 
       // check if G has a feasible flow

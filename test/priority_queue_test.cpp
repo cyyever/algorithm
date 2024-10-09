@@ -16,8 +16,9 @@ TEST_CASE("priority_queue") {
   REQUIRE(h.empty());
 
   SUBCASE("insert") {
-    h.insert(5, 5);
-    h.insert(1, 1);
+    REQUIRE(h.insert(5, 5));
+    REQUIRE(h.insert(1, 1));
+    REQUIRE(!h.insert(1, 1));
   }
   SUBCASE("top_data") {
     h.insert(5, 5);
@@ -31,6 +32,7 @@ TEST_CASE("priority_queue") {
     REQUIRE_EQ(h.top_data(), 5);
     h.pop();
     REQUIRE(h.empty());
+    h.pop();
   }
   SUBCASE("change key") {
     h.insert(5, 5);

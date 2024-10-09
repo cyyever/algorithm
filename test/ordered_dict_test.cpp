@@ -55,6 +55,8 @@ TEST_CASE("ordered_dict") {
     CHECK_EQ(k, 2);
     CHECK_EQ(v, "b");
     CHECK(container.empty());
+    container.pop_oldest();
+    CHECK_THROWS(container.pop_oldest());
     CHECK_THROWS(container.pop_oldest());
   }
 }

@@ -27,16 +27,6 @@ namespace cyy::algorithm {
     using mutex_type = std::shared_mutex;
     using container_type = ContainerType;
 
-    thread_safe_container() = default;
-    ~thread_safe_container() = default;
-
-    thread_safe_container(const thread_safe_container &) = default;
-    thread_safe_container &operator=(const thread_safe_container &) = default;
-
-    thread_safe_container(thread_safe_container &&) noexcept = default;
-    thread_safe_container &
-    operator=(thread_safe_container &&) noexcept = default;
-
     class const_reference final {
     public:
       const_reference(const container_type &container_, mutex_type &mutex_)
