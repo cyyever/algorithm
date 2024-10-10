@@ -17,53 +17,6 @@
 
 namespace cyy::algorithm {
 
-  // find word from str
-  template <std::ranges::input_range U, std::ranges::input_range V>
-    requires std::same_as<std::ranges::range_value_t<U>,
-                          std::ranges::range_value_t<V>>
-  std::optional<size_t> KMP(U word, V str) {
-    if (word.size() > str.size()) {
-      return {};
-    }
-    if (word.empty()) {
-      return 0;
-    }
-
-    // for each substring w1...ws,compute the longest proper prefix w1...wf(s)
-    // that is a suffix of w1...ws
-    std::vector<size_t> failure_function(word.size(), 0);
-    // f[1] is always empty string,so we begin with w2;
-    for (size_t i = 2; i < word.size(); i++) {
-      auto const &next_char = word[i - 1];
-      auto t = failure_function[i - 1];
-      while (true) {
-        if (word[t] == next_char) {
-          failure_function[i] = t + 1;
-          break;
-        }
-        if (t == 0) {
-          break;
-        }
-        t = failure_function[t];
-      }
-    }
-
-    size_t s = 0;
-    for (size_t i = 0; i < str.size(); i++) {
-      auto next_char = str[i];
-      while (s > 0 && word[s] != next_char) {
-        s = failure_function[s];
-      }
-      if (word[s] == next_char) {
-        s++;
-        if (s == word.size()) {
-          return i + 1 - s;
-        }
-      }
-    }
-    return {};
-  }
-
   // find one of words from str
   template <typename CharT>
   std::basic_string_view<CharT>

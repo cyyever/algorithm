@@ -29,6 +29,7 @@ TEST_CASE("thread_safe_linear_container") {
     container.clear();
     {
       std::vector<std::jthread> thds;
+      thds.reserve(10);
       for (int i = 0; i < 10; i++) {
         thds.emplace_back([i, &container]() { container.push_back(i); });
       }
@@ -55,15 +56,33 @@ TEST_CASE("thread_safe_linear_container") {
     container.clear();
     CHECK(container.const_ref()->empty());
   }
+  SUBCASE("back") {
+    using namespace std::chrono_literals;
+    container.clear();
+    CHECK(container.const_ref()->empty());
+
+    std::stop_source source;
+    std::jthread pop_thd(
+        [&container, &source] { container.back(1ms, source.get_token()); });
+    source.request_stop();
+    std::jthread back_thd([&container] {
+      auto val = container.back(1000ms);
+      CHECK_EQ(val, 5);
+    });
+    container.push_back(5);
+  }
   SUBCASE("batch_pop_front") {
     container.emplace_back(1);
     container.emplace_back(2);
     auto res = container.batch_pop_front(2, std::chrono::milliseconds(1));
     REQUIRE_EQ(res, std::vector<int>{1, 2});
+    res = container.batch_pop_front(2, std::chrono::milliseconds(1));
+    REQUIRE(res.empty());
   }
   SUBCASE("concurrently pop_front") {
     std::vector<std::jthread> thds;
 
+    thds.reserve(10);
     for (int i = 0; i < 10; i++) {
       thds.emplace_back([&container]() {
         CHECK(!container.pop_front(std::chrono::microseconds(1)).has_value());
@@ -74,7 +93,7 @@ TEST_CASE("thread_safe_linear_container") {
     container.clear();
     {
       std::vector<std::jthread> thds;
-      for (int i = 0; i < 500; i++) {
+      for (size_t i = 0; i < 500; i++) {
         thds.emplace_back([i, &container]() { container.push_back(i); });
         thds.emplace_back([&container]() {
           CHECK(container.pop_front(std::chrono::minutes(1)).has_value());

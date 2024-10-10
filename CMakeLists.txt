@@ -8,7 +8,7 @@ option(BUILD_PYTHON_BINDING "Build python binding" OFF)
 file(GLOB_RECURSE src_files ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
 file(GLOB_RECURSE headers ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.hpp)
 
-find_package(Boost)
+find_package(Boost CONFIG)
 find_package(Eigen3)
 find_package(spdlog)
 find_package(CyyNaiveLib)
@@ -51,8 +51,8 @@ if(BUILD_PYTHON_BINDING)
 endif()
 
 # test
-option(BUILD_TEST "Build test" OFF)
-if(BUILD_TEST)
+option(BUILD_TESTING "Build test" OFF)
+if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
 

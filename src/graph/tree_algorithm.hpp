@@ -9,7 +9,6 @@
 
 #include <cassert>
 #include <map>
-#include <set>
 #include <vector>
 
 #include "graph.hpp"
@@ -57,20 +56,31 @@ namespace cyy::algorithm {
 
   template <typename vertex_type>
   auto MST_kruskal(const graph<vertex_type> &g) {
-    std::set<indexed_edge> edges;
+
+    std::vector<indexed_edge> edges;
+    edges.reserve(g.get_edge_number());
     for (auto e : g.foreach_edge()) {
-      edges.emplace(std::move(e));
+      edges.emplace_back(std::move(e));
     }
-    union_find<size_t> connected_components(g.get_vertex_indices());
+    std::ranges::sort_heap(edges);
+    using uf = union_find<size_t>;
+    std::vector<uf::node_ptr> uf_nodes;
+    uf_nodes.resize(g.get_vertex_number());
     graph<vertex_type> MST;
 
     for (auto const &edge : edges) {
       auto [u, v] = edge;
-      auto *u_component = connected_components.find(u);
-      auto *v_component = connected_components.find(v);
-      if (u_component != v_component) {
+      assert(u < uf_nodes.size());
+      assert(v < uf_nodes.size());
+      if (!uf_nodes[u]) {
+        uf_nodes[u] = uf::make_set(u);
+      }
+      if (!uf_nodes[v]) {
+        uf_nodes[v] = uf::make_set(v);
+      }
+      if (uf::find(uf_nodes[u]) != uf::find(uf_nodes[v])) {
         MST.add_edge({g.get_edge(edge)});
-        connected_components.UNION(u_component, v_component);
+        uf::UNION(uf_nodes[u], uf_nodes[v]);
       }
     }
     return tree(MST, false);

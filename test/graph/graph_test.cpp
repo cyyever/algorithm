@@ -24,7 +24,15 @@ TEST_CASE("graph") {
     g.remove_edge({"1", "2"});
   }
   SUBCASE("rearrange") { g.rearrange_vertices(); }
-  SUBCASE("reverse") { h.get_reverse(); }
+  SUBCASE("reverse") {
+
+    h.add_edge({"1", "2"});
+    auto new_h = h.get_reverse();
+    for (auto const &e : new_h.foreach_edge()) {
+      REQUIRE_EQ(e.first, 1);
+      REQUIRE_EQ(e.second, 0);
+    }
+  }
   SUBCASE("depth first recursive search") {
     h.add_edge({"1", "2"});
     h.recursive_depth_first_search(0, [](auto u, auto v) {
