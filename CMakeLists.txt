@@ -5,7 +5,8 @@ project(CyyAlgorithmLib LANGUAGES CXX)
 include(cmake/all.cmake)
 
 option(BUILD_PYTHON_BINDING "Build python binding" OFF)
-file(GLOB_RECURSE SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
+file(GLOB_RECURSE src_files ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
+file(GLOB_RECURSE headers ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.hpp)
 
 find_package(Boost)
 find_package(Eigen3)
@@ -15,9 +16,9 @@ find_package(CyyNaiveLib)
 option(BUILD_OBJECT_LIB "Build CMake object libraries" OFF)
 
 if(BUILD_OBJECT_LIB)
-  add_library(CyyAlgorithmLib OBJECT ${SOURCE})
+  add_library(CyyAlgorithmLib OBJECT ${src_files})
 else()
-  add_library(CyyAlgorithmLib ${SOURCE})
+  add_library(CyyAlgorithmLib ${src_files})
 endif()
 
 if(TARGET Eigen3::eigen)
@@ -34,9 +35,16 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   target_compile_options(CyyAlgorithmLib PUBLIC -fexperimental-library)
 endif()
 
-target_include_directories(
-  CyyAlgorithmLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-                         $<INSTALL_INTERFACE:include/cyy/algorithm>)
+target_sources(
+  CyyAlgorithmLib
+  PUBLIC FILE_SET
+         public_headers
+         TYPE
+         HEADERS
+         BASE_DIRS
+         src
+         FILES
+         ${headers})
 
 if(BUILD_PYTHON_BINDING)
   add_subdirectory(python_binding)
@@ -57,17 +65,8 @@ endif()
 install(
   TARGETS CyyAlgorithmLib
   EXPORT CyyAlgorithmLibConfig
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib COMPONENT library
-  INCLUDES
-  DESTINATION include)
-
-install(
-  DIRECTORY src/
-  DESTINATION include/cyy/algorithm
-  FILES_MATCHING
-  PATTERN "*.hpp")
+  FILE_SET public_headers)
 
 # install cmake config file
-install(EXPORT CyyAlgorithmLibConfig DESTINATION lib/cmake/CyyAlgorithmLib)
+install(EXPORT CyyAlgorithmLibConfig
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CyyAlgorithmLib)
