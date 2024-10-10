@@ -5,61 +5,50 @@
 
 #pragma once
 #include <memory>
-#include <ranges>
-#include <unordered_map>
 namespace cyy::algorithm {
   template <typename data_type> class union_find {
-  private:
-    struct node;
 
   public:
-    template <std::ranges::range U>
-      requires std::same_as<data_type, std::ranges::range_value_t<U>>
-    explicit union_find(U data) {
-      nodes.reserve(std::ranges::size(data));
-      for (auto const &item : data) {
-        nodes.emplace(item, std::make_unique<node>());
-      }
+    struct node {
+      data_type data;
+      size_t rank{};
+      std::shared_ptr<node> representative;
+    };
+    using node_ptr = std::shared_ptr<node>;
+
+    static node_ptr make_set(const data_type &item) {
+      return std::make_shared<node>(item);
     }
-    node *find(const data_type &item) {
-      auto it = nodes.find(item);
-      if (it == nodes.end()) {
+    static const node *find(const node_ptr &ptr) {
+      if (!ptr) {
         return nullptr;
       }
-      return find(it->second.get());
+      return find_impl(ptr).get();
     }
 
-    void UNION(const data_type &a, const data_type &b) {
-      UNION(find(a), find(b));
-    }
-
-    void UNION(node *a, node *b) {
-      if (!a || !b || a==b) {
+    static void UNION(const node_ptr &a, const node_ptr &b) {
+      if (!a || !b || a == b) {
         return;
       }
-      if (a->rank < b->rank) {
-        a->representative = b;
-      } else if (a->rank > b->rank) {
-        b->representative = a;
+      const auto &a_root = find_impl(a);
+      const auto &b_root = find_impl(b);
+      if (a_root->rank < b_root->rank) {
+        a_root->representative = b;
+      } else if (a_root->rank > b_root->rank) {
+        b_root->representative = a;
       } else {
-        a->representative = b;
-        b->rank++;
+        a_root->representative = b;
+        b_root->rank++;
       }
     }
 
   private:
-    node *find(node *node_ptr) const {
-      if (!node_ptr->representative) {
-        return node_ptr;
+    static const node_ptr &find_impl(const node_ptr &ptr) {
+      if (!ptr->representative) {
+        return ptr;
       }
-      node_ptr->representative = find(node_ptr->representative);
-      return node_ptr->representative;
+      ptr->representative = find_impl(ptr->representative);
+      return ptr->representative;
     }
-
-    struct node {
-      size_t rank{};
-      node *representative = {};
-    };
-    std::unordered_map<data_type, std::unique_ptr<node>> nodes;
   };
 } // namespace cyy::algorithm

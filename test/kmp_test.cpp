@@ -18,8 +18,8 @@ TEST_CASE("KMP") {
     KMP<char> kmp(word);
     auto idx_opt = kmp.search(str);
     REQUIRE(idx_opt == 2);
-     str = "2111222";
-     word = "111222";
+    str = "2111222";
+    word = "111222";
 
     KMP<char> kmp2(word);
     idx_opt = kmp2.search(str);
@@ -28,7 +28,7 @@ TEST_CASE("KMP") {
   SUBCASE("match empty") {
 
     std::string str = "abababaab";
-    std::string word = "";
+    std::string word;
 
     KMP<char> kmp(word);
     auto idx_opt = kmp.search(str);

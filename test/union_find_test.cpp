@@ -3,24 +3,19 @@
  *
  */
 
-#include <vector>
-
 #include <doctest/doctest.h>
 
 #include "union_find.hpp"
 
-using namespace cyy::algorithm;
 TEST_CASE("union_find") {
-  std::vector<int> data{1, 2, 3};
-  cyy::algorithm::union_find<int> h(data);
-  REQUIRE(h.find(1));
-  REQUIRE(h.find(2));
-  REQUIRE(h.find(3));
-  REQUIRE(!h.find(4));
-  h.UNION(1, 2);
-  h.UNION(1, 3);
-  REQUIRE_EQ(h.find(1), h.find(2));
-  REQUIRE_EQ(h.find(1), h.find(3));
-  h.UNION(5, 9);
-  h.UNION(1, 9);
+  using uf = cyy::algorithm::union_find<int>;
+  auto node1 = uf::make_set(1);
+  auto node2 = uf::make_set(2);
+  auto node3 = uf::make_set(3);
+  REQUIRE_EQ(uf::find(node1), node1.get());
+  REQUIRE(!uf::find(nullptr));
+  uf::UNION(node1, node2);
+  uf::UNION(node1, node3);
+  REQUIRE_EQ(uf::find(node1), uf::find(node2));
+  REQUIRE_EQ(uf::find(node2), uf::find(node3));
 }
