@@ -31,9 +31,6 @@ if(TARGET CyyNaiveLib::util)
   target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::util)
   target_link_libraries(CyyAlgorithmLib INTERFACE CyyNaiveLib::log)
 endif()
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  target_compile_options(CyyAlgorithmLib PUBLIC -fexperimental-library)
-endif()
 
 target_sources(
   CyyAlgorithmLib
