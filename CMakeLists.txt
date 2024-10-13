@@ -48,7 +48,7 @@ if(BUILD_PYTHON_BINDING)
 endif()
 
 # test
-option(BUILD_TESTING "Build test" OFF)
+option(BUILD_TESTING "Build test" ON)
 if(BUILD_TESTING)
   add_subdirectory(test)
 endif()
