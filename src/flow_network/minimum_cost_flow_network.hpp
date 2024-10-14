@@ -94,8 +94,8 @@ namespace cyy::algorithm {
         assert(costs.contains(violating_edge.value()));
         // create cycle
         in_directed_tree in_T(ts.T);
-        auto ancestor =
-            in_T.nearest_ancestor(violating_edge->first, violating_edge->second);
+        auto ancestor = in_T.nearest_ancestor(violating_edge->first,
+                                              violating_edge->second);
         std::vector<size_t> cycle;
         if (forward_direction) {
           cycle = in_T.get_path(violating_edge->first, size_t(ancestor));

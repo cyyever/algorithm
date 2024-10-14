@@ -18,7 +18,7 @@
 namespace cyy::algorithm {
   template <typename T> class trie {
   private:
-    object_pool<T> pool;
+    object_pool<T, false> pool;
 
   public:
     using element_id_type = decltype(pool)::element_id_type;

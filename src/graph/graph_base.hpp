@@ -55,7 +55,7 @@ namespace cyy::algorithm {
       }
     }
     bool operator==(const indexed_edge &rhs) const noexcept = default;
-    auto operator<=>(const indexed_edge &rhs) const noexcept =default;
+    auto operator<=>(const indexed_edge &rhs) const noexcept = default;
     [[nodiscard]] bool contains(size_t v) const noexcept {
       return first == v || second == v;
     }

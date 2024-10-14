@@ -9,9 +9,18 @@
 #include "pool.hpp"
 
 using namespace cyy::algorithm;
-TEST_CASE("tire construction") {
-  SUBCASE("string") {
-    cyy::algorithm::object_pool<char> p;
-    static_assert(std::is_same_v<decltype(p)::element_id_type, char>);
+TEST_CASE("pool") {
+  SUBCASE("char") {
+    static_assert(
+        !std::is_same_v<cyy::algorithm::object_pool<char>::element_id_type,
+                        char>);
+    static_assert(
+        std::is_same_v<
+            cyy::algorithm::object_pool<char, false>::element_id_type, char>);
+  }
+  SUBCASE("std::string") {
+    static_assert(!std::is_same_v<
+                  cyy::algorithm::object_pool<std::string>::element_id_type,
+                  std::string>);
   }
 }
