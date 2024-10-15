@@ -102,9 +102,7 @@ namespace cyy::algorithm {
       }
     }
     void set_vertex_indices(vertices_type new_vertices) {
-      if (!weighted_adjacent_list.empty()) {
-        throw std::runtime_error("this graph has some edge");
-      }
+      assert(weighted_adjacent_list.empty());
       vertex_pool = std::move(new_vertices);
     }
     const auto &get_vertex_pool() const { return vertex_pool; }
@@ -116,7 +114,7 @@ namespace cyy::algorithm {
       }
     }
 
-    [[nodiscard]] bool has_continuous_vertices() const { return true; }
+    [[nodiscard]] constexpr bool has_continuous_vertices() const { return true; }
 
     auto foreach_edge_with_weight() const noexcept {
       if constexpr (directed) {
@@ -425,7 +423,7 @@ namespace cyy::algorithm {
   protected:
     void add_directed_edge(const edge_type &e) {
       auto const first_index = add_vertex(e.first);
-      auto second_index = add_vertex(e.second);
+      auto const second_index = add_vertex(e.second);
       auto &neighbors = weighted_adjacent_list[first_index];
 #ifndef NDEBUG
       auto it = std::ranges::find_if(neighbors, [second_index](auto const &a) {
