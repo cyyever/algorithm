@@ -154,8 +154,7 @@ namespace cyy::algorithm {
         return add_vertex(artificial_vertex_name);
       } else {
         static_assert(std::is_integral_v<vertex_type>);
-        auto it = vertex_pool.left.rbegin();
-        return add_vertex(it->first + 1);
+        return add_vertex(get_vertex_number());
       }
     }
 
@@ -398,7 +397,7 @@ namespace cyy::algorithm {
 
     [[nodiscard]] bool is_connected() const {
       // empty graph
-      if (vertex_pool.empty()) {
+      if (empty()) {
         return false;
       }
       size_t tree_edge_num = 0;
@@ -410,7 +409,7 @@ namespace cyy::algorithm {
 
     [[nodiscard]] bool is_tree(size_t root = SIZE_MAX) const {
       // empty graph
-      if (vertex_pool.empty()) {
+      if (empty()) {
         return false;
       }
       size_t tree_edge_num = 0;
