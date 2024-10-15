@@ -13,7 +13,7 @@ namespace cyy::algorithm {
   public:
     using element_id_type = size_t;
 
-    element_id_type get_data_id(const T &elem) { return pool[elem]; }
+    element_id_type get_data_id(const T &elem) const { return pool.at(elem); }
     element_id_type add_data(const T &e) {
       auto [it, emplaced] = pool.emplace(e, its.size());
       if (emplaced) {
@@ -21,6 +21,10 @@ namespace cyy::algorithm {
       }
       return it->second;
     }
+    auto size() const { return pool.size(); }
+    bool empty() const { return pool.empty(); }
+    bool contains(const T &e) const { return pool.contains(e); }
+    bool contains_data_id(element_id_type id) const { return id < its.size(); }
     const T &get_data(element_id_type id) const { return its[id]->first; }
     auto foreach_data() const { return std::views::all(pool); }
 
@@ -36,8 +40,8 @@ namespace cyy::algorithm {
   public:
     using element_id_type = std::remove_cv_t<T>;
 
-    element_id_type get_data_id(const T &elem) { return elem; }
-    element_id_type add_data(const T &e) { return e; }
+    element_id_type get_data_id(const T &elem) const { return elem; }
+    element_id_type add_data(const T &e) const { return e; }
     T get_data(element_id_type id) const { return id; }
   };
 } // namespace cyy::algorithm
