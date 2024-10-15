@@ -32,13 +32,12 @@ namespace cyy::algorithm {
   }
 
   template <IsGraph G> auto shortest_path_by_edge_number(const G &g, size_t s) {
-#ifndef NDEBUG
     assert(g.has_vertex_index(s));
-#endif
     if (!g.has_vertex_index(s)) {
       return std::vector<size_t>();
     }
-    std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
+    assert(g.has_continuous_vertices());
+    std::vector<size_t> parent(g.get_vertex_number(), SIZE_MAX);
     parent[s] = s;
     g.breadth_first_search(s, [&parent](auto u, auto v, auto) {
       parent[v] = u;
@@ -59,9 +58,10 @@ namespace cyy::algorithm {
       return std::vector<size_t>();
     }
     using weight_type = typename G::weight_type;
-    std::vector<std::optional<weight_type>> distance(g.get_next_vertex_index());
+    assert(g.has_continuous_vertices());
+    std::vector<std::optional<weight_type>> distance(g.get_vertex_number());
     distance[s] = 0;
-    std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
+    std::vector<size_t> parent(g.get_vertex_number(), SIZE_MAX);
     parent[s] = s;
     priority_queue<size_t, weight_type> h;
     h.insert(s, 0);
@@ -94,9 +94,9 @@ namespace cyy::algorithm {
       return std::vector<size_t>();
     }
     using weight_type = typename G::weight_type;
-    std::vector<std::optional<weight_type>> distance(g.get_next_vertex_index());
+    std::vector<std::optional<weight_type>> distance(g.get_vertex_number());
     distance[s] = 0;
-    std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
+    std::vector<size_t> parent(g.get_vertex_number(), SIZE_MAX);
     parent[s] = s;
 
     auto vertex_number = g.get_vertex_number();
@@ -122,7 +122,7 @@ namespace cyy::algorithm {
 
   template <IsGraph G>
   std::vector<size_t> get_path(const G &g, size_t source, size_t target) {
-    std::vector<size_t> parent(g.get_next_vertex_index(), SIZE_MAX);
+    std::vector<size_t> parent(g.get_vertex_number(), SIZE_MAX);
     g.recursive_depth_first_search(source, [&parent, &target](auto u, auto v) {
       parent[v] = u;
       return v == target;

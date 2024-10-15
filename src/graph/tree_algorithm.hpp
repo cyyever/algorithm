@@ -20,9 +20,10 @@ namespace cyy::algorithm {
 
   template <typename vertex_type, typename weight_type = double>
   auto MST_prime(const graph<vertex_type, weight_type> &g) {
+    assert(g.has_continuous_vertices());
 
-    std::vector<std::optional<weight_type>> weights(g.get_next_vertex_index());
-    std::vector<size_t> edge(g.get_next_vertex_index(), SIZE_MAX);
+    std::vector<std::optional<weight_type>> weights(g.get_vertex_number());
+    std::vector<size_t> edge(g.get_vertex_number(), SIZE_MAX);
     graph<vertex_type> MST;
     priority_queue<size_t, weight_type> h;
     auto s = *g.get_vertex_indices().begin();

@@ -23,6 +23,7 @@
 #include <vector>
 
 #include <boost/bimap.hpp>
+#include "pool.hpp"
 
 namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type> struct edge {
@@ -71,6 +72,7 @@ namespace std {
     }
   };
   template <typename vertex_type, typename weight_type>
+    // NOLINTNEXTLINE
   struct hash<cyy::algorithm::edge<vertex_type, weight_type>> {
     size_t operator()(const cyy::algorithm::edge<vertex_type, weight_type> &x)
         const noexcept {
@@ -96,6 +98,16 @@ namespace cyy::algorithm {
     explicit graph_base(U edges) {
       for (auto const &edge : edges) {
         add_edge(edge);
+      }
+    }
+    void set_vertex_indices2(object_pool<vertex_type,false> new_vertices2) {
+      if (!weighted_adjacent_list.empty()) {
+        throw std::runtime_error("this graph has some edge");
+      }
+      vertex_indices2 = std::move(new_vertices2);
+      next_vertex_index = 0;
+      for (auto const idx : get_vertex_indices()) {
+        next_vertex_index = std::max(next_vertex_index, idx + 1);
       }
     }
     void set_vertex_indices(boost::bimap<vertex_type, size_t> new_vertices) {
@@ -158,8 +170,6 @@ namespace cyy::algorithm {
       }
       next_vertex_index = vertex_indices.size();
     }
-
-    auto get_next_vertex_index() const noexcept { return next_vertex_index; }
 
     auto foreach_edge_with_weight() const noexcept {
       if constexpr (directed) {
@@ -333,11 +343,6 @@ namespace cyy::algorithm {
                                    [](auto const &it) { return it.first; });
     }
 
-    auto get_vertices() const {
-      return std::views::transform(vertex_indices.left,
-                                   [](auto const &it) { return it.first; });
-    }
-
     auto get_vertices_and_indices() const {
       return std::views::transform(vertex_indices.left, [](auto const &it) {
         return std::pair<const vertex_type &, size_t>{it.first, it.second};
@@ -383,7 +388,7 @@ namespace cyy::algorithm {
         size_t s,
         std::function<bool(size_t, size_t, weight_type)> edge_fun) const {
       assert(has_vertex_index(s));
-      std::vector<bool> discovered(get_next_vertex_index(), false);
+      std::vector<bool> discovered(get_vertex_number(), false);
       discovered[s] = true;
       std::list<size_t> queue{s};
 
@@ -409,7 +414,7 @@ namespace cyy::algorithm {
         const std::function<bool(size_t, size_t)> &after_edge_fun) const {
       assert(has_vertex_index(s));
 
-      std::vector<bool> explored(get_next_vertex_index(), false);
+      std::vector<bool> explored(get_vertex_number(), false);
       auto search_fun = [&](auto &&self, size_t u) {
         if (explored[u]) {
           return;
@@ -430,9 +435,9 @@ namespace cyy::algorithm {
         size_t s,
         std::function<void(size_t, size_t, weight_type)> edge_fun) const {
       assert(has_vertex_index(s));
-      std::vector<bool> explored(get_next_vertex_index(), false);
+      std::vector<bool> explored(get_vertex_number(), false);
       std::vector<std::pair<size_t, weight_type>> stack{{s, 0}};
-      std::vector<size_t> parent(get_next_vertex_index(), 0);
+      std::vector<size_t> parent(get_vertex_number(), 0);
 
       while (!stack.empty()) {
         auto const [u, weight] = stack.back();
@@ -508,6 +513,7 @@ namespace cyy::algorithm {
 
     std::unordered_map<size_t, std::list<std::pair<size_t, weight_type>>>
         weighted_adjacent_list;
+    object_pool<vertex_type,false> vertex_indices2;
     boost::bimap<vertex_type, size_t> vertex_indices;
 
   private:
@@ -517,7 +523,7 @@ namespace cyy::algorithm {
 
   template <typename T>
   concept IsGraph = requires(T a) {
-    { a.get_vertices() };
+    { a.get_vertex_indices() };
     { a.is_directed };
     { a.foreach_edge_with_weight() };
   };
@@ -540,7 +546,7 @@ namespace std {
 
     template <class FormatContext>
     auto format(const auto &g, FormatContext &ctx) {
-      for (auto const &v : g.get_vertices()) {
+      for (auto const &v : g.get_vertex_indices()) {
         std::format_to(ctx.out(), "vertex {}\n", v);
       }
       for (auto const &[indexed_edge, w] : g.foreach_edge_with_weight()) {
