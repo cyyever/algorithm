@@ -23,6 +23,7 @@
 #include <vector>
 
 #include <boost/bimap.hpp>
+
 #include "pool.hpp"
 
 namespace cyy::algorithm {
@@ -72,7 +73,7 @@ namespace std {
     }
   };
   template <typename vertex_type, typename weight_type>
-    // NOLINTNEXTLINE
+  // NOLINTNEXTLINE
   struct hash<cyy::algorithm::edge<vertex_type, weight_type>> {
     size_t operator()(const cyy::algorithm::edge<vertex_type, weight_type> &x)
         const noexcept {
@@ -100,7 +101,7 @@ namespace cyy::algorithm {
         add_edge(edge);
       }
     }
-    void set_vertex_indices2(object_pool<vertex_type,false> new_vertices2) {
+    void set_vertex_indices2(object_pool<vertex_type, false> new_vertices2) {
       if (!weighted_adjacent_list.empty()) {
         throw std::runtime_error("this graph has some edge");
       }
@@ -139,37 +140,6 @@ namespace cyy::algorithm {
       }
       return true;
     }
-    void rearrange_vertices() {
-      size_t vertex_index = 0;
-      std::unordered_map<size_t, size_t> index_map;
-      for (auto it = vertex_indices.right.begin();
-           it != vertex_indices.right.end(); it++, vertex_index++) {
-        if (it->first == vertex_index) {
-          continue;
-        }
-        index_map[it->first] = vertex_index;
-      }
-      for (auto [old_index, new_index] : index_map) {
-        auto it = vertex_indices.right.find(old_index);
-        vertex_indices.insert({std::move(it->second), new_index});
-        vertex_indices.right.erase(it);
-        auto it2 = weighted_adjacent_list.find(old_index);
-        if (it2 == weighted_adjacent_list.end()) {
-          continue;
-        }
-        weighted_adjacent_list[new_index] = std::move(it2->second);
-        weighted_adjacent_list.erase(it2);
-
-        for (auto &[_, adjacent_vertices] : weighted_adjacent_list) {
-          for (auto &p : adjacent_vertices) {
-            if (p.first == old_index) {
-              p.first = new_index;
-            }
-          }
-        }
-      }
-      next_vertex_index = vertex_indices.size();
-    }
 
     auto foreach_edge_with_weight() const noexcept {
       if constexpr (directed) {
@@ -200,28 +170,27 @@ namespace cyy::algorithm {
       return foreach_edge_with_weight() | std::views::keys;
     }
 
-    auto foreach_weight() const {
-      return foreach_edge_with_weight() | std::views::values;
-    }
-
     size_t add_dummy_vertex() {
       assert(!empty());
       if constexpr (std::is_same_v<vertex_type, std::string>) {
         static constexpr auto artificial_vertex_name = "___dummy_vertex";
         return add_vertex(artificial_vertex_name);
       } else {
+        static_assert(std::is_integral_v<vertex_type>);
         auto it = vertex_indices.left.rbegin();
         return add_vertex(it->first + 1);
       }
     }
 
     size_t add_vertex(vertex_type vertex) {
-      auto it = vertex_indices.left.find(vertex);
-      if (it != vertex_indices.left.end()) {
-        return it->second;
-      }
-      vertex_indices.insert({std::move(vertex), next_vertex_index});
-      return next_vertex_index++;
+      return vertex_indices2.add_data(vertex);
+
+      // auto it = vertex_indices.left.find(vertex);
+      // if (it != vertex_indices.left.end()) {
+      //   return it->second;
+      // }
+      // vertex_indices.insert({std::move(vertex), next_vertex_index});
+      // return next_vertex_index++;
     }
 
     edge_type get_edge(const indexed_edge &edge) const {
@@ -513,7 +482,7 @@ namespace cyy::algorithm {
 
     std::unordered_map<size_t, std::list<std::pair<size_t, weight_type>>>
         weighted_adjacent_list;
-    object_pool<vertex_type,false> vertex_indices2;
+    object_pool<vertex_type, false> vertex_indices2;
     boost::bimap<vertex_type, size_t> vertex_indices;
 
   private:

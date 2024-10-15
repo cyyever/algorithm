@@ -23,7 +23,6 @@ TEST_CASE("graph") {
     g.add_edge({"1", "2"});
     g.remove_edge({"1", "2"});
   }
-  SUBCASE("rearrange") { g.rearrange_vertices(); }
   SUBCASE("reverse") {
 
     h.add_edge({"1", "2"});

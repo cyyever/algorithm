@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <ranges>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
@@ -21,6 +22,7 @@ namespace cyy::algorithm {
       return it->second;
     }
     const T &get_data(element_id_type id) const { return its[id]->first; }
+    auto foreach_data() const { return std::views::all(pool); }
 
   private:
     std::unordered_map<T, element_id_type> pool;
@@ -36,6 +38,6 @@ namespace cyy::algorithm {
 
     element_id_type get_data_id(const T &elem) { return elem; }
     element_id_type add_data(const T &e) { return e; }
-    const T &get_data(const element_id_type &id) const { return id; }
+    T get_data(element_id_type id) const { return id; }
   };
 } // namespace cyy::algorithm
