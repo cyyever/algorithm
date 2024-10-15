@@ -23,7 +23,7 @@ namespace cyy::algorithm {
 
     auto get_underlying_graph() const {
       graph<vertex_type, weight_type> g;
-      g.set_vertex_indices(this->vertex_indices);
+      g.set_vertex_indices(this->get_vertex_pool());
       for (auto const &e : this->foreach_edge()) {
         g.add_edge(this->get_edge(e));
       }

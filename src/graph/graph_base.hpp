@@ -90,8 +90,8 @@ namespace cyy::algorithm {
     using edge_type = edge<vertexType, weightType>;
     using vertex_type = vertexType;
     using weight_type = weightType;
-    // using vertex_index_map_type = std::unordered_map<vertex_type, size_t>;
     using adjacent_matrix_type = std::vector<std::vector<weight_type>>;
+    using vertices_type = object_pool<vertex_type, true>;
     static constexpr bool is_directed = directed;
     graph_base() = default;
     template <std::ranges::input_range U>
@@ -101,27 +101,14 @@ namespace cyy::algorithm {
         add_edge(edge);
       }
     }
-    void set_vertex_indices2(object_pool<vertex_type, false> new_vertices2) {
+    void set_vertex_indices(vertices_type new_vertices) {
       if (!weighted_adjacent_list.empty()) {
         throw std::runtime_error("this graph has some edge");
       }
-      vertex_indices2 = std::move(new_vertices2);
-      next_vertex_index = 0;
-      for (auto const idx : get_vertex_indices()) {
-        next_vertex_index = std::max(next_vertex_index, idx + 1);
-      }
+      vertex_pool = std::move(new_vertices);
     }
-    void set_vertex_indices(boost::bimap<vertex_type, size_t> new_vertices) {
-      if (!weighted_adjacent_list.empty()) {
-        throw std::runtime_error("this graph has some edge");
-      }
-      vertex_indices = std::move(new_vertices);
-      next_vertex_index = 0;
-      for (auto const idx : get_vertex_indices()) {
-        next_vertex_index = std::max(next_vertex_index, idx + 1);
-      }
-    }
-    [[nodiscard]] bool empty() const { return vertex_indices.empty(); }
+    const auto &get_vertex_pool() const { return vertex_pool; }
+    [[nodiscard]] bool empty() const { return vertex_pool.empty(); }
 
     void print_edges(std::ostream &os) const {
       for (auto const &e : foreach_edge()) {
@@ -129,17 +116,7 @@ namespace cyy::algorithm {
       }
     }
 
-    [[nodiscard]] bool has_continuous_vertices() const {
-      size_t vertex_index = 0;
-      for (auto it = vertex_indices.right.begin();
-           it != vertex_indices.right.end(); it++, vertex_index++) {
-        if (it->first == vertex_index) {
-          continue;
-        }
-        return false;
-      }
-      return true;
-    }
+    [[nodiscard]] bool has_continuous_vertices() const { return true; }
 
     auto foreach_edge_with_weight() const noexcept {
       if constexpr (directed) {
@@ -177,20 +154,13 @@ namespace cyy::algorithm {
         return add_vertex(artificial_vertex_name);
       } else {
         static_assert(std::is_integral_v<vertex_type>);
-        auto it = vertex_indices.left.rbegin();
+        auto it = vertex_pool.left.rbegin();
         return add_vertex(it->first + 1);
       }
     }
 
     size_t add_vertex(vertex_type vertex) {
-      return vertex_indices2.add_data(vertex);
-
-      // auto it = vertex_indices.left.find(vertex);
-      // if (it != vertex_indices.left.end()) {
-      //   return it->second;
-      // }
-      // vertex_indices.insert({std::move(vertex), next_vertex_index});
-      // return next_vertex_index++;
+      return vertex_pool.add_data(vertex);
     }
 
     edge_type get_edge(const indexed_edge &edge) const {
@@ -231,11 +201,10 @@ namespace cyy::algorithm {
     }
 
     bool has_vertex(const vertex_type &vertex) const {
-      return vertex_indices.left.find(vertex) != vertex_indices.left.end();
+      return vertex_pool.contains(vertex);
     }
     [[nodiscard]] bool has_vertex_index(size_t vertex_index) const {
-      return vertex_indices.right.find(vertex_index) !=
-             vertex_indices.right.end();
+      return vertex_pool.contains_data_id(vertex_index);
     }
     // get a path from u to v
     [[nodiscard]] path_type get_path(size_t u, size_t v) const {
@@ -294,9 +263,10 @@ namespace cyy::algorithm {
     }
     adjacent_matrix_type get_adjacent_matrix() const {
       adjacent_matrix_type adjacent_matrix;
-      adjacent_matrix.reserve(next_vertex_index);
-      for (size_t i = 0; i < next_vertex_index; i++) {
-        adjacent_matrix.emplace_back(next_vertex_index, 0);
+      auto vertex_num = get_vertex_number();
+      adjacent_matrix.reserve(vertex_num);
+      for (size_t i = 0; i < vertex_num; i++) {
+        adjacent_matrix.emplace_back(vertex_num, 0);
       }
       for (auto const &[e, weight] : foreach_edge_with_weight()) {
         adjacent_matrix[e.first][e.second] = weight;
@@ -308,26 +278,27 @@ namespace cyy::algorithm {
     }
 
     auto get_vertex_indices() const noexcept {
-      return std::views::transform(vertex_indices.right,
-                                   [](auto const &it) { return it.first; });
+      return std::views::transform(vertex_pool.foreach_data(),
+                                   [](auto const &it) { return it.second; });
     }
 
     auto get_vertices_and_indices() const {
-      return std::views::transform(vertex_indices.left, [](auto const &it) {
-        return std::pair<const vertex_type &, size_t>{it.first, it.second};
-      });
+      return std::views::transform(
+          vertex_pool.foreach_data(), [](auto const &it) {
+            return std::pair<const vertex_type &, size_t>{it.first, it.second};
+          });
     }
     [[nodiscard]] size_t get_vertex_number() const {
-      return vertex_indices.size();
+      return vertex_pool.size();
     }
     [[nodiscard]] size_t get_edge_number() const {
       return static_cast<size_t>(std::ranges::distance(foreach_edge()));
     }
     const vertex_type &get_vertex(size_t index) const {
-      return vertex_indices.right.at(index);
+      return vertex_pool.get_data(index);
     }
     size_t get_vertex_index(const vertex_type &vertex) const {
-      return vertex_indices.left.at(vertex);
+      return vertex_pool.get_data_id(vertex);
     }
     void set_all_weights(weight_type new_weight) {
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
@@ -427,7 +398,7 @@ namespace cyy::algorithm {
 
     [[nodiscard]] bool is_connected() const {
       // empty graph
-      if (vertex_indices.empty()) {
+      if (vertex_pool.empty()) {
         return false;
       }
       size_t tree_edge_num = 0;
@@ -439,7 +410,7 @@ namespace cyy::algorithm {
 
     [[nodiscard]] bool is_tree(size_t root = SIZE_MAX) const {
       // empty graph
-      if (vertex_indices.empty()) {
+      if (vertex_pool.empty()) {
         return false;
       }
       size_t tree_edge_num = 0;
@@ -482,11 +453,9 @@ namespace cyy::algorithm {
 
     std::unordered_map<size_t, std::list<std::pair<size_t, weight_type>>>
         weighted_adjacent_list;
-    object_pool<vertex_type, false> vertex_indices2;
-    boost::bimap<vertex_type, size_t> vertex_indices;
+    vertices_type vertex_pool;
 
   private:
-    size_t next_vertex_index = 0;
     static inline std::list<std::pair<size_t, weight_type>> empty_adjacent_list;
   };
 
