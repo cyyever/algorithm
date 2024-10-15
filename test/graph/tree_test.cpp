@@ -16,11 +16,13 @@ TEST_CASE("tree") {
     cyy::algorithm::graph<std::string> g;
     g.add_edge({"1", "2"});
     auto mst = MST_prime(g);
+    REQUIRE_EQ(mst.get_edge_number(), 1);
   }
   SUBCASE("Kruskal MST") {
     cyy::algorithm::graph<std::string> g;
     g.add_edge({"1", "2"});
     auto mst = MST_kruskal(g);
+    REQUIRE_EQ(mst.get_edge_number(), 1);
   }
   /* #ifdef __cpp_lib_format */
   /*   SUBCASE("print") { */
