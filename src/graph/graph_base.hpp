@@ -396,7 +396,7 @@ namespace cyy::algorithm {
       }
       size_t tree_edge_num = 0;
       depth_first_search(
-          *get_vertex_indices().begin(),
+          0,
           [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number();
     }
@@ -408,7 +408,7 @@ namespace cyy::algorithm {
       }
       size_t tree_edge_num = 0;
       if (root == SIZE_MAX) {
-        root = *get_vertex_indices().begin();
+        root = 0;
       }
       depth_first_search(
           root, [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
