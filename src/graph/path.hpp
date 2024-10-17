@@ -96,12 +96,12 @@ namespace cyy::algorithm {
       return std::vector<size_t>();
     }
     using weight_type = typename G::weight_type;
-    std::vector<std::optional<weight_type>> distance(g.get_vertex_number());
+    const auto vertex_number = g.get_vertex_number();
+    std::vector<std::optional<weight_type>> distance(vertex_number);
     distance[s] = 0;
-    std::vector<size_t> parent(g.get_vertex_number(), SIZE_MAX);
+    std::vector<size_t> parent(vertex_number, SIZE_MAX);
     parent[s] = s;
 
-    auto vertex_number = g.get_vertex_number();
     for (size_t i = 0; i + 1 < vertex_number; i++) {
       bool flag = false;
       for (auto const &[u, list] : g.get_adjacent_list()) {

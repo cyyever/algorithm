@@ -244,7 +244,7 @@ namespace cyy::algorithm {
       return true;
     }
 
-    auto const &get_adjacent_list() const { return weighted_adjacent_list; }
+    auto const &get_adjacent_list() const noexcept { return weighted_adjacent_list; }
     auto const &get_adjacent_list(size_t vertex_index) const {
       auto it = weighted_adjacent_list.find(vertex_index);
       if (it != weighted_adjacent_list.end()) {

@@ -23,7 +23,7 @@ namespace cyy::algorithm {
     }
     auto size() const noexcept { return pool.size(); }
     bool empty() const noexcept { return pool.empty(); }
-    bool contains(const T &e) const noexcept{ return pool.contains(e); }
+    bool contains(const T &e) const { return pool.contains(e); }
     bool contains_data_id(element_id_type id) const noexcept { return id < its.size(); }
     const T &get_data(element_id_type id) const { 
 #ifndef NDEBUG
@@ -46,8 +46,8 @@ namespace cyy::algorithm {
   public:
     using element_id_type = std::remove_cv_t<T>;
 
-    element_id_type get_data_id(const T &elem) const { return elem; }
-    element_id_type add_data(const T &e) const { return e; }
-    T get_data(element_id_type id) const { return id; }
+    element_id_type get_data_id(const T &elem) const  noexcept{ return elem; }
+    element_id_type add_data(const T &e) const noexcept { return e; }
+    T get_data(element_id_type id) const noexcept { return id; }
   };
 } // namespace cyy::algorithm

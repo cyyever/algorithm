@@ -157,10 +157,10 @@ namespace cyy::algorithm {
       auto bottleneck = residual_graph.get_extreme_weight(path);
       assert(bottleneck > 0);
       for (size_t i = 0; i + 1 < path.size(); i++) {
-        indexed_edge indexed_e{path[i], path[i + 1]};
+        const indexed_edge indexed_e{path[i], path[i + 1]};
         // backward
         if (!graph.has_edge(indexed_e)) {
-          auto forward_edge = indexed_e.reverse();
+          const auto forward_edge = indexed_e.reverse();
           auto new_weight = graph.get_weight(forward_edge) - bottleneck;
           graph.set_weight(forward_edge, new_weight);
         } else {

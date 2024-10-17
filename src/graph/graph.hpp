@@ -40,7 +40,7 @@ namespace cyy::algorithm {
       return reverse;
     }
 
-    auto get_containing_edges(size_t vertex_index) const {
+    auto get_containing_edges(size_t vertex_index) const noexcept {
       return std::ranges::filter_view(this->foreach_edge_with_weight(),
                                       [vertex_index](auto const &e) {
                                         return e.first.contains(vertex_index);
