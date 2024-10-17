@@ -24,7 +24,6 @@ namespace cyy::algorithm {
 
     std::vector<std::optional<weight_type>> weights(g.get_vertex_number());
     std::vector<size_t> edge(g.get_vertex_number(), SIZE_MAX);
-    graph<size_t> MST;
     priority_queue<size_t, weight_type> h;
     auto s = *g.get_vertex_indices().begin();
     weights[s] = 0;
@@ -45,6 +44,7 @@ namespace cyy::algorithm {
         }
       }
     }
+    graph<size_t> MST;
     for (size_t v = 0; v < edge.size(); v++) {
       auto u = edge[v];
       if (u == SIZE_MAX) {
