@@ -102,8 +102,8 @@ namespace cyy::algorithm {
     auto vertex_number = g.get_vertex_number();
     for (size_t i = 0; i + 1 < vertex_number; i++) {
       bool flag = false;
-      for (auto const u : g.get_vertex_indices()) {
-        for (auto [v, weight] : g.get_adjacent_list(u)) {
+      for (auto const &[u, list] : g.get_adjacent_list()) {
+        for (auto [v, weight] : list) {
           if (distance[u].has_value() &&
               (!distance[v].has_value() ||
                distance[u].value() + weight < distance[v].value())) {

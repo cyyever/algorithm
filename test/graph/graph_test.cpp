@@ -15,10 +15,11 @@ using namespace cyy::algorithm;
 TEST_CASE("graph") {
   cyy::algorithm::graph<std::string> g;
   cyy::algorithm::directed_graph<std::string> h;
-  // SUBCASE("print") {
-  //   g.add_edge({"1", "2"});
-  //   std::cout << std::format("{}", g) << std::endl;
-  // }
+  SUBCASE("print") {
+    static_assert(cyy::algorithm::IsGraph<decltype(g)>);
+    g.add_edge({"1", "2"});
+    std::cout << std::format("{}", g) << std::endl;
+  }
   SUBCASE("process edge") {
     g.add_edge({"1", "2"});
     g.remove_edge({"1", "2"});
@@ -27,7 +28,7 @@ TEST_CASE("graph") {
 
     h.add_edge({"1", "2"});
     auto new_h = h.get_reverse();
-    for (auto const &e : new_h.foreach_edge()) {
+    for (auto e : new_h.foreach_edge()) {
       REQUIRE_EQ(e.first, 1);
       REQUIRE_EQ(e.second, 0);
     }

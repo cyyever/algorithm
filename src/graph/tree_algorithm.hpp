@@ -104,9 +104,8 @@ namespace cyy::algorithm {
     std::map<size_t, std::list<std::pair<size_t, weight_type>>> adjacent_list(
         T.get_adjacent_list().begin(), T.get_adjacent_list().end());
     while (vertex_number > 2) {
-      auto it =
-          std::ranges::find_if(adjacent_list,
-                       [](auto const &p) { return p.second.size() == 1; });
+      auto it = std::ranges::find_if(
+          adjacent_list, [](auto const &p) { return p.second.size() == 1; });
       assert(it != adjacent_list.end());
       auto index = it->first;
       auto to_index = it->second.front().first;

@@ -38,7 +38,7 @@ namespace cyy::algorithm {
     auto operator==(const auto &rhs) const noexcept {
       return first == rhs.first && second == rhs.second;
     }
-    edge reverse() const { return edge(second, first, weight); }
+    edge reverse() const { return {second, first, weight}; }
   };
 
   struct indexed_edge {
@@ -270,11 +270,6 @@ namespace cyy::algorithm {
       return adjacent_matrix;
     }
 
-    auto get_vertex_indices() const noexcept {
-      return std::views::transform(vertex_pool.foreach_data(),
-                                   [](auto const &it) { return it.second; });
-    }
-
     auto get_vertices_and_indices() const {
       return std::views::transform(
           vertex_pool.foreach_data(), [](auto const &it) {
@@ -293,7 +288,7 @@ namespace cyy::algorithm {
     size_t get_vertex_index(const vertex_type &vertex) const {
       return vertex_pool.get_data_id(vertex);
     }
-    void set_all_weights(weight_type new_weight) {
+    void fill_weight(weight_type new_weight) {
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
         for (auto &to_vertice : to_vertices) {
           to_vertice.second = new_weight;
@@ -396,8 +391,7 @@ namespace cyy::algorithm {
       }
       size_t tree_edge_num = 0;
       depth_first_search(
-          0,
-          [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
+          0, [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number();
     }
 
@@ -454,38 +448,41 @@ namespace cyy::algorithm {
 
   template <typename T>
   concept IsGraph = requires(T a) {
-    { a.get_vertex_indices() };
     { a.is_directed };
     { a.foreach_edge_with_weight() };
+    { a.get_vertex_number() };
   };
 } // namespace cyy::algorithm
 
-namespace std {
-  template <cyy::algorithm::IsGraph G> struct formatter<G> {
-    // // Parses format specifications
-    constexpr auto parse(format_parse_context &ctx) -> decltype(ctx.begin()) {
-      // Parse the presentation format and store it in the formatter:
-      const auto *it = ctx.begin();
-      const auto *end = ctx.end();
-      // Check if reached the end of the range:
-      if (it != end && *it != '}') {
-        throw format_error("invalid format");
-      }
-      // Return an iterator past the end of the parsed range:
-      return it;
+template <cyy::algorithm::IsGraph G> struct std::formatter<G> {
+  // Parses format specifications
+  template <class ParseContext> constexpr auto parse(ParseContext &ctx) {
+    // Parse the presentation format and store it in the formatter:
+    auto it = ctx.begin();
+    auto end = ctx.end();
+    // Check if reached the end of the range:
+    if (it != end && *it != '}') {
+      throw format_error("invalid format");
     }
+    // Return an iterator past the end of the parsed range:
+    return it;
+  }
 
-    template <class FormatContext>
-    auto format(const auto &g, FormatContext &ctx) {
-      for (auto const &v : g.get_vertex_indices()) {
-        std::format_to(ctx.out(), "vertex {}\n", v);
-      }
-      for (auto const &[indexed_edge, w] : g.foreach_edge_with_weight()) {
-        auto e = g.get_edge(indexed_edge);
-        std::format_to(ctx.out(), "{} {} {} with weight {}\n", e.first,
-                       G::is_directed ? "->" : "<->", e.second, w);
-      }
-      return ctx.out();
+  template <class FormatContext>
+  auto format(const G &g, FormatContext &ctx) const {
+    for (size_t v = 0; v < g.get_vertex_number(); v++) {
+      std::format_to(ctx.out(), "vertex {}\n", g.get_vertex(v));
     }
-  };
-} // namespace std
+    for (auto const &[indexed_edge, w] : g.foreach_edge_with_weight()) {
+      auto e = g.get_edge(indexed_edge);
+      if constexpr (G::is_directed) {
+        std::format_to(ctx.out(), "{} -> {} with weight {}\n", e.first,
+                       e.second, w);
+      } else {
+        std::format_to(ctx.out(), "{} <-> {} with weight {}\n", e.first,
+                       e.second, w);
+      }
+    }
+    return ctx.out();
+  }
+};

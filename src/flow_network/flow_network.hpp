@@ -45,7 +45,7 @@ namespace cyy::algorithm {
       }
 
       // init flow to zero
-      graph.set_all_weights(0);
+      graph.fill_weight(0);
     }
     weight_type get_flow_value() const {
       weight_type value{};
@@ -98,7 +98,7 @@ namespace cyy::algorithm {
                                                     s_set.insert(v);
                                                     return false;
                                                   });
-      for (auto v : graph.get_vertex_indices()) {
+      for (size_t v = 0; v < graph.get_vertex_number(); v++) {
         if (!s_set.contains(v)) {
           t_set.insert(v);
         }
