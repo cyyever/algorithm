@@ -25,7 +25,7 @@ namespace cyy::algorithm {
     std::vector<std::optional<weight_type>> weights(g.get_vertex_number());
     std::vector<size_t> edge(g.get_vertex_number(), SIZE_MAX);
     priority_queue<size_t, weight_type> h;
-    auto s = *g.get_vertex_indices().begin();
+    auto s = 0;
     weights[s] = 0;
     h.insert(s, 0);
     while (!h.empty()) {
@@ -93,19 +93,19 @@ namespace cyy::algorithm {
       throw std::logic_error("need continuous vertices");
     }
     auto vertex_number = T.get_vertex_number();
-    if (vertex_number < 2) {
-      throw std::logic_error("need at least two vertices");
-    }
     std::vector<size_t> code;
     if (vertex_number == 2) {
       return code;
+    }
+    if (vertex_number < 2) {
+      throw std::logic_error("need at least two vertices");
     }
     code.reserve(vertex_number - 2);
     std::map<size_t, std::list<std::pair<size_t, weight_type>>> adjacent_list(
         T.get_adjacent_list().begin(), T.get_adjacent_list().end());
     while (vertex_number > 2) {
       auto it =
-          std::find_if(adjacent_list.begin(), adjacent_list.end(),
+          std::ranges::find_if(adjacent_list,
                        [](auto const &p) { return p.second.size() == 1; });
       assert(it != adjacent_list.end());
       auto index = it->first;
