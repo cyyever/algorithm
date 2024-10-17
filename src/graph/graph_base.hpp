@@ -31,13 +31,7 @@ namespace cyy::algorithm {
     vertex_type first;
     vertex_type second;
     weight_type weight = 1;
-    edge(vertex_type first_, vertex_type second_, weight_type weight_ = 1)
-        : first(std::move(first_)), second(std::move(second_)),
-          weight(std::move(weight_)) {
-      if (first == second) {
-        throw std::runtime_error("not an edge");
-      }
-    }
+
     auto operator<=>(const auto &rhs) const noexcept {
       return weight <=> rhs.weight;
     }
@@ -114,7 +108,9 @@ namespace cyy::algorithm {
       }
     }
 
-    [[nodiscard]] constexpr bool has_continuous_vertices() const { return true; }
+    [[nodiscard]] constexpr bool has_continuous_vertices() const {
+      return true;
+    }
 
     auto foreach_edge_with_weight() const noexcept {
       if constexpr (directed) {
