@@ -95,9 +95,9 @@ namespace cyy::algorithm {
         add_edge(edge);
       }
     }
-    void set_vertex_indices(vertices_type new_vertices) {
+    void set_vertex_pool(vertices_type new_pool) {
       assert(weighted_adjacent_list.empty());
-      vertex_pool = std::move(new_vertices);
+      vertex_pool = std::move(new_pool);
     }
     const auto &get_vertex_pool() const { return vertex_pool; }
     [[nodiscard]] bool empty() const { return vertex_pool.empty(); }

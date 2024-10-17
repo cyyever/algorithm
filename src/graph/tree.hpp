@@ -103,7 +103,7 @@ namespace cyy::algorithm {
 
     explicit in_directed_tree(const tree<vertex_type, weight_type> &T) {
       this->root = T.get_root();
-      this->set_vertex_indices(T.get_vertex_pool());
+      this->set_vertex_pool(T.get_vertex_pool());
 
       T.breadth_first_search(this->root, [this](auto u, auto v, auto weight) {
         this->add_edge({this->get_vertex(v), this->get_vertex(u), weight});
