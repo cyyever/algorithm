@@ -29,7 +29,7 @@ namespace cyy::algorithm {
 
     class const_reference final {
     public:
-      const_reference(const container_type &container_, mutex_type &mutex_)
+      const_reference(const container_type &container_, mutex_type &mutex_) noexcept
           : container{container_}, mutex{mutex_} {
         mutex.lock_shared();
       }
@@ -43,7 +43,7 @@ namespace cyy::algorithm {
       ~const_reference() { mutex.unlock(); }
       explicit operator const container_type &() const { return container; }
       // NOLINTNEXTLINE(fuchsia-overloaded-operator)
-      const container_type *operator->() const { return &container; }
+      const container_type *operator->() const noexcept { return &container; }
 
     private:
       // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
@@ -235,7 +235,7 @@ namespace cyy::algorithm {
     }
 
     void notify_less_element() const {
-      auto cur_size = container.size();
+      const auto cur_size = container.size();
       auto first_it = less_element_cv_map.lower_bound(cur_size);
       for (auto it = first_it; it != less_element_cv_map.end(); it++) {
         auto &cv_ptr = it->second;

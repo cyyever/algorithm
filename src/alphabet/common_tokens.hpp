@@ -26,7 +26,7 @@ namespace cyy::algorithm {
 
   class common_tokens final : public interval_alphabet {
   public:
-    common_tokens()
+    common_tokens() noexcept
         : interval_alphabet(0, static_cast<symbol_type>(common_token::_end) - 1,
                             "common_tokens") {}
 

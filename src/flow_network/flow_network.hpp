@@ -165,7 +165,7 @@ namespace cyy::algorithm {
           graph.set_weight(forward_edge, new_weight);
         } else {
           // forward
-          auto &forward_edge = indexed_e;
+          auto const &forward_edge = indexed_e;
           auto new_weight = graph.get_weight(forward_edge) + bottleneck;
           graph.set_weight(forward_edge, new_weight);
         }

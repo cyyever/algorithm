@@ -44,13 +44,11 @@ TEST_CASE("thread_safe_linear_container") {
     container.clear();
     container.push_back(1);
     auto val = container.back(1s);
-    CHECK(val.has_value());
-    CHECK_EQ(val.value(), 1);
+    CHECK_EQ(val, 1);
     container.pop_front();
     container.push_back(2);
     val = container.pop_front(1us);
-    CHECK(val.has_value());
-    CHECK_EQ(val.value(), 2);
+    CHECK_EQ(val, 2);
     val = container.back(1us);
     CHECK(!val.has_value());
     container.clear();
@@ -93,7 +91,7 @@ TEST_CASE("thread_safe_linear_container") {
     container.clear();
     {
       std::vector<std::jthread> thds;
-      for (size_t i = 0; i < 500; i++) {
+      for (int i = 0; i < 500; i++) {
         thds.emplace_back([i, &container]() { container.push_back(i); });
         thds.emplace_back([&container]() {
           CHECK(container.pop_front(std::chrono::minutes(1)).has_value());

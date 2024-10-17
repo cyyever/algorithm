@@ -21,11 +21,17 @@ namespace cyy::algorithm {
       }
       return it->second;
     }
-    auto size() const { return pool.size(); }
-    bool empty() const { return pool.empty(); }
-    bool contains(const T &e) const { return pool.contains(e); }
-    bool contains_data_id(element_id_type id) const { return id < its.size(); }
-    const T &get_data(element_id_type id) const { return its[id]->first; }
+    auto size() const noexcept { return pool.size(); }
+    bool empty() const noexcept { return pool.empty(); }
+    bool contains(const T &e) const noexcept{ return pool.contains(e); }
+    bool contains_data_id(element_id_type id) const noexcept { return id < its.size(); }
+    const T &get_data(element_id_type id) const { 
+#ifndef NDEBUG
+      return its.at(id)->first; 
+#else
+      return its[id]->first; 
+#endif
+    }
     auto foreach_data() const { return std::views::all(pool); }
 
   private:

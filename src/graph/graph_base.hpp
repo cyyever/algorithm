@@ -22,8 +22,6 @@
 #include <utility>
 #include <vector>
 
-#include <boost/bimap.hpp>
-
 #include "pool.hpp"
 
 namespace cyy::algorithm {
@@ -38,7 +36,7 @@ namespace cyy::algorithm {
     auto operator==(const auto &rhs) const noexcept {
       return first == rhs.first && second == rhs.second;
     }
-    edge reverse() const { return {second, first, weight}; }
+    edge reverse() const  noexcept{ return {second, first, weight}; }
   };
 
   struct indexed_edge {
@@ -99,8 +97,8 @@ namespace cyy::algorithm {
       assert(weighted_adjacent_list.empty());
       vertex_pool = std::move(new_pool);
     }
-    const auto &get_vertex_pool() const { return vertex_pool; }
-    [[nodiscard]] bool empty() const { return vertex_pool.empty(); }
+    const auto &get_vertex_pool() const noexcept { return vertex_pool; }
+    [[nodiscard]] bool empty() const noexcept { return vertex_pool.empty(); }
 
     void print_edges(std::ostream &os) const {
       for (auto const &e : foreach_edge()) {
@@ -179,7 +177,7 @@ namespace cyy::algorithm {
     auto get_extreme_weight(const path_type &path) {
       weight_type extreme_weight{};
       for (size_t i = 0; i + 1 < path.size(); i++) {
-        indexed_edge e{path[i], path[i + 1]};
+        const indexed_edge e{path[i], path[i + 1]};
         if (i == 0) {
           extreme_weight = get_edge(e).weight;
         } else {
@@ -196,7 +194,7 @@ namespace cyy::algorithm {
     bool has_vertex(const vertex_type &vertex) const {
       return vertex_pool.contains(vertex);
     }
-    [[nodiscard]] bool has_vertex_index(size_t vertex_index) const {
+    [[nodiscard]] bool has_vertex_index(size_t vertex_index) const noexcept {
       return vertex_pool.contains_data_id(vertex_index);
     }
     // get a path from u to v
@@ -276,10 +274,10 @@ namespace cyy::algorithm {
             return std::pair<const vertex_type &, size_t>{it.first, it.second};
           });
     }
-    [[nodiscard]] size_t get_vertex_number() const {
+    [[nodiscard]] size_t get_vertex_number() const noexcept {
       return vertex_pool.size();
     }
-    [[nodiscard]] size_t get_edge_number() const {
+    [[nodiscard]] size_t get_edge_number() const noexcept {
       return static_cast<size_t>(std::ranges::distance(foreach_edge()));
     }
     const vertex_type &get_vertex(size_t index) const {

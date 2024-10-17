@@ -13,7 +13,7 @@ namespace cyy::algorithm {
 
   class ASCII final : public interval_alphabet {
   public:
-    ASCII() : interval_alphabet(0, 127, "ASCII") {}
+    ASCII() noexcept : interval_alphabet(0, 127, "ASCII") {}
     bool support_ASCII_escape_sequence() const noexcept override {
       return true;
     }
@@ -21,7 +21,7 @@ namespace cyy::algorithm {
 
   class printable_ASCII final : public interval_alphabet {
   public:
-    printable_ASCII() : interval_alphabet(32, 126, "printable-ASCII") {}
+    printable_ASCII() noexcept : interval_alphabet(32, 126, "printable-ASCII") {}
     bool support_ASCII_escape_sequence() const noexcept override {
       return true;
     }

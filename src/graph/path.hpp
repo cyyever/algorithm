@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cassert>
+#include <optional>
 
 #include "graph_base.hpp"
 #include "priority_queue.hpp"
@@ -71,6 +72,7 @@ namespace cyy::algorithm {
       h.pop();
       for (auto [v, weight] : g.get_adjacent_list(u)) {
         assert(weight >= 0);
+        assert(distance[u].has_value());
         if (distance[v].has_value() &&
             distance[v].value() <= distance[u].value() + weight) {
           continue;
