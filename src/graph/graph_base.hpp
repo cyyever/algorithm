@@ -36,7 +36,7 @@ namespace cyy::algorithm {
     auto operator==(const auto &rhs) const noexcept {
       return first == rhs.first && second == rhs.second;
     }
-    edge reverse() const  noexcept{ return {second, first, weight}; }
+    edge reverse() const noexcept { return {second, first, weight}; }
   };
 
   struct indexed_edge {
@@ -244,7 +244,9 @@ namespace cyy::algorithm {
       return true;
     }
 
-    auto const &get_adjacent_list() const noexcept { return weighted_adjacent_list; }
+    auto const &get_adjacent_list() const noexcept {
+      return weighted_adjacent_list;
+    }
     auto const &get_adjacent_list(size_t vertex_index) const {
       auto it = weighted_adjacent_list.find(vertex_index);
       if (it != weighted_adjacent_list.end()) {

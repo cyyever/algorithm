@@ -29,7 +29,9 @@ namespace cyy::algorithm {
     ALPHABET(ALPHABET &&) noexcept = default;
     ALPHABET &operator=(ALPHABET &&) noexcept = default;
     virtual ~ALPHABET() = default;
-    bool operator==(const ALPHABET &rhs) const noexcept { return name == rhs.name; }
+    bool operator==(const ALPHABET &rhs) const noexcept {
+      return name == rhs.name;
+    }
 
     auto get_view() const noexcept {
       return std::ranges::views::iota(static_cast<size_t>(0), size()) |
@@ -96,7 +98,7 @@ namespace cyy::algorithm {
   public:
     using std::shared_ptr<ALPHABET>::shared_ptr;
     template <typename T>
-    ALPHABET_ptr(const T& strv) : ALPHABET_ptr(ALPHABET::get(strv)) {}
+    ALPHABET_ptr(const T &strv) : ALPHABET_ptr(ALPHABET::get(strv)) {}
     // NOLINTNEXTLINE
     ALPHABET_ptr(std::shared_ptr<ALPHABET> ptr) noexcept
         : shared_ptr(std::move(ptr)) {}

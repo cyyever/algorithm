@@ -29,7 +29,8 @@ namespace cyy::algorithm {
 
     class const_reference final {
     public:
-      const_reference(const container_type &container_, mutex_type &mutex_) noexcept
+      const_reference(const container_type &container_,
+                      mutex_type &mutex_) noexcept
           : container{container_}, mutex{mutex_} {
         mutex.lock_shared();
       }

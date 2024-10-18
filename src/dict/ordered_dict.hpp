@@ -35,7 +35,8 @@ namespace cyy::algorithm {
     };
 
     struct reverse_iterator : public data_list_type::reverse_iterator {
-      explicit reverse_iterator(typename data_list_type::reverse_iterator rhs) noexcept
+      explicit reverse_iterator(
+          typename data_list_type::reverse_iterator rhs) noexcept
           : data_list_type::reverse_iterator{rhs} {}
       const auto &operator*() const {
         return data_list_type::reverse_iterator::operator*();
