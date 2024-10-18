@@ -22,9 +22,9 @@ namespace cyy::algorithm {
       return it->second;
     }
     auto size() const noexcept { return pool.size(); }
-    bool empty() const noexcept { return pool.empty(); }
+    [[nodiscard]] bool empty() const noexcept { return pool.empty(); }
     bool contains(const T &e) const { return pool.contains(e); }
-    bool contains_data_id(element_id_type id) const noexcept {
+    [[nodiscard]] bool contains_data_id(element_id_type id) const noexcept {
       return id < its.size();
     }
     const T &get_data(element_id_type id) const {
