@@ -12,14 +12,14 @@ using namespace cyy::algorithm;
 
 TEST_CASE("Aho_Corasick") {
   SUBCASE("dismatch") {
-    auto str = "abababaab";
-    std::vector<std::string_view> words = {"aaa", "abaaa", "ababaaa"};
+    const auto *str = "abababaab";
+    std::vector<std::string_view> const words = {"aaa", "abaaa", "ababaaa"};
 
     CHECK(Aho_Corasick<char>(words, str).empty());
   }
 
   SUBCASE("match") {
-    auto str = "abaa";
+    const auto *str = "abaa";
     std::vector<std::string_view> words = {"aa", "abaaa"};
 
     auto p = Aho_Corasick<char>(words, str);

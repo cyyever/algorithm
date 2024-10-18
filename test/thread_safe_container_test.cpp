@@ -60,10 +60,10 @@ TEST_CASE("thread_safe_linear_container") {
     CHECK(container.const_ref()->empty());
 
     std::stop_source source;
-    std::jthread pop_thd(
+    std::jthread const pop_thd(
         [&container, &source] { container.back(1ms, source.get_token()); });
     source.request_stop();
-    std::jthread back_thd([&container] {
+    std::jthread const back_thd([&container] {
       auto val = container.back(1000ms);
       CHECK_EQ(val, 5);
     });

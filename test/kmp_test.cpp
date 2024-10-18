@@ -27,8 +27,8 @@ TEST_CASE("KMP") {
   }
   SUBCASE("match empty") {
 
-    std::string str = "abababaab";
-    std::string word;
+    std::string const str = "abababaab";
+    std::string const word;
 
     KMP<char> kmp(word);
     auto idx_opt = kmp.search(str);
@@ -36,7 +36,7 @@ TEST_CASE("KMP") {
   }
 
   SUBCASE("dismatch") {
-    std::string str = "abababbaa";
+    std::string const str = "abababbaa";
     std::string word = "ababaa";
     KMP<char> kmp(word);
     auto idx_opt = kmp.search(str);
