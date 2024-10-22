@@ -90,8 +90,14 @@ namespace cyy::algorithm {
     compare<data_type> comparator;
     std::vector<data_type> items;
   };
-  template <typename key_type> using max_heap = heap<key_type, std::greater>;
+  template <typename data_type> using max_heap = heap<data_type, std::greater>;
 
-  template <typename key_type> using min_heap = heap<key_type>;
-
+  template <typename data_type> using min_heap = heap<data_type>;
+  template <typename data_type, typename weight_type = double>
+  struct weigted_data {
+    data_type data{};
+    weight_type weight{};
+    bool operator==(const weigted_data &) const noexcept = default;
+    auto operator<=>(const weigted_data &) const noexcept = default;
+  };
 } // namespace cyy::algorithm
