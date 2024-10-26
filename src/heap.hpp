@@ -30,19 +30,20 @@ namespace cyy::algorithm {
       items.emplace_back(std::move(data));
       return heapify_up(items.size() - 1);
     }
-    void change_item(size_t index, std::function<void(data_type &)> callback) {
+    size_t change_item(size_t index, std::function<void(data_type &)> callback) {
       assert(index < this->size());
       callback(items[index]);
-      heapify(index);
+      return heapify(index);
     }
     const data_type &get_item(size_t index) const { return items.at(index); }
 
   private:
-    void heapify(size_t index) noexcept {
-      if (heapify_up(index) != index) {
-        return;
+    size_t heapify(size_t index) noexcept {
+      auto new_idx=heapify_up(index);
+      if (new_idx != index) {
+        return new_idx;
       }
-      heapify_down(index);
+      return heapify_down(index);
     }
 
     size_t heapify_up(size_t index) noexcept {
@@ -62,10 +63,10 @@ namespace cyy::algorithm {
       items[index] = std::move(tmp);
       return index;
     }
-    void heapify_down(size_t index) noexcept {
+    size_t heapify_down(size_t index) noexcept {
       auto left_child_index = 2 * (index + 1) - 1;
       if (left_child_index >= size()) {
-        return;
+        return index;
       }
       auto tmp = std::move(items[index]);
       while (left_child_index < size()) {
@@ -85,6 +86,7 @@ namespace cyy::algorithm {
         left_child_index = 2 * (index + 1) - 1;
       }
       items[index] = std::move(tmp);
+      return index;
     }
 
     compare<data_type> comparator;
