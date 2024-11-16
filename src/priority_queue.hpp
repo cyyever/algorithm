@@ -6,6 +6,8 @@
 
 #pragma once
 #include <cassert>
+#include <cstddef>
+#include <functional>
 #include <unordered_map>
 
 #include "heap.hpp"
@@ -57,7 +59,7 @@ namespace cyy::algorithm {
       if (!has_insertion) {
         return false;
       }
-      item_heap.insert(priority_queue_item{std::move(key), it});
+      item_heap.insert(priority_queue_item{std::move(key), it, it->second});
       check_consistency();
       return true;
     }
@@ -87,13 +89,12 @@ namespace cyy::algorithm {
       auto operator<=>(const priority_queue_item &rhs) const noexcept {
         return key <=> rhs.key;
       }
-      priority_queue_item(key_type key_, iterator_type iterator_) noexcept
-          : key(std::move(key_)), iterator(iterator_),
-            heap_index{iterator_->second} {}
+      priority_queue_item(key_type key_, iterator_type iterator_,
+                          size_t heap_index_) noexcept
+          : key(std::move(key_)), iterator(iterator_), heap_index{heap_index_} {
+      }
 
-      priority_queue_item(priority_queue_item &&rhs) noexcept
-          : key(std::move(rhs.key)), iterator(std::move(rhs.iterator)),
-            heap_index(iterator->second) {}
+      priority_queue_item(priority_queue_item &&rhs) noexcept = default;
       priority_queue_item &operator=(priority_queue_item &&rhs) noexcept {
         if (this == &rhs) {
           return *this;
