@@ -21,6 +21,12 @@ TEST_CASE("heap") {
     h.insert(1);
     REQUIRE_EQ(h.top(), 1);
   }
+  SUBCASE("remove") {
+    h.insert(5);
+    h.insert(1);
+    h.remove_item(1);
+    REQUIRE_EQ(h.top(), 1);
+  }
   SUBCASE("pop") {
     h.insert(5);
     h.insert(1);

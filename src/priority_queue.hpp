@@ -36,6 +36,14 @@ namespace cyy::algorithm {
     bool contains(const data_type &data) const {
       return position.contains(data);
     }
+    void remove(const data_type &data) {
+      auto it = position.find(data);
+      if (it != position.end()) {
+        item_heap.remove_item(it->second);
+        position.erase(it);
+      }
+      check_consistency();
+    }
     void change_key(const data_type &data, key_type key) {
       auto idx = position.at(data);
       item_heap.change_item(idx,

@@ -30,16 +30,26 @@ namespace cyy::algorithm {
       items.emplace_back(std::move(data));
       return heapify_up(items.size() - 1);
     }
-    size_t change_item(size_t index, std::function<void(data_type &)> callback) {
+    size_t change_item(size_t index,
+                       std::function<void(data_type &)> callback) {
       assert(index < this->size());
       callback(items[index]);
       return heapify(index);
+    }
+    void remove_item(size_t index) {
+      assert(index < this->size());
+      if (this->empty()) {
+        return;
+      }
+      std::swap(items[index], items.back());
+      items.pop_back();
+      heapify(index);
     }
     const data_type &get_item(size_t index) const { return items.at(index); }
 
   private:
     size_t heapify(size_t index) noexcept {
-      auto new_idx=heapify_up(index);
+      auto new_idx = heapify_up(index);
       if (new_idx != index) {
         return new_idx;
       }
