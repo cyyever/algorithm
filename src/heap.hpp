@@ -104,6 +104,58 @@ namespace cyy::algorithm {
   };
   template <typename data_type> using max_heap = heap<data_type, std::greater>;
 
+  template <typename data_type> struct referred_item_base {
+    data_type data;
+    referred_item_base() = delete;
+    referred_item_base(const referred_item_base &rhs) = delete;
+    referred_item_base &operator=(const referred_item_base &rhs) = delete;
+    ~referred_item_base() = default;
+    auto operator<=>(const referred_item_base &rhs) const noexcept {
+      return data <=> rhs.data;
+    }
+    referred_item_base(referred_item_base &&rhs) noexcept = default;
+  };
+  template <typename data_type, typename iterator_type>
+  struct referred_item : public referred_item_base<data_type> {
+    iterator_type iterator;
+    using referred_item_base<data_type>::referred_item_base;
+    using referred_item_base<data_type>::operator<=>;
+    referred_item(data_type data_, iterator_type iterator_,
+                 size_t heap_index_) noexcept
+        : referred_item_base<data_type>(std::move(data_)), iterator(iterator_) {
+      *iterator = heap_index_;
+    }
+
+    referred_item &operator=(referred_item &&rhs) noexcept {
+      if (this == &rhs) {
+        return *this;
+      }
+      this->data = std::move(rhs.data);
+      *(this->iterator) = *(rhs.iterator);
+      return *this;
+    }
+  };
+  template <typename data_type, typename iterator_type>
+  struct pair_referred_item : public referred_item_base<data_type> {
+    iterator_type iterator;
+    using referred_item_base<data_type>::referred_item_base;
+    using referred_item_base<data_type>::operator<=>;
+    pair_referred_item(data_type data_, iterator_type iterator_,
+                 size_t heap_index_) noexcept
+        : referred_item_base<data_type>(std::move(data_)), iterator(iterator_) {
+      iterator->second = heap_index_;
+    }
+
+    pair_referred_item &operator=(pair_referred_item &&rhs) noexcept {
+      if (this == &rhs) {
+        return *this;
+      }
+      this->data = std::move(rhs.data);
+      this->iterator->second = rhs.iterator->second;
+      return *this;
+    }
+  };
+
   template <typename data_type> using min_heap = heap<data_type>;
   template <typename data_type, typename weight_type = double>
   struct weigted_data {
@@ -112,4 +164,5 @@ namespace cyy::algorithm {
     bool operator==(const weigted_data &) const noexcept = default;
     auto operator<=>(const weigted_data &) const noexcept = default;
   };
+
 } // namespace cyy::algorithm
