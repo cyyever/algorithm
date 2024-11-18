@@ -6,7 +6,9 @@
 
 #pragma once
 #include <cassert>
+#include <cstddef>
 #include <functional>
+#include <iostream>
 #include <vector>
 namespace cyy::algorithm {
 
@@ -105,8 +107,9 @@ namespace cyy::algorithm {
   template <typename data_type> using max_heap = heap<data_type, std::greater>;
 
   template <typename data_type> struct referred_item_base {
-    data_type data;
-    referred_item_base() = delete;
+    data_type data{};
+    size_t heap_index;
+    referred_item_base() = default;
     referred_item_base(const referred_item_base &rhs) = delete;
     referred_item_base &operator=(const referred_item_base &rhs) = delete;
     ~referred_item_base() = default;
@@ -121,8 +124,10 @@ namespace cyy::algorithm {
     using referred_item_base<data_type>::referred_item_base;
     using referred_item_base<data_type>::operator<=>;
     referred_item(data_type data_, iterator_type iterator_,
-                 size_t heap_index_) noexcept
-        : referred_item_base<data_type>(std::move(data_)), iterator(iterator_) {
+                  size_t heap_index_) noexcept
+        : iterator(iterator_) {
+      this->data = std::move(data_);
+      this->heap_index = heap_index_;
       *iterator = heap_index_;
     }
 
@@ -131,7 +136,7 @@ namespace cyy::algorithm {
         return *this;
       }
       this->data = std::move(rhs.data);
-      *(this->iterator) = *(rhs.iterator);
+      *(this->iterator) = this->heap_index;
       return *this;
     }
   };
@@ -141,17 +146,21 @@ namespace cyy::algorithm {
     using referred_item_base<data_type>::referred_item_base;
     using referred_item_base<data_type>::operator<=>;
     pair_referred_item(data_type data_, iterator_type iterator_,
-                 size_t heap_index_) noexcept
-        : referred_item_base<data_type>(std::move(data_)), iterator(iterator_) {
+                       size_t heap_index_) noexcept
+        : iterator(iterator_) {
+      this->data = std::move(data_);
+      this->heap_index = heap_index_;
       iterator->second = heap_index_;
     }
+    pair_referred_item(pair_referred_item &&rhs) noexcept = default;
 
     pair_referred_item &operator=(pair_referred_item &&rhs) noexcept {
       if (this == &rhs) {
         return *this;
       }
       this->data = std::move(rhs.data);
-      this->iterator->second = rhs.iterator->second;
+      this->iterator = std::move(rhs.iterator);
+      this->iterator->second = this->heap_index;
       return *this;
     }
   };

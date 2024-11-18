@@ -7,6 +7,7 @@
 #pragma once
 #include <cassert>
 #include <cstddef>
+#include <iostream>
 #include <functional>
 #include <unordered_map>
 
@@ -23,8 +24,10 @@ namespace cyy::algorithm {
       position.reserve(n);
       item_heap.reserve(n);
     }
-    const key_type &top_key() const { return item_heap.top().key; }
-    const data_type &top_data() const { return item_heap.top().get_data(); }
+    const key_type &top_key() const { return item_heap.top().data; }
+    const data_type &top_data() const {
+      return item_heap.top().iterator->first;
+    }
     [[nodiscard]] bool empty() const noexcept { return item_heap.empty(); }
     void pop() {
       if (this->empty()) {
@@ -49,7 +52,7 @@ namespace cyy::algorithm {
     void change_key(const data_type &data, key_type key) {
       auto idx = position.at(data);
       item_heap.change_item(idx,
-                            [&key](auto &item) { item.key = std::move(key); });
+                            [&key](auto &item) { item.data = std::move(key); });
       check_consistency();
     }
 
@@ -59,7 +62,7 @@ namespace cyy::algorithm {
       if (!has_insertion) {
         return false;
       }
-      item_heap.insert(priority_queue_item{std::move(key), it, it->second});
+      item_heap.insert(item_type{std::move(key), it, it->second});
       check_consistency();
       return true;
     }
@@ -70,44 +73,18 @@ namespace cyy::algorithm {
       assert(position.size() == this->size());
       for (size_t i = 0; i < this->size(); i++) {
         auto const &item = item_heap.get_item(i);
-        assert(item.heap_index == i);
-        assert(position.at(item.get_data()) == i);
+      // std::cout<<item.iterator->first<<std::endl;
+        // assert(position.at(item.iterator->first) == i);
+      std::cout<<item.iterator->second<<" "<<i<<std::endl;
+        assert(item.iterator->second == i);
       }
 #endif
     }
 
     std::unordered_map<data_type, size_t> position;
     using iterator_type = typename decltype(position)::iterator;
-    struct priority_queue_item {
-      key_type key;
-      iterator_type iterator;
-      size_t heap_index;
-      priority_queue_item() = delete;
-      priority_queue_item(const priority_queue_item &rhs) = delete;
-      priority_queue_item &operator=(const priority_queue_item &rhs) = delete;
-      ~priority_queue_item() = default;
-      auto operator<=>(const priority_queue_item &rhs) const noexcept {
-        return key <=> rhs.key;
-      }
-      priority_queue_item(key_type key_, iterator_type iterator_,
-                          size_t heap_index_) noexcept
-          : key(std::move(key_)), iterator(iterator_), heap_index{heap_index_} {
-      }
-
-      priority_queue_item(priority_queue_item &&rhs) noexcept = default;
-      priority_queue_item &operator=(priority_queue_item &&rhs) noexcept {
-        if (this == &rhs) {
-          return *this;
-        }
-        key = std::move(rhs.key);
-        auto const old_heap_index = heap_index;
-        iterator = std::move(rhs.iterator);
-        iterator->second = old_heap_index;
-        return *this;
-      }
-      const auto &get_data() const noexcept { return iterator->first; }
-    };
-    using heap_type = heap<priority_queue_item, compare>;
+    using item_type = pair_referred_item<key_type, iterator_type>;
+    using heap_type = heap<item_type, compare>;
     heap_type item_heap;
   };
   template <typename data_type, typename key_type>
