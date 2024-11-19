@@ -62,7 +62,8 @@ namespace cyy::algorithm {
       if (!has_insertion) {
         return false;
       }
-      item_heap.insert(item_type{std::move(key), it, it->second});
+      item_heap.insert(
+          typename heap_type::heap_data_type{std::move(key), it, it->second});
       check_consistency();
       return true;
     }

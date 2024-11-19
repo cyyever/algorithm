@@ -15,6 +15,7 @@ namespace cyy::algorithm {
   template <typename data_type, template <typename T> class compare = std::less>
   class heap {
   public:
+    using heap_data_type = data_type;
     void reserve(size_t n) { items.reserve(n); }
     const data_type &top() const { return get_item(0); }
     [[nodiscard]] size_t size() const noexcept { return items.size(); }
@@ -105,6 +106,7 @@ namespace cyy::algorithm {
     std::vector<data_type> items;
   };
   template <typename data_type> using max_heap = heap<data_type, std::greater>;
+  template <typename data_type> using min_heap = heap<data_type>;
 
   template <typename data_type> struct referred_item_base {
     data_type data{};
@@ -163,15 +165,6 @@ namespace cyy::algorithm {
       this->iterator->second = this->heap_index;
       return *this;
     }
-  };
-
-  template <typename data_type> using min_heap = heap<data_type>;
-  template <typename data_type, typename weight_type = double>
-  struct weigted_data {
-    data_type data{};
-    weight_type weight{};
-    bool operator==(const weigted_data &) const noexcept = default;
-    auto operator<=>(const weigted_data &) const noexcept = default;
   };
 
 } // namespace cyy::algorithm
