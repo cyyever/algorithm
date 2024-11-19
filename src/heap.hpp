@@ -132,6 +132,7 @@ namespace cyy::algorithm {
       this->heap_index = heap_index_;
       *iterator = heap_index_;
     }
+    referred_item(referred_item &&rhs) noexcept = default;
 
     referred_item &operator=(referred_item &&rhs) noexcept {
       if (this == &rhs) {
@@ -208,25 +209,50 @@ namespace cyy::algorithm {
     heap_type item_heap;
   };
 
+  template <typename container_type, typename data_type,
+            template <typename T> class compare = std::less>
+  class referred_heap_base {
+  public:
+    [[nodiscard]] size_t size() const noexcept { return item_heap.size(); }
+    [[nodiscard]] bool empty() const noexcept { return item_heap.empty(); }
+
+  protected:
+    void check_consistency() {
+#ifndef NDEBUG
+      assert(container.size() == this->size());
+      for (size_t i = 0; i < this->size(); i++) {
+        auto const &item = item_heap.get_item(i);
+        assert(*item.iterator == i);
+      }
+#endif
+    }
+
+    container_type container;
+    using iterator_type = typename container_type::iterator;
+    using item_type = referred_item<data_type, iterator_type>;
+    using heap_type = heap<item_type, compare>;
+    heap_type item_heap;
+  };
+
   template <typename key_type, template <typename T> class compare = std::less>
   class window_heap
-      : public mapped_heap_base<std::deque<std::pair<key_type, size_t>>,
-                                key_type, compare> {
+      // : public mapped_heap_base<std::deque<std::pair<key_type, size_t>>,
+      : public referred_heap_base<std::deque<size_t>, key_type, compare> {
   public:
-    const auto &top() const { return this->item_heap.top().iterator->first; }
+    const auto &top() const { return this->item_heap.top().data; }
     void pop() {
       if (this->empty()) {
         return;
       }
       auto const &e = this->container.back();
-      this->item_heap.remove_item(e.second);
+      this->item_heap.remove_item(e);
       this->container.pop_back();
     }
 
     void push(key_type data) {
       this->check_consistency();
 
-      this->container.push_front({data, 0});
+      this->container.push_front({0});
       auto it = this->container.begin();
       this->item_heap.insert({std::move(data), it, this->item_heap.size()});
       this->check_consistency();
