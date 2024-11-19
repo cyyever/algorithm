@@ -38,3 +38,21 @@ TEST_CASE("heap") {
     REQUIRE(h.empty());
   }
 }
+
+TEST_CASE("window_heap") {
+  cyy::algorithm::window_heap<int> h;
+  REQUIRE(h.empty());
+
+  SUBCASE("insert") {
+    h.push(5);
+    h.push(1);
+    REQUIRE_EQ(h.top(), 1);
+  }
+  SUBCASE("pop") {
+    h.push(1);
+    h.push(5);
+    REQUIRE_EQ(h.top(), 1);
+    h.pop();
+    REQUIRE_EQ(h.top(), 5);
+  }
+}

@@ -7,9 +7,8 @@
 #pragma once
 #include <cassert>
 #include <cstddef>
+#include <deque>
 #include <functional>
-#include <iostream>
-#include <list>
 #include <vector>
 namespace cyy::algorithm {
 
@@ -211,7 +210,26 @@ namespace cyy::algorithm {
 
   template <typename key_type, template <typename T> class compare = std::less>
   class window_heap
-      : mapped_heap_base<std::list<key_type, size_t>, key_type, compare> {
+      : public mapped_heap_base<std::deque<std::pair<key_type, size_t>>,
+                                key_type, compare> {
   public:
+    const auto &top() const { return this->item_heap.top().iterator->first; }
+    void pop() {
+      if (this->empty()) {
+        return;
+      }
+      auto const &e = this->container.back();
+      this->item_heap.remove_item(e.second);
+      this->container.pop_back();
+    }
+
+    void push(key_type data) {
+      this->check_consistency();
+
+      this->container.push_front({data, 0});
+      auto it = this->container.begin();
+      this->item_heap.insert({std::move(data), it, this->item_heap.size()});
+      this->check_consistency();
+    }
   };
 } // namespace cyy::algorithm
