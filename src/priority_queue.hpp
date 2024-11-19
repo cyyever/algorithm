@@ -7,7 +7,6 @@
 #pragma once
 #include <cassert>
 #include <cstddef>
-#include <iostream>
 #include <functional>
 #include <unordered_map>
 
@@ -58,7 +57,8 @@ namespace cyy::algorithm {
 
     bool insert(data_type data, key_type key) {
       check_consistency();
-      auto const [it, has_insertion] = position.try_emplace(data, this->size());
+      auto const [it, has_insertion] =
+          position.try_emplace(std::move(data), this->size());
       if (!has_insertion) {
         return false;
       }
@@ -73,9 +73,6 @@ namespace cyy::algorithm {
       assert(position.size() == this->size());
       for (size_t i = 0; i < this->size(); i++) {
         auto const &item = item_heap.get_item(i);
-      // std::cout<<item.iterator->first<<std::endl;
-        // assert(position.at(item.iterator->first) == i);
-      std::cout<<item.iterator->second<<" "<<i<<std::endl;
         assert(item.iterator->second == i);
       }
 #endif
