@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <functional>
 #include <iostream>
+#include <list>
 #include <vector>
 namespace cyy::algorithm {
 
@@ -167,4 +168,50 @@ namespace cyy::algorithm {
     }
   };
 
+  template <typename container_type, typename key_type,
+            template <typename T> class compare = std::less>
+  class mapped_heap_base {
+  public:
+    [[nodiscard]] size_t size() const noexcept { return item_heap.size(); }
+    void reserve(size_t n) {
+      container.reserve(n);
+      item_heap.reserve(n);
+    }
+    const auto &top_key() const { return item_heap.top().data; }
+    const auto &top_data() const { return item_heap.top().iterator->first; }
+    [[nodiscard]] bool empty() const noexcept { return item_heap.empty(); }
+    void pop() {
+      if (this->empty()) {
+        return;
+      }
+      auto it = item_heap.top().iterator;
+      item_heap.pop();
+      container.erase(it);
+      check_consistency();
+    }
+
+  protected:
+    void check_consistency() {
+#ifndef NDEBUG
+      assert(container.size() == this->size());
+      for (size_t i = 0; i < this->size(); i++) {
+        auto const &item = item_heap.get_item(i);
+        assert(item.iterator->second == i);
+      }
+#endif
+    }
+
+    container_type container;
+    using data_type = typename container_type::value_type::first_type;
+    using iterator_type = typename container_type::iterator;
+    using item_type = pair_referred_item<key_type, iterator_type>;
+    using heap_type = heap<item_type, compare>;
+    heap_type item_heap;
+  };
+
+  template <typename key_type, template <typename T> class compare = std::less>
+  class window_heap
+      : mapped_heap_base<std::list<key_type, size_t>, key_type, compare> {
+  public:
+  };
 } // namespace cyy::algorithm

@@ -28,6 +28,7 @@ TEST_CASE("priority_queue") {
   SUBCASE("remove") {
     h.insert(5, 5);
     h.insert(1, 1);
+    REQUIRE_EQ(h.top_data(), 1);
     h.remove(5);
     REQUIRE_EQ(h.top_data(), 1);
   }
