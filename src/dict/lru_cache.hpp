@@ -6,6 +6,7 @@
  */
 #pragma once
 #include <chrono>
+#include <format>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -23,7 +24,6 @@
 #include "naive_cpp_lib/log/log.hpp"
 #include "naive_cpp_lib/util/runnable.hpp"
 #endif
-#include <spdlog/fmt/fmt.h>
 
 #include "../thread_safe_container.hpp"
 #include "ordered_dict.hpp"
@@ -179,7 +179,7 @@ namespace cyy::algorithm {
       while (true) {
         auto [result, value_opt] = prefetch(key, false);
         if (result < 0) {
-          throw std::runtime_error(fmt::format("failed to get {}", key));
+          throw std::runtime_error(std::format("failed to get {}", key));
         }
         if (result > 0) {
           if (hold && value_opt.has_value()) {
@@ -365,7 +365,7 @@ namespace cyy::algorithm {
     class fetch_thread final : public cyy::naive_lib::runnable {
     public:
       fetch_thread(lru_cache &dict_, size_t id_) : dict(dict_), id(id_) {
-        start(fmt::format("fetch_thread {}", id));
+        start(std::format("fetch_thread {}", id));
       }
       ~fetch_thread() override { stop(); }
 
@@ -423,7 +423,7 @@ namespace cyy::algorithm {
     class save_thread final : public cyy::naive_lib::runnable {
     public:
       save_thread(lru_cache &dict_, size_t id_) : dict(dict_), id(id_) {
-        start(fmt::format("saving_thread {}", id));
+        start(std::format("saving_thread {}", id));
       }
       ~save_thread() override { stop(); }
 
@@ -454,7 +454,7 @@ namespace cyy::algorithm {
                        it != dict.data_dict.end()) {
               batch_data.emplace_back(std::move(key), it->second);
             } else {
-              throw std::runtime_error(fmt::format(
+              throw std::runtime_error(std::format(
                   "can't find data of {} to save, invariant error", key));
             }
           }
@@ -578,7 +578,7 @@ namespace cyy::algorithm {
             continue;
           }
           if (it->second != data_state::MEMORY_MODIFIED) {
-            throw std::runtime_error(fmt::format("invalid state {} of key:{}",
+            throw std::runtime_error(std::format("invalid state {} of key:{}",
                                                  static_cast<int>(it->second),
                                                  key));
           }
