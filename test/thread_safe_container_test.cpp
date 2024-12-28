@@ -5,7 +5,6 @@
  * \author cyy
  */
 #include <chrono>
-#include <functional>
 #include <thread>
 
 #include <doctest/doctest.h>
