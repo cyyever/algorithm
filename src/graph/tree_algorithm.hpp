@@ -25,7 +25,7 @@ namespace cyy::algorithm {
     std::vector<std::optional<weight_type>> weights(g.get_vertex_number());
     std::vector<size_t> edge(g.get_vertex_number(), SIZE_MAX);
     priority_queue<size_t, weight_type> h;
-    auto s = 0;
+    size_t s = 0;
     weights[s] = 0;
     h.insert(s, 0);
     while (!h.empty()) {
