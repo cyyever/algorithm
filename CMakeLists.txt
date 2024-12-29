@@ -66,4 +66,4 @@ install(
 
 # install cmake config file
 install(EXPORT CyyAlgorithmLibConfig
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CyyAlgorithmLib)
+        DESTINATION lib/cmake/CyyAlgorithmLib)
