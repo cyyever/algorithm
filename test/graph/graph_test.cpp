@@ -18,7 +18,7 @@ TEST_CASE("graph") {
   SUBCASE("print") {
     static_assert(cyy::algorithm::IsGraph<decltype(g)>);
     g.add_edge({"1", "2"});
-    std::cout << std::format("{}", g) << std::endl;
+    std::cout << std::format("{}", g) << '\n';
   }
   SUBCASE("process edge") {
     g.add_edge({"1", "2"});
@@ -43,7 +43,7 @@ TEST_CASE("graph") {
   }
   SUBCASE("topological ordering") {
     h.add_edge({"1", "2"});
-    cyy::algorithm::DAG<std::string> dag(h);
+    cyy::algorithm::DAG<std::string> const dag(h);
     auto order = dag.get_topological_ordering();
     REQUIRE(order);
   }

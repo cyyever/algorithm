@@ -52,8 +52,8 @@ TEST_CASE("flow network") {
 
 TEST_CASE("complex flow network") {
   using weight_type = double;
-  weight_type M = 2;
-  weight_type r = (sqrt(5) - 1) / 2;
+  weight_type const M = 2;
+  weight_type const r = (sqrt(5) - 1) / 2;
   cyy::algorithm::flow_network<std::string, weight_type>::capacity_fun_type
       capacities;
   capacities.emplace_back("s", "a", M);

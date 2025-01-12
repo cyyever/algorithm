@@ -5,8 +5,10 @@ project(CyyAlgorithmLib LANGUAGES CXX)
 include(cmake/all.cmake)
 
 option(BUILD_PYTHON_BINDING "Build python binding" OFF)
-file(GLOB_RECURSE src_files ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp)
-file(GLOB_RECURSE headers ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.hpp)
+file(GLOB_RECURSE src_files ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp
+     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE headers ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.hpp
+     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp)
 
 find_package(Boost CONFIG)
 find_package(Eigen3)
