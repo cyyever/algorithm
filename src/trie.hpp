@@ -1,9 +1,9 @@
 /*!
- * \file string_algorithm.hpp
+ * \file trie.hpp
  *
- * \brief string algorithms
+ * \brief trie data structure
  * \author cyy
- * \date 2018-03-03
+ * \date 2024-03-03
  */
 
 #pragma once
@@ -54,13 +54,13 @@ namespace cyy::algorithm {
       }
       levels.reserve(level_num);
       for (auto const &r : sequences) {
-        insert(r);
+      add_sequence(r);
       }
     }
 
     template <std::ranges::range Sequence>
       requires std::same_as<std::ranges::range_value_t<Sequence>, T>
-    void insert(Sequence sequence) {
+    void add_sequence(Sequence sequence) {
       element_id_type parent_id = 0;
       auto sequence_size = std::ranges::size(sequence);
       decltype(sequence_size) level_idx = 0;
