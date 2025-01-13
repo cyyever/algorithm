@@ -39,6 +39,7 @@ namespace cyy::algorithm {
     edge_base(edge_base &&) = default;
     edge_base &operator=(const edge_base &) = default;
     edge_base &operator=(edge_base &&) = default;
+    ~edge_base() = default;
     auto operator==(const auto &rhs) const noexcept {
       return first == rhs.first && second == rhs.second;
     }
@@ -77,31 +78,6 @@ namespace cyy::algorithm {
   using weighted_indexed_edge = weighted_edge<size_t, weight_type>;
   using path_type = std::vector<size_t>;
 } // namespace cyy::algorithm
-
-namespace std {
-  template <typename vertex_type>
-  struct hash<cyy::algorithm::edge_base<vertex_type>> {
-    size_t
-    operator()(const cyy::algorithm::edge_base<vertex_type> &x) const noexcept {
-      return ::std::hash<vertex_type>()(x.first) ^
-             ::std::hash<vertex_type>()(x.second);
-    }
-  };
-  template <> struct hash<cyy::algorithm::indexed_edge> {
-    size_t operator()(const cyy::algorithm::indexed_edge &x) const noexcept {
-      return ::std::hash<size_t>()(x.first) ^ ::std::hash<size_t>()(x.second);
-    }
-  };
-  template <typename vertex_type, typename weight_type>
-  struct hash<cyy::algorithm::weighted_edge<vertex_type, weight_type>> {
-    size_t
-    operator()(const cyy::algorithm::weighted_edge<vertex_type, weight_type> &x)
-        const noexcept {
-      return ::std::hash<vertex_type>()(x.first) ^
-             ::std::hash<vertex_type>()(x.second);
-    }
-  };
-} // namespace std
 
 namespace cyy::algorithm {
   template <typename vertexType, bool directed, typename weightType>
@@ -496,6 +472,17 @@ namespace cyy::algorithm {
     { a.second };
   };
 } // namespace cyy::algorithm
+
+namespace std {
+
+  template <cyy::algorithm::IsEdge E> struct hash<E> {
+    size_t operator()(const E &e) const noexcept {
+      using vertex_type = decltype(e.first);
+      return ::std::hash<vertex_type>()(e.first) ^
+             ::std::hash<vertex_type>()(e.second);
+    }
+  };
+} // namespace std
 
 template <cyy::algorithm::IsGraph G> struct std::formatter<G> {
   // Parses format specifications
