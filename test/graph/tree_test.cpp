@@ -20,17 +20,25 @@ TEST_CASE("tree") {
   }
   SUBCASE("Kruskal MST") {
     cyy::algorithm::graph<std::string> g;
-    g.add_edge({"1", "2"});
+    g.add_edge({"A", "B", 7});
+    g.add_edge({"C", "B", 8});
+    g.add_edge({"A", "D", 5});
+    g.add_edge({"D", "E", 15});
+    g.add_edge({"B", "E", 7});
+    g.add_edge({"B", "C", 8});
+    g.add_edge({"C", "E", 5});
+    g.add_edge({"D", "F", 6});
+    g.add_edge({"E", "F", 8});
+    g.add_edge({"E", "G", 9});
+    g.add_edge({"F", "G", 11});
     auto mst = MST_kruskal(g);
-    REQUIRE_EQ(mst.get_edge_number(), 1);
+    REQUIRE_EQ(mst.get_edge_number(), g.get_vertex_number() - 1);
   }
-  /* #ifdef __cpp_lib_format */
-  /*   SUBCASE("print") { */
-  /*     cyy::algorithm::tree<std::string> T; */
-  /*     T.add_edge({"1", "2"}); */
-  /*     std::cout << std::format("{}", T) << std::endl; */
-  /*   } */
-  /* #endif */
+  SUBCASE("print") {
+    cyy::algorithm::tree<std::string> T;
+    T.add_edge({"1", "2"});
+    std::println("{}", T);
+  }
   SUBCASE("Prufer code") {
     cyy::algorithm::tree<std::string> T;
     T.add_vertex("1");
