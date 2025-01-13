@@ -18,8 +18,8 @@ TEST_CASE("tree") {
     auto mst = MST_prime(g);
     REQUIRE_EQ(mst.get_edge_number(), 1);
   }
-  SUBCASE("Kruskal MST") {
-    cyy::algorithm::graph<std::string> g;
+  SUBCASE("MST") {
+    cyy::algorithm::graph<std::string, int> g;
     g.add_edge({"A", "B", 7});
     g.add_edge({"B", "C", 8});
     g.add_edge({"A", "D", 5});
@@ -33,6 +33,13 @@ TEST_CASE("tree") {
     g.add_edge({"F", "G", 11});
     auto mst = MST_kruskal(g);
     double total_weight = 0;
+    for (const auto &e : mst.foreach_edge_with_weight()) {
+      total_weight += e.weight;
+    }
+    REQUIRE_EQ(mst.get_edge_number(), g.get_vertex_number() - 1);
+    REQUIRE_EQ(total_weight, 39);
+    mst = MST_prime(g);
+    total_weight = 0;
     for (const auto &e : mst.foreach_edge_with_weight()) {
       total_weight += e.weight;
     }

@@ -12,57 +12,50 @@
 #include <vector>
 
 #include "graph.hpp"
-#include "priority_queue.hpp"
+#include "heap.hpp"
 #include "tree.hpp"
 #include "union_find.hpp"
 
 namespace cyy::algorithm {
-
   template <typename vertex_type, typename weight_type = double>
   auto MST_prime(const graph<vertex_type, weight_type> &g) {
     assert(g.has_continuous_vertices());
 
-    std::vector<std::optional<weight_type>> weights(g.get_vertex_number());
-    std::vector<size_t> edge(g.get_vertex_number(), SIZE_MAX);
-    priority_queue<size_t, weight_type> h;
-    size_t s = 0;
-    weights[s] = 0;
-    h.insert(s, 0);
+    std::vector<bool> visited(g.get_vertex_number(), false);
+    min_heap<weighted_indexed_edge<weight_type>> h;
+    h.insert({0, SIZE_MAX, 0});
+    graph<vertex_type, weight_type> MST;
     while (!h.empty()) {
-      auto u = h.top_data();
-      h.pop();
-      for (auto [v, weight] : g.get_adjacent_list(u)) {
-        if (weights[v].has_value() && weight >= weights[v]) {
-          continue;
-        }
-        edge[v] = u;
-        weights[v] = weight;
-        if (h.contains(v)) {
-          h.change_key(v, weight);
-        } else {
-          h.insert(v, weight);
-        }
-      }
-    }
-    graph<size_t> MST;
-    for (size_t v = 0; v < edge.size(); v++) {
-      auto u = edge[v];
-      if (u == SIZE_MAX) {
+      const auto &e = h.top();
+      auto u = e.first;
+      auto v = e.second;
+      if (visited[u]) {
+        h.pop();
         continue;
       }
-      MST.add_edge({u, v, weights[v].value()});
+      visited[u] = true;
+      if (v != SIZE_MAX) {
+        MST.add_edge(g.get_edge(e));
+      }
+      h.pop();
+
+      for (auto [w, weight] : g.get_adjacent_list(u)) {
+        if (!visited[w]) {
+          h.insert({w, u, weight});
+        }
+      }
     }
     return tree(MST, false);
   }
 
-  template <typename vertex_type>
-  auto MST_kruskal(const graph<vertex_type> &g) {
+  template <typename vertex_type, typename weight_type>
+  auto MST_kruskal(const graph<vertex_type, weight_type> &g) {
     auto edges = std::ranges::to<std::vector>(g.foreach_edge_with_weight());
     std::ranges::sort(edges);
     using uf = union_find<size_t>;
     std::vector<uf::node_ptr> uf_nodes;
     uf_nodes.resize(g.get_vertex_number());
-    graph<vertex_type> MST;
+    graph<vertex_type, weight_type> MST;
 
     for (auto const &edge : edges) {
       auto const &u = edge.first;
@@ -83,7 +76,7 @@ namespace cyy::algorithm {
     return tree(MST, false);
   }
 
-  template <typename vertex_type, typename weight_type = double>
+  template <typename vertex_type, typename weight_type>
   auto get_prufer_code(const tree<vertex_type, weight_type> &T) {
     if (!T.has_continuous_vertices()) {
       throw std::logic_error("need continuous vertices");
