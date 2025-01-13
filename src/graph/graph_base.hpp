@@ -35,6 +35,10 @@ namespace cyy::algorithm {
         throw std::runtime_error("not an edge");
       }
     }
+    edge_base(const edge_base &) = default;
+    edge_base(edge_base &&) = default;
+    edge_base &operator=(const edge_base &) = default;
+    edge_base &operator=(edge_base &&) = default;
     auto operator==(const auto &rhs) const noexcept {
       return first == rhs.first && second == rhs.second;
     }
@@ -47,23 +51,43 @@ namespace cyy::algorithm {
   struct weighted_edge : public edge_base<vertex_type> {
     weight_type weight;
     weighted_edge(vertex_type first_, vertex_type second_,
-                weight_type weight_ = 1)
+                  weight_type weight_ = 1)
         : edge_base<vertex_type>(std::move(first_), std::move(second_)),
           weight(std::move(weight_)) {}
+    weighted_edge(const weighted_edge &) = default;
+    weighted_edge(weighted_edge &&) = default;
+    weighted_edge &operator=(const weighted_edge &) = default;
+    weighted_edge &operator=(weighted_edge &&) = default;
+    ~weighted_edge()=default;
+  using edge_base<vertex_type>::contains;
 
+    auto operator==(const auto &rhs) const noexcept {
+      return this->first == rhs.first && this->second == rhs.second;
+    }
     auto operator<=>(const auto &rhs) const noexcept {
       return weight <=> rhs.weight;
     }
-    weighted_edge reverse() const noexcept {
+    weighted_edge<vertex_type,weight_type> reverse() const noexcept {
       return {this->second, this->first, weight};
     }
   };
 
   using indexed_edge = edge_base<size_t>;
+  template <typename weight_type>
+  using weighted_indexed_edge = weighted_edge<size_t, weight_type>;
   using path_type = std::vector<size_t>;
 } // namespace cyy::algorithm
 
 namespace std {
+  template <typename vertex_type>
+  struct hash<cyy::algorithm::edge_base<vertex_type>> {
+    size_t
+    operator()(const cyy::algorithm::edge_base<vertex_type> &x)
+        const noexcept {
+      return ::std::hash<vertex_type>()(x.first) ^
+             ::std::hash<vertex_type>()(x.second);
+    }
+  };
   template <> struct hash<cyy::algorithm::indexed_edge> {
     size_t operator()(const cyy::algorithm::indexed_edge &x) const noexcept {
       return ::std::hash<size_t>()(x.first) ^ ::std::hash<size_t>()(x.second);
@@ -71,7 +95,8 @@ namespace std {
   };
   template <typename vertex_type, typename weight_type>
   struct hash<cyy::algorithm::weighted_edge<vertex_type, weight_type>> {
-    size_t operator()(const cyy::algorithm::weighted_edge<vertex_type, weight_type> &x)
+    size_t
+    operator()(const cyy::algorithm::weighted_edge<vertex_type, weight_type> &x)
         const noexcept {
       return ::std::hash<vertex_type>()(x.first) ^
              ::std::hash<vertex_type>()(x.second);
@@ -83,7 +108,7 @@ namespace cyy::algorithm {
   template <typename vertexType, bool directed, typename weightType>
   class graph_base {
   public:
-    using edge_type =weighted_edge<vertexType, weightType>;
+    using edge_type = weighted_edge<vertexType, weightType>;
     using vertex_type = vertexType;
     using weight_type = weightType;
     using adjacent_matrix_type = std::vector<std::vector<weight_type>>;
@@ -114,13 +139,18 @@ namespace cyy::algorithm {
       return true;
     }
 
+  template<bool use_weight=true>
     auto foreach_edge_with_weight() const noexcept {
       if constexpr (directed) {
         return std::views::join(std::views::transform(
             weighted_adjacent_list, [](const auto &p) noexcept {
               return std::ranges::views::transform(
                   p.second, [&p](auto const &t) {
-                    return std::pair(indexed_edge{p.first, t.first}, t.second);
+              if constexpr(use_weight) {
+                    return weighted_indexed_edge<weight_type>(p.first, t.first, t.second);
+              } else {
+                    return indexed_edge(p.first, t.first);
+              }
                   });
             }));
       } else {
@@ -132,15 +162,18 @@ namespace cyy::algorithm {
                            return e.first > p.first;
                          }) |
                      std::ranges::views::transform([&p](auto const &t) {
-                       return std::pair(indexed_edge{p.first, t.first},
-                                        t.second);
+              if constexpr(use_weight) {
+                    return weighted_indexed_edge<weight_type>(p.first, t.first, t.second);
+              } else {
+                    return indexed_edge(p.first, t.first);
+              }
                      });
             }));
       }
     }
 
     auto foreach_edge() const noexcept {
-      return foreach_edge_with_weight() | std::views::keys;
+      return foreach_edge_with_weight<false>();
     }
 
     size_t add_dummy_vertex() {
@@ -265,10 +298,10 @@ namespace cyy::algorithm {
       for (size_t i = 0; i < vertex_num; i++) {
         adjacent_matrix.emplace_back(vertex_num, 0);
       }
-      for (auto const &[e, weight] : foreach_edge_with_weight()) {
-        adjacent_matrix[e.first][e.second] = weight;
+      for (auto const &e : foreach_edge_with_weight()) {
+        adjacent_matrix[e.first][e.second] = e.weight;
         if constexpr (!directed) {
-          adjacent_matrix[e.second][e.first] = weight;
+          adjacent_matrix[e.second][e.first] = e.weight;
         }
       }
       return adjacent_matrix;
@@ -482,14 +515,13 @@ template <cyy::algorithm::IsGraph G> struct std::formatter<G> {
     for (size_t v = 0; v < g.get_vertex_number(); v++) {
       std::format_to(ctx.out(), "vertex {}\n", g.get_vertex(v));
     }
-    for (auto const &[indexed_edge, w] : g.foreach_edge_with_weight()) {
-      auto e = g.get_edge(indexed_edge);
+    for (auto const &e : g.foreach_edge_with_weight()) {
       if constexpr (G::is_directed) {
         std::format_to(ctx.out(), "{} -> {} with weight {}\n", e.first,
-                       e.second, w);
+                       e.second, e.weight);
       } else {
         std::format_to(ctx.out(), "{} <-> {} with weight {}\n", e.first,
-                       e.second, w);
+                       e.second, e.weight);
       }
     }
     return ctx.out();

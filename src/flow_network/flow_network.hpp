@@ -5,12 +5,17 @@
  */
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+#include <cassert>
 #include <numeric>
+#include <stdexcept>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "graph/graph.hpp"
+#include "graph/graph_base.hpp"
 #include "graph/path.hpp"
 namespace cyy::algorithm {
   template <typename vertex_type = size_t, typename weight_type = double>
@@ -49,11 +54,11 @@ namespace cyy::algorithm {
     }
     weight_type get_flow_value() const {
       weight_type value{};
-      for (auto const &[e, weight] : graph.get_containing_edges(source)) {
+      for (auto const &e : graph.get_containing_edges(source)) {
         if (e.first == source) {
-          value += weight;
+          value += e.weight;
         } else {
-          value -= weight;
+          value -= e.weight;
         }
       }
       return value;
@@ -115,9 +120,9 @@ namespace cyy::algorithm {
     flow_network() = default;
     bool check_flow() const {
       // capacity condition
-      for (auto const &[indexed_edge, weight] :
+      for (auto const & e:
            graph.foreach_edge_with_weight()) {
-        if (weight > capacities.at(indexed_edge)) {
+        if (e.weight > capacities.at({e.first,e.second})) {
           return false;
         }
       }

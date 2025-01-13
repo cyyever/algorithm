@@ -15,11 +15,13 @@ namespace cyy::algorithm {
   class graph : public graph_base<vertex_type, false, weight_type> {
   public:
     using graph_base<vertex_type, false, weight_type>::graph_base;
+    using typename graph_base<vertex_type, false, weight_type>::edge_type;
   };
   template <typename vertex_type, typename weight_type = double>
   class directed_graph : public graph_base<vertex_type, true, weight_type> {
   public:
     using graph_base<vertex_type, true, weight_type>::graph_base;
+    using typename graph_base<vertex_type, true, weight_type>::edge_type;
 
     auto get_underlying_graph() const {
       graph<vertex_type, weight_type> g;
@@ -43,7 +45,7 @@ namespace cyy::algorithm {
     auto get_containing_edges(size_t vertex_index) const noexcept {
       return std::ranges::filter_view(this->foreach_edge_with_weight(),
                                       [vertex_index](auto const &e) {
-                                        return e.first.contains(vertex_index);
+                                        return e.contains(vertex_index);
                                       });
     }
     std::vector<size_t> get_indegrees() const {

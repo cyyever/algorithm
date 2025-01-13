@@ -51,8 +51,8 @@ namespace cyy::algorithm {
   template <IsGraph G> auto shortest_path_Dijkstra(const G &g, size_t s) {
 #ifndef NDEBUG
     assert(g.has_vertex_index(s));
-    for (auto const &[_, weight] : g.foreach_edge_with_weight()) {
-      assert(weight >= 0);
+    for (auto const &e : g.foreach_edge_with_weight()) {
+      assert(e.weight >= 0);
     }
 #endif
     if (!g.has_vertex_index(s)) {

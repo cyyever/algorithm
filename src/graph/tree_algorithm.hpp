@@ -57,20 +57,16 @@ namespace cyy::algorithm {
 
   template <typename vertex_type>
   auto MST_kruskal(const graph<vertex_type> &g) {
-
-    std::vector<typename decltype(g)::edge_type> edges;
-    edges.reserve(g.get_edge_number());
-    for (auto e : g.foreach_edge()) {
-      edges.emplace_back(std::move(e));
-    }
-    std::ranges::sort_heap(edges);
+    auto edges = std::ranges::to<std::vector>(g.foreach_edge_with_weight());
+    std::ranges::sort(edges);
     using uf = union_find<size_t>;
     std::vector<uf::node_ptr> uf_nodes;
     uf_nodes.resize(g.get_vertex_number());
     graph<vertex_type> MST;
 
     for (auto const &edge : edges) {
-      auto [u, v] = edge;
+    auto const &u=edge.first;
+    auto const &v=edge.second;
       assert(u < uf_nodes.size());
       assert(v < uf_nodes.size());
       if (!uf_nodes[u]) {
@@ -80,7 +76,7 @@ namespace cyy::algorithm {
         uf_nodes[v] = uf::make_set(v);
       }
       if (uf::find(uf_nodes[u]) != uf::find(uf_nodes[v])) {
-        MST.add_edge({g.get_edge(edge)});
+        MST.add_edge(g.get_edge(edge));
         uf::UNION(uf_nodes[u], uf_nodes[v]);
       }
     }
