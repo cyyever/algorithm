@@ -58,8 +58,8 @@ namespace cyy::algorithm {
     weighted_edge(weighted_edge &&) = default;
     weighted_edge &operator=(const weighted_edge &) = default;
     weighted_edge &operator=(weighted_edge &&) = default;
-    ~weighted_edge()=default;
-  using edge_base<vertex_type>::contains;
+    ~weighted_edge() = default;
+    using edge_base<vertex_type>::contains;
 
     auto operator==(const auto &rhs) const noexcept {
       return this->first == rhs.first && this->second == rhs.second;
@@ -67,7 +67,7 @@ namespace cyy::algorithm {
     auto operator<=>(const auto &rhs) const noexcept {
       return weight <=> rhs.weight;
     }
-    weighted_edge<vertex_type,weight_type> reverse() const noexcept {
+    weighted_edge<vertex_type, weight_type> reverse() const noexcept {
       return {this->second, this->first, weight};
     }
   };
@@ -82,8 +82,7 @@ namespace std {
   template <typename vertex_type>
   struct hash<cyy::algorithm::edge_base<vertex_type>> {
     size_t
-    operator()(const cyy::algorithm::edge_base<vertex_type> &x)
-        const noexcept {
+    operator()(const cyy::algorithm::edge_base<vertex_type> &x) const noexcept {
       return ::std::hash<vertex_type>()(x.first) ^
              ::std::hash<vertex_type>()(x.second);
     }
@@ -139,18 +138,19 @@ namespace cyy::algorithm {
       return true;
     }
 
-  template<bool use_weight=true>
+    template <bool use_weight = true>
     auto foreach_edge_with_weight() const noexcept {
       if constexpr (directed) {
         return std::views::join(std::views::transform(
             weighted_adjacent_list, [](const auto &p) noexcept {
               return std::ranges::views::transform(
                   p.second, [&p](auto const &t) {
-              if constexpr(use_weight) {
-                    return weighted_indexed_edge<weight_type>(p.first, t.first, t.second);
-              } else {
-                    return indexed_edge(p.first, t.first);
-              }
+                    if constexpr (use_weight) {
+                      return weighted_indexed_edge<weight_type>(
+                          p.first, t.first, t.second);
+                    } else {
+                      return indexed_edge(p.first, t.first);
+                    }
                   });
             }));
       } else {
@@ -162,11 +162,12 @@ namespace cyy::algorithm {
                            return e.first > p.first;
                          }) |
                      std::ranges::views::transform([&p](auto const &t) {
-              if constexpr(use_weight) {
-                    return weighted_indexed_edge<weight_type>(p.first, t.first, t.second);
-              } else {
-                    return indexed_edge(p.first, t.first);
-              }
+                       if constexpr (use_weight) {
+                         return weighted_indexed_edge<weight_type>(
+                             p.first, t.first, t.second);
+                       } else {
+                         return indexed_edge(p.first, t.first);
+                       }
                      });
             }));
       }

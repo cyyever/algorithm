@@ -5,9 +5,9 @@
  */
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cassert>
 #include <numeric>
 #include <stdexcept>
 #include <unordered_set>
@@ -120,9 +120,8 @@ namespace cyy::algorithm {
     flow_network() = default;
     bool check_flow() const {
       // capacity condition
-      for (auto const & e:
-           graph.foreach_edge_with_weight()) {
-        if (e.weight > capacities.at({e.first,e.second})) {
+      for (auto const &e : graph.foreach_edge_with_weight()) {
+        if (e.weight > capacities.at(e)) {
           return false;
         }
       }

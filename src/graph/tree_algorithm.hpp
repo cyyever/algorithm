@@ -65,8 +65,8 @@ namespace cyy::algorithm {
     graph<vertex_type> MST;
 
     for (auto const &edge : edges) {
-    auto const &u=edge.first;
-    auto const &v=edge.second;
+      auto const &u = edge.first;
+      auto const &v = edge.second;
       assert(u < uf_nodes.size());
       assert(v < uf_nodes.size());
       if (!uf_nodes[u]) {
