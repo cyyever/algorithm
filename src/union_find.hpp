@@ -4,6 +4,7 @@
  */
 
 #pragma once
+#include <cassert>
 #include <memory>
 namespace cyy::algorithm {
   template <typename data_type> class union_find {
@@ -40,6 +41,7 @@ namespace cyy::algorithm {
         a_root->representative = b;
         b_root->rank++;
       }
+      assert(find(a) == find(b));
     }
 
   private:

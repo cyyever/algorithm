@@ -434,7 +434,8 @@ namespace cyy::algorithm {
         return a.first == second_index;
       });
       if (it != neighbors.end()) {
-        throw std::runtime_error("edge has existed");
+        throw std::runtime_error(
+            std::format("edge {}->{} has existed", first_index, second_index));
       }
 #endif
       neighbors.emplace_back(second_index, e.weight);

@@ -21,18 +21,23 @@ TEST_CASE("tree") {
   SUBCASE("Kruskal MST") {
     cyy::algorithm::graph<std::string> g;
     g.add_edge({"A", "B", 7});
-    g.add_edge({"C", "B", 8});
+    g.add_edge({"B", "C", 8});
     g.add_edge({"A", "D", 5});
     g.add_edge({"D", "E", 15});
     g.add_edge({"B", "E", 7});
-    g.add_edge({"B", "C", 8});
+    g.add_edge({"B", "D", 9});
     g.add_edge({"C", "E", 5});
     g.add_edge({"D", "F", 6});
     g.add_edge({"E", "F", 8});
     g.add_edge({"E", "G", 9});
     g.add_edge({"F", "G", 11});
     auto mst = MST_kruskal(g);
+    double total_weight = 0;
+    for (const auto &e : mst.foreach_edge_with_weight()) {
+      total_weight += e.weight;
+    }
     REQUIRE_EQ(mst.get_edge_number(), g.get_vertex_number() - 1);
+    REQUIRE_EQ(total_weight, 39);
   }
   SUBCASE("print") {
     cyy::algorithm::tree<std::string> T;
