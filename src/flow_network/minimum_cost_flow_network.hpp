@@ -12,12 +12,11 @@
 #include <vector>
 
 #include "graph/tree.hpp"
-// #include "hash.hpp"
 namespace cyy::algorithm {
   template <typename vertex_type = size_t, typename weight_type = double>
   class minimum_cost_flow_network {
   public:
-    using edge_type = edge<vertex_type, weight_type>;
+    using edge_type = weighted_edge<vertex_type, weight_type>;
     using flow_fun_type = std::unordered_map<indexed_edge, weight_type>;
     using capacity_and_cost_fun_type =
         std::unordered_map<edge_type,
@@ -362,7 +361,6 @@ namespace cyy::algorithm {
       }
       T.set_root_by_index(*artificial_vertex_opt);
       assert(T.get_edge_number() + L.size() == graph.get_edge_number());
-      /* T.print_edges(std::cout); */
       return {std::move(T), std::move(L), {}};
     }
 

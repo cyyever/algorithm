@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(CyyAlgorithmLib LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 23)
 include(cmake/all.cmake)
 
 option(BUILD_PYTHON_BINDING "Build python binding" OFF)

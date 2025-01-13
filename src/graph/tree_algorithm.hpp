@@ -58,7 +58,7 @@ namespace cyy::algorithm {
   template <typename vertex_type>
   auto MST_kruskal(const graph<vertex_type> &g) {
 
-    std::vector<indexed_edge> edges;
+    std::vector<typename decltype(g)::edge_type> edges;
     edges.reserve(g.get_edge_number());
     for (auto e : g.foreach_edge()) {
       edges.emplace_back(std::move(e));

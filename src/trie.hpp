@@ -54,7 +54,7 @@ namespace cyy::algorithm {
       }
       levels.reserve(level_num);
       for (auto const &r : sequences) {
-      add_sequence(r);
+        add_sequence(r);
       }
     }
 

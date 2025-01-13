@@ -17,7 +17,7 @@ namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type = double>
   class tree : public graph<vertex_type, weight_type> {
   public:
-    using edge_type = edge<vertex_type, weight_type>;
+    using edge_type = weighted_edge<vertex_type, weight_type>;
     tree() = default;
 
     template <std::ranges::input_range U>
@@ -59,7 +59,8 @@ namespace cyy::algorithm {
   template <typename vertex_type, typename weight_type = double>
   class directed_tree_base : public DAG<vertex_type, weight_type> {
   public:
-    using edge_type = edge<vertex_type, weight_type>;
+    using DAG<vertex_type, weight_type>::get_path;
+    using edge_type = DAG<vertex_type, weight_type>::edge_type;
     directed_tree_base() = default;
 
     template <std::ranges::input_range U>
@@ -71,7 +72,6 @@ namespace cyy::algorithm {
                        vertex_type root_)
         : DAG<vertex_type, weight_type>(std::move(g)),
           root(this->get_vertex_index(root_)) {}
-    using DAG<vertex_type, weight_type>::get_path;
     // get a path from root to u
     [[nodiscard]] std::vector<size_t> get_path(size_t u) const {
       return this->get_path(root, u);

@@ -12,9 +12,9 @@
 #include <cstdint>
 #include <format>
 #include <functional>
-#include <iostream>
 #include <iterator>
 #include <list>
+#include <print>
 #include <ranges>
 #include <stdexcept>
 #include <string>
@@ -25,36 +25,41 @@
 #include "pool.hpp"
 
 namespace cyy::algorithm {
-  template <typename vertex_type, typename weight_type> struct edge {
+  template <typename vertex_type> struct edge_base {
     vertex_type first;
     vertex_type second;
-    weight_type weight = 1;
 
-    auto operator<=>(const auto &rhs) const noexcept {
-      return weight <=> rhs.weight;
-    }
-    auto operator==(const auto &rhs) const noexcept {
-      return first == rhs.first && second == rhs.second;
-    }
-    edge reverse() const noexcept { return {second, first, weight}; }
-  };
-
-  struct indexed_edge {
-    size_t first;
-    size_t second;
-    indexed_edge(size_t first_, size_t second_)
-        : first(first_), second(second_) {
+    edge_base(vertex_type first_, vertex_type second_)
+        : first(std::move(first_)), second(std::move(second_)) {
       if (first == second) {
         throw std::runtime_error("not an edge");
       }
     }
-    bool operator==(const indexed_edge &rhs) const noexcept = default;
-    auto operator<=>(const indexed_edge &rhs) const noexcept = default;
-    [[nodiscard]] bool contains(size_t v) const noexcept {
+    auto operator==(const auto &rhs) const noexcept {
+      return first == rhs.first && second == rhs.second;
+    }
+    [[nodiscard]] bool contains(const vertex_type &v) const noexcept {
       return first == v || second == v;
     }
-    [[nodiscard]] indexed_edge reverse() const { return {second, first}; }
+    [[nodiscard]] auto reverse() const { return edge_base{second, first}; }
   };
+  template <typename vertex_type, typename weight_type>
+  struct weighted_edge : public edge_base<vertex_type> {
+    weight_type weight;
+    weighted_edge(vertex_type first_, vertex_type second_,
+                weight_type weight_ = 1)
+        : edge_base<vertex_type>(std::move(first_), std::move(second_)),
+          weight(std::move(weight_)) {}
+
+    auto operator<=>(const auto &rhs) const noexcept {
+      return weight <=> rhs.weight;
+    }
+    weighted_edge reverse() const noexcept {
+      return {this->second, this->first, weight};
+    }
+  };
+
+  using indexed_edge = edge_base<size_t>;
   using path_type = std::vector<size_t>;
 } // namespace cyy::algorithm
 
@@ -65,9 +70,8 @@ namespace std {
     }
   };
   template <typename vertex_type, typename weight_type>
-  // NOLINTNEXTLINE
-  struct hash<cyy::algorithm::edge<vertex_type, weight_type>> {
-    size_t operator()(const cyy::algorithm::edge<vertex_type, weight_type> &x)
+  struct hash<cyy::algorithm::weighted_edge<vertex_type, weight_type>> {
+    size_t operator()(const cyy::algorithm::weighted_edge<vertex_type, weight_type> &x)
         const noexcept {
       return ::std::hash<vertex_type>()(x.first) ^
              ::std::hash<vertex_type>()(x.second);
@@ -79,7 +83,7 @@ namespace cyy::algorithm {
   template <typename vertexType, bool directed, typename weightType>
   class graph_base {
   public:
-    using edge_type = edge<vertexType, weightType>;
+    using edge_type =weighted_edge<vertexType, weightType>;
     using vertex_type = vertexType;
     using weight_type = weightType;
     using adjacent_matrix_type = std::vector<std::vector<weight_type>>;
@@ -100,9 +104,9 @@ namespace cyy::algorithm {
     const auto &get_vertex_pool() const noexcept { return vertex_pool; }
     [[nodiscard]] bool empty() const noexcept { return vertex_pool.empty(); }
 
-    void print_edges(std::ostream &os) const {
+    void print_edges() const {
       for (auto const &e : foreach_edge()) {
-        os << e.first << " -> " << e.second << std::endl;
+        std::println("{} -> {}\n", e.first, e.second);
       }
     }
 
@@ -451,6 +455,11 @@ namespace cyy::algorithm {
     { a.is_directed };
     { a.foreach_edge_with_weight() };
     { a.get_vertex_number() };
+  };
+  template <typename T>
+  concept IsEdge = requires(T a) {
+    { a.first };
+    { a.second };
   };
 } // namespace cyy::algorithm
 

@@ -10,7 +10,7 @@
 #include <set>
 namespace cyy::algorithm {
   tree<size_t> recover_tree(const std::vector<size_t> &prufer_code) {
-    std::vector<edge<size_t, double>> edges;
+    std::vector<weighted_edge<size_t, double>> edges;
     std::set<size_t> vertices;
     for (size_t v = 0; v < prufer_code.size() + 2; v++) {
       if (std::ranges::find(prufer_code, v) == prufer_code.end()) {

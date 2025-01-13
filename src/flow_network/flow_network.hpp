@@ -19,7 +19,7 @@ namespace cyy::algorithm {
     enum class s_t_path_type : std::uint8_t { random = 0, shortest };
 
   public:
-    using edge_type = edge<vertex_type, weight_type>;
+    using edge_type = weighted_edge<vertex_type, weight_type>;
     using capacity_fun_type = std::vector<edge_type>;
     flow_network(const capacity_fun_type &capacities_, vertex_type source_,
                  vertex_type sink_) {
