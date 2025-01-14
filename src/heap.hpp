@@ -119,7 +119,7 @@ namespace cyy::algorithm {
       return data <=> rhs.data;
     }
     referred_item_base(referred_item_base &&rhs) noexcept = default;
-    referred_item_base &operator=(referred_item_base&& rhs) = default;
+    referred_item_base &operator=(referred_item_base &&rhs) = default;
   };
   template <typename data_type, typename iterator_type>
   struct referred_item : public referred_item_base<data_type> {
@@ -156,7 +156,11 @@ namespace cyy::algorithm {
       this->heap_index = heap_index_;
       iterator->second = heap_index_;
     }
+    pair_referred_item(const pair_referred_item &) noexcept = delete;
+
+    pair_referred_item &operator=(const pair_referred_item &) = delete;
     pair_referred_item(pair_referred_item &&rhs) noexcept = default;
+    ~pair_referred_item() = default;
 
     pair_referred_item &operator=(pair_referred_item &&rhs) noexcept {
       if (this == &rhs) {
