@@ -65,7 +65,7 @@ namespace cyy::algorithm {
       }
       auto tmp = std::move(items[index]);
       while (index > 0) {
-        const auto parent_idx = (index + 1) / 2 - 1;
+        const auto parent_idx = ((index + 1) / 2) - 1;
         if (comparator(tmp, items[parent_idx])) {
           items[index] = std::move(items[parent_idx]);
           index = parent_idx;
@@ -77,7 +77,7 @@ namespace cyy::algorithm {
       return index;
     }
     size_t heapify_down(size_t index) noexcept {
-      auto left_child_index = 2 * (index + 1) - 1;
+      auto left_child_index = (2 * (index + 1)) - 1;
       if (left_child_index >= size()) {
         return index;
       }
@@ -110,7 +110,7 @@ namespace cyy::algorithm {
 
   template <typename data_type> struct referred_item_base {
     data_type data{};
-    size_t heap_index;
+    size_t heap_index{};
     referred_item_base() = default;
     referred_item_base(const referred_item_base &rhs) = delete;
     referred_item_base &operator=(const referred_item_base &rhs) = delete;
@@ -119,6 +119,7 @@ namespace cyy::algorithm {
       return data <=> rhs.data;
     }
     referred_item_base(referred_item_base &&rhs) noexcept = default;
+    referred_item_base &operator=(referred_item_base&& rhs) = default;
   };
   template <typename data_type, typename iterator_type>
   struct referred_item : public referred_item_base<data_type> {

@@ -43,7 +43,6 @@ namespace cyy::algorithm {
 
       ~const_reference() { mutex.unlock(); }
       explicit operator const container_type &() const { return container; }
-      // NOLINTNEXTLINE(fuchsia-overloaded-operator)
       const container_type *operator->() const noexcept { return &container; }
 
     private:
