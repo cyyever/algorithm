@@ -41,8 +41,9 @@ namespace cyy::algorithm {
       // Time Complexity is O(m+n)
       std::vector<size_t> order;
       order.reserve(this->get_vertex_number());
-      std::vector<size_t> to_delete_vertices;
       auto indegrees = this->get_indegrees();
+      std::vector<size_t> to_delete_vertices;
+      to_delete_vertices.reserve(indegrees.size());
       for (size_t i = 0; i < indegrees.size(); i++) {
         if (indegrees[i] == 0) {
           to_delete_vertices.push_back(i);
@@ -62,7 +63,7 @@ namespace cyy::algorithm {
       }
       // is a DAG
       if (order.size() == this->get_vertex_number()) {
-        topological_ordering = order;
+        topological_ordering = std::move(order);
       }
       return topological_ordering;
     }
