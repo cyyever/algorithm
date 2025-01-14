@@ -58,7 +58,7 @@ namespace cyy::algorithm {
       std::vector<std::pair<key_type, bool>> batch_res;
       for (auto &[k, v] : batch_data) {
         auto res = save_data(k, std::move(v));
-        batch_res.emplace_back(std::move(k), res);
+        batch_res.emplace_back(std::move(k), std::move(res));
       }
       return batch_res;
     }
