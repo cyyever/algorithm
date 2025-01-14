@@ -51,9 +51,6 @@ namespace cyy::algorithm {
       std::vector<size_t> indegrees(this->get_vertex_number(), 0);
       for (auto const &[_, adjacent_vertices] : this->weighted_adjacent_list) {
         for (auto const &[to_index, weight] : adjacent_vertices) {
-          if (to_index >= indegrees.size()) {
-            indegrees.resize(to_index, 0);
-          }
           indegrees[to_index]++;
         }
       }
