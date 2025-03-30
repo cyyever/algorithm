@@ -8,10 +8,7 @@
 
 #pragma once
 
-#include <cstddef>
-#include <list>
-#include <ranges>
-
+import std;
 namespace cyy::algorithm {
 
   template <typename T>

@@ -5,22 +5,8 @@
  */
 
 #pragma once
-#include <algorithm>
-#include <cassert>
-#include <concepts>
-#include <cstddef>
 #include <cstdint>
-#include <format>
-#include <functional>
-#include <iterator>
-#include <list>
-#include <print>
-#include <ranges>
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+#include <cassert>
 
 #include "pool.hpp"
 

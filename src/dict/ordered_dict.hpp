@@ -6,10 +6,7 @@
 
 #pragma once
 
-#include <list>
-#include <stdexcept>
-#include <unordered_map>
-#include <utility>
+import std;
 
 namespace cyy::algorithm {
 

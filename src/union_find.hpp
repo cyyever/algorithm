@@ -5,7 +5,7 @@
 
 #pragma once
 #include <cassert>
-#include <memory>
+import std;
 namespace cyy::algorithm {
   template <typename data_type> class union_find {
 

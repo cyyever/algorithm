@@ -5,12 +5,9 @@
 
 #pragma once
 
-#include <concepts>
-#include <ranges>
-#include <utility>
-
 #include <boost/container_hash/hash.hpp>
 #include <boost/pfr.hpp>
+import std;
 
 namespace std {
   template <typename T>

@@ -8,11 +8,7 @@
 
 #pragma once
 
-#include <concepts>
-#include <cstddef>
-#include <optional>
-#include <ranges>
-#include <vector>
+import std;
 
 namespace cyy::algorithm {
 

@@ -3,6 +3,7 @@
  *
  * \brief
  */
+#include <cassert>
 #include "algorithm.hpp"
 
 #include "priority_queue.hpp"

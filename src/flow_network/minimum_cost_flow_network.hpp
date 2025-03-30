@@ -6,11 +6,6 @@
 
 #pragma once
 
-#include <algorithm>
-#include <optional>
-#include <utility>
-#include <vector>
-
 #include "graph/tree.hpp"
 namespace cyy::algorithm {
   template <typename vertex_type = size_t, typename weight_type = double>

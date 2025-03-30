@@ -5,12 +5,8 @@
  */
 #pragma once
 
-#include <algorithm>
-#include <ranges>
-#include <set>
-#include <vector>
-
 #include <cyy/math/algebra/matrix.hpp>
+import std;
 
 namespace cyy::algorithm {
   // A polyhedron satisfying Ax<=b

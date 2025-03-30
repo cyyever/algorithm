@@ -1,10 +1,8 @@
 
 #pragma once
 
-#include <ranges>
-#include <type_traits>
-#include <unordered_map>
-#include <vector>
+#include <cstddef>
+import std;
 
 namespace cyy::algorithm {
   template <typename T, bool ContinousID = true, typename Enable = void>

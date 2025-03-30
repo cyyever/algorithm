@@ -5,10 +5,6 @@
  */
 
 #pragma once
-#include <cassert>
-#include <cstddef>
-#include <functional>
-#include <unordered_map>
 
 #include "heap.hpp"
 namespace cyy::algorithm {

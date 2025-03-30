@@ -5,12 +5,6 @@
  */
 #pragma once
 
-#include <algorithm>
-#include <optional>
-#include <ranges>
-#include <set>
-#include <vector>
-
 #include "polyhedron.hpp"
 
 namespace cyy::algorithm {

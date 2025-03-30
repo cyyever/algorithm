@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <vector>
-
 #include "graph_base.hpp"
 namespace cyy::algorithm {
 
