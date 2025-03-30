@@ -7,12 +7,6 @@
  */
 #pragma once
 
-#include <format>
-#include <ranges>
-#include <string>
-#include <type_traits>
-#include <utility>
-
 #include <boost/bimap.hpp>
 
 #include "alphabet.hpp"

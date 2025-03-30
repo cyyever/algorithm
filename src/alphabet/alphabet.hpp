@@ -7,13 +7,7 @@
 
 #pragma once
 
-#include <functional>
-#include <limits>
-#include <memory>
-#include <ranges>
-#include <string>
-#include <string_view>
-#include <unordered_map>
+#include <cstddef>
 
 #include "symbol.hpp"
 

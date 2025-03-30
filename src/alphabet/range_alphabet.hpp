@@ -4,11 +4,7 @@
  */
 #pragma once
 
-#include <algorithm>
-#include <ranges>
-#include <set>
-#include <vector>
-
+#include <cstdint>
 #include "alphabet.hpp"
 #include "exception.hpp"
 

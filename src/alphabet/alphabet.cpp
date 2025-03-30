@@ -7,13 +7,12 @@
 
 #include "alphabet.hpp"
 
-#include <format>
-#include <string_view>
 
-#include "ascii.hpp"
-#include "common_tokens.hpp"
 #include "endmarked_alphabet.hpp"
 #include "exception.hpp"
+#include "ascii.hpp"
+#include "common_tokens.hpp"
+import std;
 
 namespace cyy::algorithm {
 

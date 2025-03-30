@@ -7,10 +7,7 @@
 
 #pragma once
 
-#include <initializer_list>
-#include <set>
-#include <string>
-#include <string_view>
+import std;
 
 namespace cyy::algorithm {
 

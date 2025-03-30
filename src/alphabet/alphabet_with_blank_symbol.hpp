@@ -4,8 +4,6 @@
  */
 #pragma once
 
-#include <memory>
-
 #include "alphabet.hpp"
 
 namespace cyy::algorithm {
