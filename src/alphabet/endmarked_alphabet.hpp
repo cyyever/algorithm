@@ -24,8 +24,8 @@ namespace cyy::algorithm {
       return alphabet->contain(s) || s == ALPHABET::endmarker;
     }
 
-    size_t size() const noexcept override {
-      size_t real_size = 0;
+    std::size_t size() const noexcept override {
+      std::size_t real_size = 0;
       if (!has_endmarker) {
         real_size++;
       }
@@ -43,7 +43,7 @@ namespace cyy::algorithm {
       return alphabet->to_string(symbol);
     }
 
-    symbol_type get_symbol(size_t index) const override {
+    symbol_type get_symbol(std::size_t index) const override {
       if (index + 1 == size()) {
         return ALPHABET::endmarker;
       }

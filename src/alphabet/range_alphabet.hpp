@@ -24,12 +24,12 @@ namespace cyy::algorithm {
       return s >= min_symbol && s <= max_symbol;
     }
 
-    size_t size() const noexcept override {
+    std::size_t size() const noexcept override {
       return max_symbol - min_symbol + 1;
     }
 
   private:
-    symbol_type get_symbol(size_t index) const noexcept override {
+    symbol_type get_symbol(std::size_t index) const noexcept override {
       return static_cast<symbol_type>(min_symbol + index);
     }
 
@@ -52,10 +52,10 @@ namespace cyy::algorithm {
     bool contain(symbol_type s) const noexcept override {
       return std::ranges::binary_search(symbols, s);
     }
-    size_t size() const noexcept override { return symbols.size(); }
+    std::size_t size() const noexcept override { return symbols.size(); }
 
   private:
-    symbol_type get_symbol(size_t index) const noexcept override {
+    symbol_type get_symbol(std::size_t index) const noexcept override {
       return symbols[index];
     }
 
