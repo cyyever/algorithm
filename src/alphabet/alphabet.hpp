@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <cstddef>
-
 #include "symbol.hpp"
 
 namespace cyy::algorithm {
@@ -28,7 +26,7 @@ namespace cyy::algorithm {
     }
 
     auto get_view() const noexcept {
-      return std::ranges::views::iota(static_cast<size_t>(0), size()) |
+      return std::ranges::views::iota(static_cast<std::size_t>(0), size()) |
              std::ranges::views::transform(
                  [this](auto idx) { return get_symbol(idx); });
     }
@@ -38,7 +36,7 @@ namespace cyy::algorithm {
     bool contain_alphabet(const ALPHABET &subset) const;
 
     virtual bool contain(symbol_type s) const noexcept = 0;
-    virtual size_t size() const noexcept = 0;
+    virtual std::size_t size() const noexcept = 0;
     std::string to_string(symbol_type symbol) const {
       if (contain(symbol)) {
         return _to_string(symbol);
@@ -58,7 +56,7 @@ namespace cyy::algorithm {
       return false;
     }
 
-    virtual symbol_type get_symbol(size_t index) const = 0;
+    virtual symbol_type get_symbol(std::size_t index) const = 0;
     void set_MMA_draw_fun(
         std::function<std::string(const ALPHABET &, symbol_type)> fun) {
       MMA_draw_fun_ptr = std::move(fun);
@@ -100,7 +98,7 @@ namespace cyy::algorithm {
 
   inline auto endmarked_symbol_string(symbol_string_view str) noexcept {
     auto size = str.size() + 1;
-    return std::ranges::views::iota(static_cast<size_t>(0), size) |
+    return std::ranges::views::iota(static_cast<std::size_t>(0), size) |
            std::ranges::views::transform([str, size](auto idx) {
              if (idx + 1 == size) {
                return ALPHABET::endmarker;
