@@ -24,10 +24,10 @@ namespace cyy::algorithm {
   }
 
   // find the number of inversions
-  template <std::ranges::input_range U> size_t get_inversion_number(U A) {
+  template <std::ranges::input_range U> std::size_t get_inversion_number(U A) {
     using list_type = std::list<std::ranges::range_value_t<U>>;
     auto sort_and_count = [](auto &&self,
-                             list_type l) -> std::pair<list_type, size_t> {
+                             list_type l) -> std::pair<list_type, std::size_t> {
       auto span_size = l.size();
       if (span_size <= 1) {
         return {std::move(l), 0};
@@ -36,7 +36,7 @@ namespace cyy::algorithm {
 
       auto [sorted_first_half, count1] = self(self, std::move(first_half));
       auto [sorted_second_half, count2] = self(self, std::move(second_half));
-      size_t count3 = 0;
+      std::size_t count3 = 0;
       list_type sorted_list;
       while (!sorted_first_half.empty() && !sorted_second_half.empty()) {
         if (sorted_first_half.front() <= sorted_second_half.front()) {

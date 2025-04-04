@@ -12,7 +12,7 @@ namespace cyy::algorithm {
   public:
     struct node {
       data_type data;
-      size_t rank{};
+      std::size_t rank{};
       std::shared_ptr<node> representative;
     };
     using node_ptr = std::shared_ptr<node>;

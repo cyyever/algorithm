@@ -6,7 +6,6 @@
 
 #pragma once
 #include <cassert>
-#include <cstddef>
 import std;
 namespace cyy::algorithm {
 
@@ -14,9 +13,9 @@ namespace cyy::algorithm {
   class heap {
   public:
     using heap_data_type = data_type;
-    void reserve(size_t n) { items.reserve(n); }
+    void reserve(std::size_t n) { items.reserve(n); }
     const data_type &top() const { return get_item(0); }
-    [[nodiscard]] size_t size() const noexcept { return items.size(); }
+    [[nodiscard]] std::size_t size() const noexcept { return items.size(); }
     void pop() noexcept {
       if (items.empty()) {
         return;
@@ -27,17 +26,17 @@ namespace cyy::algorithm {
     }
     [[nodiscard]] bool empty() const noexcept { return items.empty(); }
 
-    size_t insert(data_type data) {
+    std::size_t insert(data_type data) {
       items.emplace_back(std::move(data));
       return heapify_up(items.size() - 1);
     }
-    size_t change_item(size_t index,
+    std::size_t change_item(std::size_t index,
                        std::function<void(data_type &)> callback) {
       assert(index < this->size());
       callback(items[index]);
       return heapify(index);
     }
-    void remove_item(size_t index) {
+    void remove_item(std::size_t index) {
       assert(index < this->size());
       if (this->empty()) {
         return;
@@ -46,10 +45,10 @@ namespace cyy::algorithm {
       items.pop_back();
       heapify(index);
     }
-    const data_type &get_item(size_t index) const { return items.at(index); }
+    const data_type &get_item(std::size_t index) const { return items.at(index); }
 
   private:
-    size_t heapify(size_t index) noexcept {
+    std::size_t heapify(std::size_t index) noexcept {
       auto new_idx = heapify_up(index);
       if (new_idx != index) {
         return new_idx;
@@ -57,7 +56,7 @@ namespace cyy::algorithm {
       return heapify_down(index);
     }
 
-    size_t heapify_up(size_t index) noexcept {
+    std::size_t heapify_up(std::size_t index) noexcept {
       if (index == 0) {
         return index;
       }
@@ -74,7 +73,7 @@ namespace cyy::algorithm {
       items[index] = std::move(tmp);
       return index;
     }
-    size_t heapify_down(size_t index) noexcept {
+    std::size_t heapify_down(std::size_t index) noexcept {
       auto left_child_index = (2 * (index + 1)) - 1;
       if (left_child_index >= size()) {
         return index;
@@ -108,7 +107,7 @@ namespace cyy::algorithm {
 
   template <typename data_type> struct referred_item_base {
     data_type data{};
-    size_t heap_index{};
+    std::size_t heap_index{};
     referred_item_base() = default;
     referred_item_base(const referred_item_base &rhs) = delete;
     referred_item_base &operator=(const referred_item_base &rhs) = delete;
@@ -125,7 +124,7 @@ namespace cyy::algorithm {
     using referred_item_base<data_type>::referred_item_base;
     using referred_item_base<data_type>::operator<=>;
     referred_item(data_type data_, iterator_type iterator_,
-                  size_t heap_index_) noexcept
+                  std::size_t heap_index_) noexcept
         : iterator(iterator_) {
       this->data = std::move(data_);
       this->heap_index = heap_index_;
@@ -148,7 +147,7 @@ namespace cyy::algorithm {
     using referred_item_base<data_type>::referred_item_base;
     using referred_item_base<data_type>::operator<=>;
     pair_referred_item(data_type data_, iterator_type iterator_,
-                       size_t heap_index_) noexcept
+                       std::size_t heap_index_) noexcept
         : iterator(iterator_) {
       this->data = std::move(data_);
       this->heap_index = heap_index_;
@@ -175,8 +174,8 @@ namespace cyy::algorithm {
             template <typename T> class compare = std::less>
   class mapped_heap_base {
   public:
-    [[nodiscard]] size_t size() const noexcept { return item_heap.size(); }
-    void reserve(size_t n) {
+    [[nodiscard]] std::size_t size() const noexcept { return item_heap.size(); }
+    void reserve(std::size_t n) {
       container.reserve(n);
       item_heap.reserve(n);
     }
@@ -197,7 +196,7 @@ namespace cyy::algorithm {
     void check_consistency() {
 #ifndef NDEBUG
       assert(container.size() == this->size());
-      for (size_t i = 0; i < this->size(); i++) {
+      for (std::size_t i = 0; i < this->size(); i++) {
         auto const &item = item_heap.get_item(i);
         assert(item.iterator->second == i);
       }
@@ -216,14 +215,14 @@ namespace cyy::algorithm {
             template <typename T> class compare = std::less>
   class referred_heap_base {
   public:
-    [[nodiscard]] size_t size() const noexcept { return item_heap.size(); }
+    [[nodiscard]] std::size_t size() const noexcept { return item_heap.size(); }
     [[nodiscard]] bool empty() const noexcept { return item_heap.empty(); }
 
   protected:
     void check_consistency() {
 #ifndef NDEBUG
       assert(container.size() == this->size());
-      for (size_t i = 0; i < this->size(); i++) {
+      for (std::size_t i = 0; i < this->size(); i++) {
         auto const &item = item_heap.get_item(i);
         assert(*item.iterator == i);
       }
@@ -239,8 +238,8 @@ namespace cyy::algorithm {
 
   template <typename key_type, template <typename T> class compare = std::less>
   class window_heap
-      // : public mapped_heap_base<std::deque<std::pair<key_type, size_t>>,
-      : public referred_heap_base<std::deque<size_t>, key_type, compare> {
+      // : public mapped_heap_base<std::deque<std::pair<key_type, std::size_t>>,
+      : public referred_heap_base<std::deque<std::size_t>, key_type, compare> {
   public:
     const auto &top() const { return this->item_heap.top().data; }
     void pop() {

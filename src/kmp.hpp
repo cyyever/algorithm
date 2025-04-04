@@ -24,7 +24,7 @@ namespace cyy::algorithm {
       auto pattern_size = std::ranges::size(pattern);
       failure_function.resize(pattern_size, 0);
       // f[1] is always empty string,so we begin with w2;
-      for (size_t i = 2; i < pattern_size; i++) {
+      for (std::size_t i = 2; i < pattern_size; i++) {
         auto const &w = pattern[i - 1];
         auto t = failure_function[i - 1];
         while (true) {
@@ -43,14 +43,14 @@ namespace cyy::algorithm {
 
     template <std::ranges::random_access_range U>
       requires std::same_as<std::ranges::range_value_t<U>, T>
-    std::optional<size_t> search(const U &str) {
+    std::optional<std::size_t> search(const U &str) {
       if (failure_function.empty()) {
         return 0;
       }
       // for each substring w1...ws,compute the longest proper prefix w1...wf(s)
       // that is a suffix of w1...ws
-      size_t s = 0;
-      size_t i = 0;
+      std::size_t s = 0;
+      std::size_t i = 0;
       auto seq_size = std::ranges::size(str);
       while (i < seq_size) {
         auto const &c = str[i];
@@ -73,7 +73,7 @@ namespace cyy::algorithm {
   private:
     std::span<const T> pattern;
     std::optional<T> any_char_opt;
-    std::vector<size_t> failure_function;
+    std::vector<std::size_t> failure_function;
   };
 
 } // namespace cyy::algorithm

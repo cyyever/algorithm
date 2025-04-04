@@ -6,7 +6,6 @@
 
 #pragma once
 
-
 #include "dag.hpp"
 #include "graph.hpp"
 
@@ -31,15 +30,15 @@ namespace cyy::algorithm {
         throw std::logic_error("not a tree");
       }
     }
-    [[nodiscard]] size_t get_root() const { return root.value(); }
+    [[nodiscard]] auto get_root() const { return root.value(); }
     void set_root(vertex_type root_) { root = this->get_vertex_index(root_); }
-    void set_root_by_index(size_t root_) noexcept { root = root_; }
-    [[nodiscard]] size_t get_adjacent_vertex(size_t u) const {
+    void set_root_by_index(std::size_t root_) noexcept { root = root_; }
+    [[nodiscard]] std::size_t get_adjacent_vertex(std::size_t u) const {
       return this->get_adjacent_list(u).begin()->first;
     }
 
-    [[nodiscard]] std::unordered_set<size_t> get_leaves() const {
-      std::unordered_set<size_t> leaves;
+    [[nodiscard]] std::unordered_set<std::size_t> get_leaves() const {
+      std::unordered_set<std::size_t> leaves;
       leaves.reserve(this->get_vertex_number());
       this->breadth_first_search(this->root.value(),
                                  [&leaves](auto u, auto v, auto) {
@@ -51,7 +50,7 @@ namespace cyy::algorithm {
     }
 
   protected:
-    std::optional<size_t> root;
+    std::optional<std::size_t> root;
   };
 
   template <typename vertex_type, typename weight_type = double>
@@ -71,14 +70,14 @@ namespace cyy::algorithm {
         : DAG<vertex_type, weight_type>(std::move(g)),
           root(this->get_vertex_index(root_)) {}
     // get a path from root to u
-    [[nodiscard]] std::vector<size_t> get_path(size_t u) const {
+    [[nodiscard]] std::vector<std::size_t> get_path(std::size_t u) const {
       return this->get_path(root, u);
     }
 
     auto get_root() const { return root; }
 
   protected:
-    size_t root{};
+    std::size_t root{};
   };
 
   template <typename vertex_type, typename weight_type = double>
@@ -115,7 +114,7 @@ namespace cyy::algorithm {
           this->get_vertex(this->root));
     }
 
-    [[nodiscard]] std::optional<size_t> parent(size_t u) const {
+    [[nodiscard]] std::optional<std::size_t> parent(std::size_t u) const {
       auto const &l = this->get_adjacent_list(u);
       if (l.empty()) {
         return {};
@@ -123,10 +122,10 @@ namespace cyy::algorithm {
       return l.begin()->first;
     }
 
-    [[nodiscard]] std::vector<size_t> get_leaves() const {
-      std::vector<size_t> leaves;
+    [[nodiscard]] std::vector<std::size_t> get_leaves() const {
+      std::vector<std::size_t> leaves;
       auto indegrees = this->get_indegrees();
-      for (size_t idx = 0; idx < indegrees.size(); idx++) {
+      for (std::size_t idx = 0; idx < indegrees.size(); idx++) {
         if (indegrees[idx] == 0 && this->vertex_indices.right.find(idx) !=
                                        this->vertex_indices.right.end()) {
 
@@ -136,13 +135,13 @@ namespace cyy::algorithm {
       return leaves;
     }
 
-    [[nodiscard]] size_t nearest_ancestor(size_t u, size_t v) const {
+    [[nodiscard]] std::size_t nearest_ancestor(std::size_t u, std::size_t v) const {
       if (u == v) {
         return v;
       }
-      std::array<size_t, 2> frontier{u, v};
-      std::unordered_set<size_t> parents{u, v};
-      std::optional<size_t> ancestor_opt;
+      std::array<std::size_t, 2> frontier{u, v};
+      std::unordered_set<std::size_t> parents{u, v};
+      std::optional<std::size_t> ancestor_opt;
       while (!ancestor_opt) {
         for (auto &i : frontier) {
           auto parent_opt = parent(i);

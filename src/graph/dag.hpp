@@ -32,17 +32,17 @@ namespace cyy::algorithm {
       }
     }
 
-    const std::optional<std::vector<size_t>> &get_topological_ordering() const {
+    const std::optional<std::vector<std::size_t>> &get_topological_ordering() const {
       if (topological_ordering.has_value()) {
         return topological_ordering;
       }
       // Time Complexity is O(m+n)
-      std::vector<size_t> order;
+      std::vector<std::size_t> order;
       order.reserve(this->get_vertex_number());
       auto indegrees = this->get_indegrees();
-      std::vector<size_t> to_delete_vertices;
+      std::vector<std::size_t> to_delete_vertices;
       to_delete_vertices.reserve(indegrees.size());
-      for (size_t i = 0; i < indegrees.size(); i++) {
+      for (std::size_t i = 0; i < indegrees.size(); i++) {
         if (indegrees[i] == 0) {
           to_delete_vertices.push_back(i);
         }
@@ -67,7 +67,7 @@ namespace cyy::algorithm {
     }
 
   private:
-    mutable std::optional<std::vector<size_t>> topological_ordering;
+    mutable std::optional<std::vector<std::size_t>> topological_ordering;
   };
 
 } // namespace cyy::algorithm

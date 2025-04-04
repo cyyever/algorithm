@@ -4,7 +4,6 @@
  */
 #pragma once
 
-#include <cstdint>
 #include "alphabet.hpp"
 #include "exception.hpp"
 
@@ -68,7 +67,7 @@ namespace cyy::algorithm {
 
   private:
     std::string _to_string(symbol_type symbol) const override {
-      return std::to_string(static_cast<uint64_t>(symbol));
+      return std::to_string(static_cast<std::uint64_t>(symbol));
     }
   };
 } // namespace cyy::algorithm

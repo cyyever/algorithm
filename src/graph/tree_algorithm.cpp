@@ -8,10 +8,10 @@
 
 import std;
 namespace cyy::algorithm {
-  tree<size_t> recover_tree(const std::vector<size_t> &prufer_code) {
-    std::vector<weighted_edge<size_t, double>> edges;
-    std::set<size_t> vertices;
-    for (size_t v = 0; v < prufer_code.size() + 2; v++) {
+  tree<std::size_t> recover_tree(const std::vector<std::size_t> &prufer_code) {
+    std::vector<weighted_edge<std::size_t, double>> edges;
+    std::set<std::size_t> vertices;
+    for (std::size_t v = 0; v < prufer_code.size() + 2; v++) {
       if (std::ranges::find(prufer_code, v) == prufer_code.end()) {
         vertices.insert(v);
       }
@@ -29,6 +29,6 @@ namespace cyy::algorithm {
     assert(vertices.size() == 2);
     edges.emplace_back(*vertices.begin(), *vertices.rbegin());
 
-    return tree<size_t>(std::move(edges));
+    return tree<std::size_t>(std::move(edges));
   }
 } // namespace cyy::algorithm

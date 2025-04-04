@@ -40,13 +40,13 @@ namespace cyy::algorithm {
       return reverse;
     }
 
-    auto get_containing_edges(size_t vertex_index) const noexcept {
+    auto get_containing_edges(std::size_t vertex_index) const noexcept {
       return std::ranges::filter_view(
           this->foreach_edge_with_weight(),
           [vertex_index](auto const &e) { return e.contains(vertex_index); });
     }
-    std::vector<size_t> get_indegrees() const {
-      std::vector<size_t> indegrees(this->get_vertex_number(), 0);
+    std::vector<std::size_t> get_indegrees() const {
+      std::vector<std::size_t> indegrees(this->get_vertex_number(), 0);
       for (auto const &[_, adjacent_vertices] : this->weighted_adjacent_list) {
         for (auto const &[to_index, weight] : adjacent_vertices) {
           indegrees[to_index]++;

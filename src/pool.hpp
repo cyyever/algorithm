@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include <cstddef>
 import std;
 
 namespace cyy::algorithm {
@@ -9,7 +8,7 @@ namespace cyy::algorithm {
 
   class object_pool {
   public:
-    using element_id_type = size_t;
+    using element_id_type = std::size_t;
 
     element_id_type get_data_id(const T &elem) const { return pool.at(elem); }
     element_id_type add_data(const T &e) {

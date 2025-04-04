@@ -5,7 +5,7 @@
  */
 
 #pragma once
-#include <cstdint>
+
 #include <cassert>
 
 #include "pool.hpp"
@@ -59,10 +59,10 @@ namespace cyy::algorithm {
     }
   };
 
-  using indexed_edge = edge_base<size_t>;
+  using indexed_edge = edge_base<std::size_t>;
   template <typename weight_type>
-  using weighted_indexed_edge = weighted_edge<size_t, weight_type>;
-  using path_type = std::vector<size_t>;
+  using weighted_indexed_edge = weighted_edge<std::size_t, weight_type>;
+  using path_type = std::vector<std::size_t>;
 } // namespace cyy::algorithm
 
 namespace cyy::algorithm {
@@ -120,9 +120,8 @@ namespace cyy::algorithm {
             weighted_adjacent_list, [](const auto &p) noexcept {
               return std::ranges::views::filter(
                          p.second,
-                         [&p](const std::pair<size_t, weight_type> &e) -> bool {
-                           return e.first > p.first;
-                         }) |
+                         [&p](const std::pair<std::size_t, weight_type> &e)
+                             -> bool { return e.first > p.first; }) |
                      std::ranges::views::transform([&p](auto const &t) {
                        if constexpr (use_weight) {
                          return weighted_indexed_edge<weight_type>(
@@ -139,7 +138,7 @@ namespace cyy::algorithm {
       return foreach_edge_with_weight<false>();
     }
 
-    size_t add_dummy_vertex() {
+    std::size_t add_dummy_vertex() {
       assert(!empty());
       if constexpr (std::is_same_v<vertex_type, std::string>) {
         static constexpr auto artificial_vertex_name = "___dummy_vertex";
@@ -150,7 +149,7 @@ namespace cyy::algorithm {
       }
     }
 
-    size_t add_vertex(vertex_type vertex) {
+    std::size_t add_vertex(vertex_type vertex) {
       return vertex_pool.add_data(vertex);
     }
 
@@ -176,7 +175,7 @@ namespace cyy::algorithm {
     template <bool minimum = true>
     auto get_extreme_weight(const path_type &path) {
       weight_type extreme_weight{};
-      for (size_t i = 0; i + 1 < path.size(); i++) {
+      for (std::size_t i = 0; i + 1 < path.size(); i++) {
         const indexed_edge e{path[i], path[i + 1]};
         if (i == 0) {
           extreme_weight = get_edge(e).weight;
@@ -194,11 +193,12 @@ namespace cyy::algorithm {
     bool has_vertex(const vertex_type &vertex) const {
       return vertex_pool.contains(vertex);
     }
-    [[nodiscard]] bool has_vertex_index(size_t vertex_index) const noexcept {
+    [[nodiscard]] bool
+    has_vertex_index(std::size_t vertex_index) const noexcept {
       return vertex_pool.contains_data_id(vertex_index);
     }
     // get a path from u to v
-    [[nodiscard]] path_type get_path(size_t u, size_t v) const {
+    [[nodiscard]] path_type get_path(std::size_t u, std::size_t v) const {
       path_type path{u};
       while (u != v) {
         auto const &l = this->get_adjacent_list(u);
@@ -212,7 +212,7 @@ namespace cyy::algorithm {
       return path;
     }
     // get a path from u to v
-    [[nodiscard]] bool has_path(size_t u, size_t v) const {
+    [[nodiscard]] bool has_path(std::size_t u, std::size_t v) const {
       return !get_path(u, v).empty();
     }
     void add_edge(const edge_type &e) {
@@ -222,7 +222,7 @@ namespace cyy::algorithm {
       }
     }
     void clear_edges() { weighted_adjacent_list.clear(); }
-    void remove_vertex(size_t vertex_index) {
+    void remove_vertex(std::size_t vertex_index) {
       weighted_adjacent_list.erase(vertex_index);
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
         to_vertices.remove_if(
@@ -247,7 +247,7 @@ namespace cyy::algorithm {
     auto const &get_adjacent_list() const noexcept {
       return weighted_adjacent_list;
     }
-    auto const &get_adjacent_list(size_t vertex_index) const {
+    auto const &get_adjacent_list(std::size_t vertex_index) const {
       auto it = weighted_adjacent_list.find(vertex_index);
       if (it != weighted_adjacent_list.end()) {
         return it->second;
@@ -258,7 +258,7 @@ namespace cyy::algorithm {
       adjacent_matrix_type adjacent_matrix;
       auto vertex_num = get_vertex_number();
       adjacent_matrix.reserve(vertex_num);
-      for (size_t i = 0; i < vertex_num; i++) {
+      for (std::size_t i = 0; i < vertex_num; i++) {
         adjacent_matrix.emplace_back(vertex_num, 0);
       }
       for (auto const &e : foreach_edge_with_weight()) {
@@ -273,19 +273,20 @@ namespace cyy::algorithm {
     auto get_vertices_and_indices() const {
       return std::views::transform(
           vertex_pool.foreach_data(), [](auto const &it) {
-            return std::pair<const vertex_type &, size_t>{it.first, it.second};
+            return std::pair<const vertex_type &, std::size_t>{it.first,
+                                                               it.second};
           });
     }
-    [[nodiscard]] size_t get_vertex_number() const noexcept {
+    [[nodiscard]] std::size_t get_vertex_number() const noexcept {
       return vertex_pool.size();
     }
-    [[nodiscard]] size_t get_edge_number() const noexcept {
-      return static_cast<size_t>(std::ranges::distance(foreach_edge()));
+    [[nodiscard]] std::size_t get_edge_number() const noexcept {
+      return static_cast<std::size_t>(std::ranges::distance(foreach_edge()));
     }
-    const vertex_type &get_vertex(size_t index) const {
+    const vertex_type &get_vertex(std::size_t index) const {
       return vertex_pool.get_data(index);
     }
-    size_t get_vertex_index(const vertex_type &vertex) const {
+    std::size_t get_vertex_index(const vertex_type &vertex) const {
       return vertex_pool.get_data_id(vertex);
     }
     void fill_weight(weight_type new_weight) {
@@ -313,12 +314,13 @@ namespace cyy::algorithm {
 
     // breadth first search in g from s
     void breadth_first_search(
-        size_t s,
-        std::function<bool(size_t, size_t, weight_type)> edge_fun) const {
+        std::size_t s,
+        std::function<bool(std::size_t, std::size_t, weight_type)> edge_fun)
+        const {
       assert(has_vertex_index(s));
       std::vector<bool> discovered(get_vertex_number(), false);
       discovered[s] = true;
-      std::list<size_t> queue{s};
+      std::list<std::size_t> queue{s};
 
       while (!queue.empty()) {
         auto u = queue.front();
@@ -338,12 +340,13 @@ namespace cyy::algorithm {
     // depth first search in g from s
 
     void recursive_depth_first_search(
-        size_t s,
-        const std::function<bool(size_t, size_t)> &after_edge_fun) const {
+        std::size_t s,
+        const std::function<bool(std::size_t, std::size_t)> &after_edge_fun)
+        const {
       assert(has_vertex_index(s));
 
       std::vector<bool> explored(get_vertex_number(), false);
-      auto search_fun = [&](auto &&self, size_t u) {
+      auto search_fun = [&](auto &&self, std::size_t u) {
         if (explored[u]) {
           return;
         }
@@ -360,12 +363,13 @@ namespace cyy::algorithm {
 
     // depth first search in g from s
     void depth_first_search(
-        size_t s,
-        std::function<void(size_t, size_t, weight_type)> edge_fun) const {
+        std::size_t s,
+        std::function<void(std::size_t, std::size_t, weight_type)> edge_fun)
+        const {
       assert(has_vertex_index(s));
       std::vector<bool> explored(get_vertex_number(), false);
-      std::vector<std::pair<size_t, weight_type>> stack{{s, 0}};
-      std::vector<size_t> parent(get_vertex_number(), 0);
+      std::vector<std::pair<std::size_t, weight_type>> stack{{s, 0}};
+      std::vector<std::size_t> parent(get_vertex_number(), 0);
 
       while (!stack.empty()) {
         auto const [u, weight] = stack.back();
@@ -389,19 +393,20 @@ namespace cyy::algorithm {
       if (empty()) {
         return false;
       }
-      size_t tree_edge_num = 0;
+      std::size_t tree_edge_num = 0;
       depth_first_search(
           0, [&tree_edge_num](auto, auto, auto) { tree_edge_num++; });
       return tree_edge_num + 1 == get_vertex_number();
     }
 
-    [[nodiscard]] bool is_tree(size_t root = SIZE_MAX) const {
+    [[nodiscard]] bool
+    is_tree(std::size_t root = std::numeric_limits<std::size_t>::max()) const {
       // empty graph
       if (empty()) {
         return false;
       }
-      size_t tree_edge_num = 0;
-      if (root == SIZE_MAX) {
+      std::size_t tree_edge_num = 0;
+      if (root == std::numeric_limits<std::size_t>::max()) {
         root = 0;
       }
       depth_first_search(
@@ -439,12 +444,14 @@ namespace cyy::algorithm {
                  [&](auto const &a) { return a.first == e.second; }) != 0;
     }
 
-    std::unordered_map<size_t, std::list<std::pair<size_t, weight_type>>>
+    std::unordered_map<std::size_t,
+                       std::list<std::pair<std::size_t, weight_type>>>
         weighted_adjacent_list;
     vertices_type vertex_pool;
 
   private:
-    static inline std::list<std::pair<size_t, weight_type>> empty_adjacent_list;
+    static inline std::list<std::pair<std::size_t, weight_type>>
+        empty_adjacent_list;
   };
 
   template <typename T>
@@ -463,7 +470,7 @@ namespace cyy::algorithm {
 namespace std {
 
   template <cyy::algorithm::IsEdge E> struct hash<E> {
-    size_t operator()(const E &e) const noexcept {
+    std::size_t operator()(const E &e) const noexcept {
       using vertex_type = decltype(e.first);
       return ::std::hash<vertex_type>()(e.first) ^
              ::std::hash<vertex_type>()(e.second);
@@ -487,7 +494,7 @@ template <cyy::algorithm::IsGraph G> struct std::formatter<G> {
 
   template <class FormatContext>
   auto format(const G &g, FormatContext &ctx) const {
-    for (size_t v = 0; v < g.get_vertex_number(); v++) {
+    for (std::size_t v = 0; v < g.get_vertex_number(); v++) {
       std::format_to(ctx.out(), "vertex {}\n", g.get_vertex(v));
     }
     for (auto const &e : g.foreach_edge_with_weight()) {

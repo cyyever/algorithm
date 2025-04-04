@@ -3,8 +3,9 @@
  *
  * \brief
  */
-#include <cassert>
 #include "algorithm.hpp"
+
+#include <cassert>
 
 #include "priority_queue.hpp"
 namespace cyy::algorithm {
