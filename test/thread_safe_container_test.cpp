@@ -4,9 +4,6 @@
  * \brief 测试container相关函数
  * \author cyy
  */
-#include <chrono>
-#include <thread>
-
 #include <doctest/doctest.h>
 
 #include "thread_safe_container.hpp"
