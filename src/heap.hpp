@@ -31,7 +31,7 @@ namespace cyy::algorithm {
       return heapify_up(items.size() - 1);
     }
     std::size_t change_item(std::size_t index,
-                            std::function<void(data_type &)> callback) {
+                            const std::function<void(data_type &)> &callback) {
       assert(index < this->size());
       callback(items[index]);
       return heapify(index);
