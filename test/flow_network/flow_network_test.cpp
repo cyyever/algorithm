@@ -4,17 +4,13 @@
  * \brief
  */
 
-#include <string>
-
 #ifdef CYY_MATH
 #include <cyy/math/all.hpp>
 #endif
-#include <cmath>
 
 #include <doctest/doctest.h>
 
 #include "flow_network/flow_network.hpp"
-#include "graph/graph.hpp"
 
 using namespace cyy::algorithm;
 TEST_CASE("flow network") {

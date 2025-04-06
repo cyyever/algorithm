@@ -4,15 +4,12 @@
  * \brief
  */
 
-#include <string>
-
 #ifdef CYY_MATH
 #include <cyy/math/integer.hpp>
 #endif
 #include <doctest/doctest.h>
 
 #include "flow_network/minimum_cost_flow_network.hpp"
-#include "graph/graph.hpp"
 
 using namespace cyy::algorithm;
 TEST_CASE("flow network") {

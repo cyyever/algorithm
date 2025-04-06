@@ -4,8 +4,6 @@
  * \brief
  */
 
-#include <string>
-
 #include <doctest/doctest.h>
 
 #include "graph/dag.hpp"

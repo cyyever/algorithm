@@ -6,7 +6,6 @@
 
 #include "tree_algorithm.hpp"
 
-import std;
 namespace cyy::algorithm {
   tree<std::size_t> recover_tree(const std::vector<std::size_t> &prufer_code) {
     std::vector<weighted_edge<std::size_t, double>> edges;
