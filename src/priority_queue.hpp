@@ -12,8 +12,8 @@ namespace cyy::algorithm {
   template <typename data_type, typename key_type,
             template <typename T> class compare = std::less>
   class priority_queue
-      : public mapped_heap_base<std::unordered_map<data_type, std::size_t>, key_type,
-                                compare> {
+      : public mapped_heap_base<std::unordered_map<data_type, std::size_t>,
+                                key_type, compare> {
   public:
     const key_type &top_key() const { return this->item_heap.top().data; }
     const data_type &top_data() const {

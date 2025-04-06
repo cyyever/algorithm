@@ -86,8 +86,9 @@ namespace cyy::algorithm {
       throw std::logic_error("need at least two vertices");
     }
     code.reserve(vertex_number - 2);
-    std::map<std::size_t, std::list<std::pair<std::size_t, weight_type>>> adjacent_list(
-        T.get_adjacent_list().begin(), T.get_adjacent_list().end());
+    std::map<std::size_t, std::list<std::pair<std::size_t, weight_type>>>
+        adjacent_list(T.get_adjacent_list().begin(),
+                      T.get_adjacent_list().end());
     while (vertex_number > 2) {
       auto it = std::ranges::find_if(
           adjacent_list, [](auto const &p) { return p.second.size() == 1; });

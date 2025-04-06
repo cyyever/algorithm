@@ -31,7 +31,7 @@ namespace cyy::algorithm {
       return heapify_up(items.size() - 1);
     }
     std::size_t change_item(std::size_t index,
-                       std::function<void(data_type &)> callback) {
+                            std::function<void(data_type &)> callback) {
       assert(index < this->size());
       callback(items[index]);
       return heapify(index);
@@ -45,7 +45,9 @@ namespace cyy::algorithm {
       items.pop_back();
       heapify(index);
     }
-    const data_type &get_item(std::size_t index) const { return items.at(index); }
+    const data_type &get_item(std::size_t index) const {
+      return items.at(index);
+    }
 
   private:
     std::size_t heapify(std::size_t index) noexcept {
@@ -131,6 +133,9 @@ namespace cyy::algorithm {
       *iterator = heap_index_;
     }
     referred_item(referred_item &&rhs) noexcept = default;
+    referred_item(const referred_item &rhs) noexcept = delete;
+    referred_item &operator=(const referred_item &rhs) = delete;
+    ~referred_item() = default;
 
     referred_item &operator=(referred_item &&rhs) noexcept {
       if (this == &rhs) {

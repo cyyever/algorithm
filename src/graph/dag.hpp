@@ -32,7 +32,8 @@ namespace cyy::algorithm {
       }
     }
 
-    const std::optional<std::vector<std::size_t>> &get_topological_ordering() const {
+    const std::optional<std::vector<std::size_t>> &
+    get_topological_ordering() const {
       if (topological_ordering.has_value()) {
         return topological_ordering;
       }

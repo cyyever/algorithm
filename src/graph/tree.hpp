@@ -135,7 +135,8 @@ namespace cyy::algorithm {
       return leaves;
     }
 
-    [[nodiscard]] std::size_t nearest_ancestor(std::size_t u, std::size_t v) const {
+    [[nodiscard]] std::size_t nearest_ancestor(std::size_t u,
+                                               std::size_t v) const {
       if (u == v) {
         return v;
       }
