@@ -7,10 +7,9 @@
  */
 #pragma once
 
-#include <boost/bimap.hpp>
-
 #include "alphabet.hpp"
 #include "exception.hpp"
+#include "pool.hpp"
 
 namespace cyy::algorithm {
   template <typename data_type = std::string>
@@ -24,11 +23,12 @@ namespace cyy::algorithm {
         throw exception::empty_alphabet("symbol map is empty");
       }
       for (auto &&[symbol, data] : std::forward<T>(symbol_map_)) {
-        symbol_map.insert({symbol, std::forward<data_type>(data)});
+        auto data_id =
+            data_pool.add_data(data) symbol_map.emplace(symbol, data_id);
       }
     }
     bool contain(symbol_type s) const noexcept override {
-      return symbol_map.left.find(s) != symbol_map.left.end();
+      return symbol_to_data_id.contains(s);
     }
     size_t size() const noexcept override { return symbol_map.size(); }
 
@@ -43,10 +43,12 @@ namespace cyy::algorithm {
     }
 
     data_type get_data(symbol_type symbol) const {
-      return symbol_map.left.at(symbol);
+      auto data_id = symbol_to_data_id.at(symbol);
+      return data_pool.get_data(data_id);
     }
     symbol_type get_symbol(const data_type &data) const {
-      return symbol_map.right.at(data);
+      auto data_id = data_pool.get_data_id(data);
+      return data_id_to_symbol.at(data_id);
     }
 
   private:
@@ -54,12 +56,17 @@ namespace cyy::algorithm {
       return std::format("{}", get_data(symbol));
     }
     symbol_type get_symbol(size_t index) const noexcept override {
-      auto it = symbol_map.left.begin();
+      auto it = symbol_to_data_id.begin();
       std::advance(it, index);
       return it->first;
     }
 
     boost::bimap<symbol_type, data_type> symbol_map;
+    cyy::algorithm::object_pool<data_type> data_pool;
+    std::unordered_map<symbol_type, decltype(data_pool)::element_id_type>
+        symbol_to_data_id;
+    std::unordered_map<decltype(data_pool)::element_id_type, symbol_type>
+        data_id_to_symbol;
   };
 
 } // namespace cyy::algorithm
