@@ -61,9 +61,9 @@ namespace cyy::algorithm {
       return it->first;
     }
 
-    boost::bimap<symbol_type, data_type> symbol_map;
     cyy::algorithm::object_pool<data_type> data_pool;
-    std::unordered_map<symbol_type, decltype(data_pool)::element_id_type>
+    std::unordered_map<symbol_type,
+                       typename decltype(data_pool)::element_id_type>
         symbol_to_data_id;
     std::unordered_map<decltype(data_pool)::element_id_type, symbol_type>
         data_id_to_symbol;
