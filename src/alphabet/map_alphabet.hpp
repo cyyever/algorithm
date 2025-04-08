@@ -23,18 +23,20 @@ namespace cyy::algorithm {
         throw exception::empty_alphabet("symbol map is empty");
       }
       for (auto &&[symbol, data] : std::forward<T>(symbol_map_)) {
-        auto data_id =
-            data_pool.add_data(data) symbol_map.emplace(symbol, data_id);
+        auto data_id = data_pool.add_data(data);
+        symbol_to_data_id.emplace(symbol, data_id);
       }
     }
     bool contain(symbol_type s) const noexcept override {
       return symbol_to_data_id.contains(s);
     }
-    size_t size() const noexcept override { return symbol_map.size(); }
+    std::size_t size() const noexcept override {
+      return symbol_to_data_id.size();
+    }
 
     std::string MMA_draw_set() const {
       std::string cmd = "{";
-      for (auto const &[s, _] : symbol_map) {
+      for (auto const &[s, _] : symbol_to_data_id) {
         cmd += MMA_draw(s);
         cmd.push_back(',');
       }
@@ -55,7 +57,7 @@ namespace cyy::algorithm {
     std::string _to_string(symbol_type symbol) const override {
       return std::format("{}", get_data(symbol));
     }
-    symbol_type get_symbol(size_t index) const noexcept override {
+    symbol_type get_symbol(std::size_t index) const noexcept override {
       auto it = symbol_to_data_id.begin();
       std::advance(it, index);
       return it->first;
@@ -65,7 +67,8 @@ namespace cyy::algorithm {
     std::unordered_map<symbol_type,
                        typename decltype(data_pool)::element_id_type>
         symbol_to_data_id;
-    std::unordered_map<decltype(data_pool)::element_id_type, symbol_type>
+    std::unordered_map<typename decltype(data_pool)::element_id_type,
+                       symbol_type>
         data_id_to_symbol;
   };
 
