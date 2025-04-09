@@ -11,10 +11,9 @@ Checks:
 -fuchsia*,
 -llvmlibc*,
 -llvm-header-guard,
+-llvm*,
 -misc-non-private-member-variables-in-classes,
--misc-include-cleaner,
 -modernize-use-trailing-return-type,
--modernize-use-nodiscard,
 -readability-identifier-length,
 -readability-math-missing-parentheses,
 -*default-argument*
