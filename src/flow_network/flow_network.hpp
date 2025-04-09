@@ -17,8 +17,8 @@ namespace cyy::algorithm {
   public:
     using edge_type = weighted_edge<vertex_type, weight_type>;
     using capacity_fun_type = std::vector<edge_type>;
-    flow_network(const capacity_fun_type &capacities_, vertex_type source_,
-                 vertex_type sink_) {
+    flow_network(const capacity_fun_type &capacities_, const vertex_type& source_,
+                 const vertex_type& sink_) {
       for (auto const &e : capacities_) {
         graph.add_edge(e);
 

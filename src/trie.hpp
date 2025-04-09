@@ -39,7 +39,7 @@ namespace cyy::algorithm {
                std::same_as<std::ranges::range_value_t<
                                 std::ranges::range_value_t<Sequences>>,
                             T>
-    explicit trie(Sequences sequences) {
+    explicit trie(const Sequences& sequences) {
       size_t level_num = 0;
       for (auto const &r : sequences) {
         level_num = std::max(level_num, std::ranges::size(r));
@@ -55,7 +55,7 @@ namespace cyy::algorithm {
 
     template <std::ranges::range Sequence>
       requires std::same_as<std::ranges::range_value_t<Sequence>, T>
-    void add_sequence(Sequence sequence) {
+    void add_sequence(const Sequence& sequence) {
       element_id_type parent_id = 0;
       auto sequence_size = std::ranges::size(sequence);
       decltype(sequence_size) level_idx = 0;

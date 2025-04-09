@@ -46,7 +46,7 @@ namespace cyy::algorithm {
 
     const_reference const_ref() const { return {container, container_mutex}; }
     bool empty() const { return const_ref()->empty(); }
-    size_t size() const { return const_ref()->size(); }
+    std::size_t size() const { return const_ref()->size(); }
 
   protected:
     container_type container;
@@ -67,7 +67,7 @@ namespace cyy::algorithm {
     template <typename Rep, typename Period>
     std::optional<value_type>
     back(const std::chrono::duration<Rep, Period> &rel_time,
-         std::optional<std::stop_token> st_opt = {}) const {
+         const std::optional<std::stop_token>& st_opt = {}) const {
       std::unique_lock lock(container_mutex);
       if (wait_for_consumer_condition(
               lock, rel_time, [this]() { return !container.empty(); },
@@ -96,7 +96,7 @@ namespace cyy::algorithm {
 
     template <typename T> void push_back(T &&value) {
       {
-        std::lock_guard lock(container_mutex);
+        std::lock_guard const lock(container_mutex);
         container.insert(container.end(), std::forward<T>(value));
       }
       new_element_cv.notify_all();
@@ -104,7 +104,7 @@ namespace cyy::algorithm {
 
     template <typename... Args> void emplace_back(Args &&...args) {
       {
-        std::lock_guard lock(container_mutex);
+        std::lock_guard const lock(container_mutex);
         container.emplace_back(std::forward<Args>(args)...);
       }
       new_element_cv.notify_all();
@@ -122,7 +122,7 @@ namespace cyy::algorithm {
     std::vector<value_type>
     batch_pop_front(size_t batch_size,
                     const std::chrono::duration<Rep, Period> &rel_time,
-                    std::optional<std::stop_token> st_opt = {}) {
+                    const std::optional<std::stop_token>& st_opt = {}) {
       std::unique_lock lock(container_mutex);
       if (wait_for_consumer_condition(
               lock, rel_time, [this]() { return !container.empty(); },
@@ -143,7 +143,7 @@ namespace cyy::algorithm {
     }
 
     void pop_front() {
-      std::unique_lock lock(container_mutex);
+      std::unique_lock const lock(container_mutex);
       if (!container.empty()) {
         pop_front_wrapper();
         notify_less_element();
@@ -153,7 +153,7 @@ namespace cyy::algorithm {
     template <typename Rep, typename Period>
     std::optional<value_type>
     pop_front(const std::chrono::duration<Rep, Period> &rel_time,
-              std::optional<std::stop_token> st_opt = {}) {
+              const std::optional<std::stop_token>& st_opt = {}) {
       std::unique_lock lock(container_mutex);
       if (wait_for_consumer_condition(
               lock, rel_time, [this]() { return !container.empty(); },
@@ -169,7 +169,7 @@ namespace cyy::algorithm {
     }
 
     void clear() {
-      std::unique_lock lock(container_mutex);
+      std::unique_lock const lock(container_mutex);
       container.clear();
       notify_less_element();
     }

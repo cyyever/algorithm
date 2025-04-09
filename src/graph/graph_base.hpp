@@ -78,7 +78,7 @@ namespace cyy::algorithm {
     graph_base() = default;
     template <std::ranges::input_range U>
       requires std::same_as<edge_type, std::ranges::range_value_t<U>>
-    explicit graph_base(U edges) {
+    explicit graph_base(const U& edges) {
       for (auto const &edge : edges) {
         add_edge(edge);
       }
@@ -364,7 +364,7 @@ namespace cyy::algorithm {
     // depth first search in g from s
     void depth_first_search(
         std::size_t s,
-        std::function<void(std::size_t, std::size_t, weight_type)> edge_fun)
+        const std::function<void(std::size_t, std::size_t, weight_type)>& edge_fun)
         const {
       assert(has_vertex_index(s));
       std::vector<bool> explored(get_vertex_number(), false);

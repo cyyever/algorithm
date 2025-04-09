@@ -19,7 +19,7 @@ namespace cyy::algorithm {
 
     template <std::ranges::input_range U>
       requires std::same_as<edge_type, std::ranges::range_value_t<U>>
-    explicit tree(U edges, bool check = true) : graph<vertex_type>(edges) {
+    explicit tree(U edges, bool check = true) : graph<vertex_type>(std::move(edges)) {
       if (check && !this->is_tree()) {
         throw std::logic_error("not a tree");
       }
