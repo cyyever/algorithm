@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cassert>
 #include "graph.hpp"
 #include "heap.hpp"
 #include "tree.hpp"
