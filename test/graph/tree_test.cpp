@@ -6,7 +6,6 @@
 
 #include <doctest/doctest.h>
 
-#include "graph/tree.hpp"
 #include "graph/tree_algorithm.hpp"
 
 TEST_CASE("tree") {

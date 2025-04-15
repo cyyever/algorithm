@@ -6,7 +6,6 @@
 #pragma once
 
 #include "graph/graph.hpp"
-#include "graph/graph_base.hpp"
 #include "graph/path.hpp"
 namespace cyy::algorithm {
   template <typename vertex_type = size_t, typename weight_type = double>
