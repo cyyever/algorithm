@@ -31,14 +31,14 @@ TEST_CASE("tree") {
     g.add_edge({"F", "G", 11});
     auto mst = MST_kruskal(g);
     double total_weight = 0;
-    for (const auto &e : mst.foreach_edge_with_weight()) {
+    for (const auto e : mst.foreach_edge_with_weight()) {
       total_weight += e.weight;
     }
     REQUIRE_EQ(mst.get_edge_number(), g.get_vertex_number() - 1);
     REQUIRE_EQ(total_weight, 39);
     mst = MST_prime(g);
     total_weight = 0;
-    for (const auto &e : mst.foreach_edge_with_weight()) {
+    for (const auto e : mst.foreach_edge_with_weight()) {
       total_weight += e.weight;
     }
     REQUIRE_EQ(mst.get_edge_number(), g.get_vertex_number() - 1);
