@@ -16,14 +16,14 @@ namespace cyy::algorithm {
   std::basic_string_view<CharT>
   Aho_Corasick(const std::vector<std::basic_string_view<CharT>> &words,
                std::basic_string_view<CharT> str) {
-    // creat trie
-    std::vector<std::map<CharT, size_t>> trie(1);
-    std::unordered_map<size_t, size_t> final_states;
+    // create trie
+    std::vector<std::map<CharT, std::size_t>> trie(1);
+    std::unordered_map<std::size_t, std::size_t> final_states;
 
     {
-      size_t next_state = 1;
+      std::size_t next_state = 1;
       for (auto &word : words) {
-        size_t cur_state = 0;
+        std::size_t cur_state = 0;
         for (auto const &c : word) {
           auto [it, has_emplaced] = trie[cur_state].try_emplace(c, next_state);
           cur_state = it->second;
@@ -45,15 +45,15 @@ namespace cyy::algorithm {
 
     // so we compute this failure_function by broad-first search of tree.
     // we find all immediate child of start_state first
-    std::vector<size_t> failure_function(trie.size(), 0);
+    std::vector<std::size_t> failure_function(trie.size(), 0);
 
-    std::multimap<size_t, size_t> search_frontier;
-    for (size_t i = 1; i < trie.size(); i++) {
+    std::multimap<std::size_t, std::size_t> search_frontier;
+    for (std::size_t i = 1; i < trie.size(); i++) {
       search_frontier.emplace(0, i);
     }
 
     while (!search_frontier.empty()) {
-      std::multimap<size_t, size_t> tmp;
+      std::multimap<std::size_t, std::size_t> tmp;
       for (auto const &[prefix_state, suffix_state] : search_frontier) {
         auto const &prefix_frontier = trie[prefix_state];
         for (auto const &[next_char, next_state] : trie[suffix_state]) {
@@ -67,8 +67,8 @@ namespace cyy::algorithm {
       search_frontier = std::move(tmp);
     }
 
-    size_t s = 0;
-    size_t i = 0;
+    std::size_t s = 0;
+    std::size_t i = 0;
 
     while (s != 0 || i < str.size()) {
       if (i < str.size()) {
