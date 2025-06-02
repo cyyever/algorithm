@@ -1,4 +1,3 @@
-find_package(fmt REQUIRED)
 find_package(CyyMathLib)
 file(GLOB test_sources ${CMAKE_CURRENT_SOURCE_DIR}/*/*.cpp)
 
@@ -9,6 +8,5 @@ foreach(test_source IN LISTS test_sources)
   add_executable(${test_prog} ${test_source})
   target_link_libraries(${test_prog} PRIVATE CyyMathLib)
   target_link_libraries(${test_prog} PRIVATE CyyAlgorithmLib)
-  target_link_libraries(${test_prog} PRIVATE fmt::fmt)
   add_fuzzing(TARGET ${test_prog})
 endforeach()
