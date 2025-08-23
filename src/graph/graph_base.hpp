@@ -154,10 +154,10 @@ namespace cyy::algorithm {
     }
 
     edge_type get_edge(const indexed_edge &edge) const {
-      for (auto const &to_vertice : get_adjacent_list(edge.first)) {
-        if (to_vertice.first == edge.second) {
+      for (auto const &to_vertex : get_adjacent_list(edge.first)) {
+        if (to_vertex.first == edge.second) {
           return {get_vertex(edge.first), get_vertex(edge.second),
-                  to_vertice.second};
+                  to_vertex.second};
         }
       }
       throw std::runtime_error("no edge");
@@ -291,8 +291,8 @@ namespace cyy::algorithm {
     }
     void fill_weight(weight_type new_weight) {
       for (auto &[_, to_vertices] : weighted_adjacent_list) {
-        for (auto &to_vertice : to_vertices) {
-          to_vertice.second = new_weight;
+        for (auto &to_vertex : to_vertices) {
+          to_vertex.second = new_weight;
         }
       }
     }
@@ -303,8 +303,8 @@ namespace cyy::algorithm {
     void set_weight(const indexed_edge &edge, weight_type new_weight) {
       auto &adjacent_list = weighted_adjacent_list.at(edge.first);
       auto it =
-          std::ranges::find_if(adjacent_list, [&edge](auto const &to_vertice) {
-            return to_vertice.first == edge.second;
+          std::ranges::find_if(adjacent_list, [&edge](auto const &to_vertex) {
+            return to_vertex.first == edge.second;
           });
       if (it == adjacent_list.end()) {
         throw std::runtime_error("no edge found");
