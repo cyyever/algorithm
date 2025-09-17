@@ -4,7 +4,7 @@
 import std;
 
 namespace cyy::algorithm {
-  template <typename T, bool ContinousID = true, typename Enable = void>
+  template <typename T, bool ContinuousID = true, typename Enable = void>
 
   class object_pool {
   public:
@@ -38,10 +38,10 @@ namespace cyy::algorithm {
     std::vector<typename decltype(pool)::iterator> its;
   };
 
-  template <typename T, bool ContinousID>
+  template <typename T, bool ContinuousID>
 
-  class object_pool<T, ContinousID,
-                    std::enable_if_t<std::is_trivial_v<T> && !ContinousID>> {
+  class object_pool<T, ContinuousID,
+                    std::enable_if_t<std::is_trivial_v<T> && !ContinuousID>> {
   public:
     using element_id_type = std::remove_cv_t<T>;
 
