@@ -43,7 +43,9 @@ namespace cyy::algorithm {
       }
       std::swap(items[index], items.back());
       items.pop_back();
-      heapify(index);
+      if (index < this->size()) {
+        heapify(index);
+      }
     }
     const data_type &get_item(std::size_t index) const {
       return items.at(index);
