@@ -19,7 +19,7 @@ namespace cyy::algorithm {
       auto alphabet2_min = alphabet2->get_min_symbol();
       if (alphabet1_max >= alphabet2_min) {
         throw cyy::algorithm::exception::invalid_alphabet(
-            "alphabet1 is not less thant alphabet2");
+            "alphabet1 is not less than alphabet2");
       }
 
       if (name_.empty()) {

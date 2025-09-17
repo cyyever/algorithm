@@ -58,9 +58,9 @@ namespace cyy::algorithm {
     std::optional<flow_fun_type> min_cost_flow_by_network_simplex() {
       flow_fun_type flow;
       auto ts = get_strongly_feasible_tree_structure();
-      flow = determin_flow(ts);
+      flow = determine_flow(ts);
       while (true) {
-        determin_potential(ts);
+        determine_potential(ts);
         bool forward_direction = true;
         std::optional<indexed_edge> violating_edge;
         {
@@ -243,7 +243,7 @@ namespace cyy::algorithm {
   private:
     minimum_cost_flow_network() = default;
 
-    flow_fun_type determin_flow(const tree_structure &ts) {
+    flow_fun_type determine_flow(const tree_structure &ts) {
       assert(ts.T.get_edge_number() + ts.L.size() + ts.U.size() ==
              costs.size());
       flow_fun_type flow;
@@ -290,7 +290,7 @@ namespace cyy::algorithm {
       assert(check_feasible_flow(flow));
       return flow;
     }
-    void determin_potential(const tree_structure &ts) {
+    void determine_potential(const tree_structure &ts) {
       auto root = ts.T.get_root();
       potential[root] = 0;
 
