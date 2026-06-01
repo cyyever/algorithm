@@ -6,6 +6,11 @@
  */
 #include <doctest/doctest.h>
 
+#include <chrono>
+#include <stop_token>
+#include <thread>
+#include <vector>
+
 #include "thread_safe_container.hpp"
 
 TEST_CASE("thread_safe_linear_container") {
