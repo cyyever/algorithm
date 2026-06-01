@@ -8,7 +8,19 @@
 
 #pragma once
 
-import std;
+#include <algorithm>
+#include <chrono>
+#include <condition_variable>
+#include <cstddef>
+#include <list>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <shared_mutex>
+#include <stop_token>
+#include <utility>
+#include <vector>
 
 namespace cyy::algorithm {
 

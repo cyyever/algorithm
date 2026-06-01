@@ -11,7 +11,14 @@
 #include "common_tokens.hpp"
 #include "endmarked_alphabet.hpp"
 #include "exception.hpp"
-import std;
+
+#include <algorithm>
+#include <format>
+#include <initializer_list>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 
 namespace cyy::algorithm {
 

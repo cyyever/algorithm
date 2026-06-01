@@ -5,8 +5,13 @@
  */
 #pragma once
 
+#include <algorithm>
+#include <cassert>
+#include <set>
+#include <utility>
+#include <vector>
+
 #include <cyy/math/algebra/matrix.hpp>
-import std;
 
 namespace cyy::algorithm {
   // A polyhedron satisfying Ax<=b

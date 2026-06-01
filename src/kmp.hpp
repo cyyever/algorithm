@@ -8,7 +8,12 @@
 
 #pragma once
 
-import std;
+#include <concepts>
+#include <cstddef>
+#include <optional>
+#include <ranges>
+#include <span>
+#include <vector>
 
 namespace cyy::algorithm {
 

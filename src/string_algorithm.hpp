@@ -8,7 +8,12 @@
 
 #pragma once
 
-import std;
+#include <cstddef>
+#include <map>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 namespace cyy::algorithm {
 
   // find one of words from str

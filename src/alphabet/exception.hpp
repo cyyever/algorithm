@@ -6,7 +6,7 @@
 
 #pragma once
 
-import std;
+#include <stdexcept>
 
 namespace cyy::algorithm::exception {
 

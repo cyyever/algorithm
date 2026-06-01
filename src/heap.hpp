@@ -6,7 +6,11 @@
 
 #pragma once
 #include <cassert>
-import std;
+#include <cstddef>
+#include <deque>
+#include <functional>
+#include <utility>
+#include <vector>
 namespace cyy::algorithm {
 
   template <typename data_type, template <typename T> class compare = std::less>
