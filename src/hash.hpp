@@ -7,7 +7,6 @@
 
 #include <boost/container_hash/hash.hpp>
 #include <boost/pfr.hpp>
-import std;
 
 namespace std {
   template <typename T>
@@ -25,21 +24,14 @@ namespace std {
     requires Hashable<std::ranges::range_value_t<T>>
   struct hash<T> {
     std::size_t operator()(const T &x) const noexcept {
-      return boost::hash_range(std::begin(x), std::end(x));
+      return boost::hash_range(std::ranges::begin(x), std::ranges::end(x));
     }
   };
   template <typename T>
     requires std::is_aggregate_v<T> && (!std::ranges::input_range<T>)
   struct hash<T> {
     std::size_t operator()(const T &x) const noexcept {
-      size_t seed = 0;
-
-      boost::pfr::for_each_field(x, [&seed](auto &&member) {
-        boost::hash_combine(
-            seed, std::hash<std::remove_cvref_t<decltype(member)>>()(member));
-      });
-
-      return seed;
+      return boost::pfr::hash_fields(x);
     }
   };
 } // namespace std
