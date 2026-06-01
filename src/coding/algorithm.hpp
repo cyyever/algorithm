@@ -4,6 +4,7 @@
  * \brief
  */
 
+#include <unordered_map>
 #include "alphabet/symbol.hpp"
 
 namespace cyy::algorithm {
