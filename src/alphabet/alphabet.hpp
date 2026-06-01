@@ -8,6 +8,9 @@
 #pragma once
 
 #include "symbol.hpp"
+#include <ranges>
+#include <functional>
+#include <memory>
 
 namespace cyy::algorithm {
 
