@@ -4,6 +4,13 @@
  * \brief
  */
 
+#include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <set>
+#include <utility>
+#include <vector>
+
 #include "tree_algorithm.hpp"
 
 namespace cyy::algorithm {

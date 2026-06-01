@@ -6,7 +6,22 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cassert>
+#include <concepts>
+#include <cstddef>
+#include <format>
+#include <functional>
+#include <limits>
+#include <list>
+#include <print>
+#include <ranges>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "pool.hpp"
 

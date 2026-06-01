@@ -7,6 +7,16 @@
  */
 #pragma once
 
+#include <cstddef>
+#include <format>
+#include <iterator>
+#include <ranges>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <unordered_map>
+#include <utility>
+
 #include "alphabet.hpp"
 #include "exception.hpp"
 #include "pool.hpp"

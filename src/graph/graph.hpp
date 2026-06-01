@@ -6,6 +6,10 @@
 
 #pragma once
 
+#include <cstddef>
+#include <ranges>
+#include <vector>
+
 #include "graph_base.hpp"
 namespace cyy::algorithm {
 

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <cstddef>
 #include <iterator>
 #include <list>
@@ -28,7 +29,9 @@ namespace cyy::algorithm {
   }
 
   // find the number of inversions
-  template <std::ranges::input_range U> std::size_t get_inversion_number(U A) {
+  template <std::ranges::input_range U>
+    requires std::totally_ordered<std::ranges::range_value_t<U>>
+  std::size_t get_inversion_number(U A) {
     using list_type = std::list<std::ranges::range_value_t<U>>;
     auto sort_and_count = [](auto &&self,
                              list_type l) -> std::pair<list_type, std::size_t> {

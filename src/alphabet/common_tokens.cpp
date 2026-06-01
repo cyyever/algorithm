@@ -9,6 +9,8 @@
 
 #include "ascii.hpp"
 
+#include <string>
+
 namespace cyy::algorithm {
   std::string common_tokens::_to_string(symbol_type symbol) const {
     switch (static_cast<common_token>(symbol)) {

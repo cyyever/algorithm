@@ -4,6 +4,15 @@
  */
 #pragma once
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <ranges>
+#include <set>
+#include <string>
+#include <string_view>
+#include <vector>
+
 #include "alphabet.hpp"
 #include "exception.hpp"
 

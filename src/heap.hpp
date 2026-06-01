@@ -6,6 +6,7 @@
 
 #pragma once
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <deque>
 #include <functional>
@@ -14,6 +15,7 @@
 namespace cyy::algorithm {
 
   template <typename data_type, template <typename T> class compare = std::less>
+    requires std::strict_weak_order<compare<data_type>, data_type, data_type>
   class heap {
   public:
     using heap_data_type = data_type;
@@ -34,8 +36,8 @@ namespace cyy::algorithm {
       items.emplace_back(std::move(data));
       return heapify_up(items.size() - 1);
     }
-    std::size_t change_item(std::size_t index,
-                            const std::function<void(data_type &)> &callback) {
+    template <std::invocable<data_type &> Callback>
+    std::size_t change_item(std::size_t index, Callback callback) {
       assert(index < this->size());
       callback(items[index]);
       return heapify(index);

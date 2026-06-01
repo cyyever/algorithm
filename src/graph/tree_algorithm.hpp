@@ -7,7 +7,17 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cassert>
+#include <cstddef>
+#include <limits>
+#include <list>
+#include <map>
+#include <ranges>
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
 #include "graph.hpp"
 #include "heap.hpp"
 #include "tree.hpp"

@@ -6,6 +6,14 @@
 
 #pragma once
 
+#include <concepts>
+#include <cstddef>
+#include <optional>
+#include <ranges>
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
 #include "graph.hpp"
 
 namespace cyy::algorithm {

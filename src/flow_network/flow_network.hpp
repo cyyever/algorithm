@@ -5,6 +5,15 @@
  */
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+#include <numeric>
+#include <stdexcept>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+
 #include "graph/graph.hpp"
 #include "graph/path.hpp"
 namespace cyy::algorithm {

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <set>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 

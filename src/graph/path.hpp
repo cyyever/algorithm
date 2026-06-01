@@ -7,6 +7,12 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <optional>
+#include <vector>
+
 #include "graph_base.hpp"
 #include "priority_queue.hpp"
 

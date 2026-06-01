@@ -6,6 +6,16 @@
 
 #pragma once
 
+#include <array>
+#include <concepts>
+#include <cstddef>
+#include <optional>
+#include <ranges>
+#include <stdexcept>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+
 #include "dag.hpp"
 #include "graph.hpp"
 

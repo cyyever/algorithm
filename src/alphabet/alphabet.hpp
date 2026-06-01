@@ -8,9 +8,17 @@
 #pragma once
 
 #include "symbol.hpp"
-#include <ranges>
+
+#include <cstddef>
+#include <format>
 #include <functional>
+#include <limits>
 #include <memory>
+#include <ranges>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
 
 namespace cyy::algorithm {
 
@@ -79,7 +87,7 @@ namespace cyy::algorithm {
 
   private:
     virtual std::string _to_string(symbol_type symbol) const {
-      return {'\'', static_cast<char>(symbol), '\''};
+      return std::format("'{}'", static_cast<char>(symbol));
     }
 
     static std::unordered_map<std::string, std::shared_ptr<ALPHABET>> &

@@ -6,6 +6,8 @@
  */
 #pragma once
 
+#include <string>
+
 #include "range_alphabet.hpp"
 
 namespace cyy::algorithm {

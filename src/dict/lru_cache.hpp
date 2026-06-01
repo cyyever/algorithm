@@ -6,6 +6,23 @@
  */
 #pragma once
 
+#include <chrono>
+#include <condition_variable>
+#include <exception>
+#include <format>
+#include <list>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <stdexcept>
+#include <stop_token>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+
 #if __has_include(<cyy/naive_lib/log/log.hpp>)
 #include <cyy/naive_lib/log/log.hpp>
 #include <cyy/naive_lib/util/runnable.hpp>

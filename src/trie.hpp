@@ -8,6 +8,13 @@
 
 #pragma once
 
+#include <algorithm>
+#include <concepts>
+#include <functional>
+#include <ranges>
+#include <unordered_set>
+#include <vector>
+
 #include "pool.hpp"
 
 namespace cyy::algorithm {
