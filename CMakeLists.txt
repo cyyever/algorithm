@@ -76,8 +76,7 @@ install(
   TARGETS CyyAlgorithmLib
   EXPORT CyyAlgorithmLibConfig
   FILE_SET public_headers
-  DESTINATION include/cyy/algorithm/${submodule_name}
-  EXPORT_PACKAGE_DEPENDENCIES)
+  DESTINATION include/cyy/algorithm/${submodule_name})
 
 # install cmake config file
-install(EXPORT CyyAlgorithmLibConfig DESTINATION lib/cmake/CyyAlgorithmLib)
+install(EXPORT CyyAlgorithmLibConfig DESTINATION lib/cmake/CyyAlgorithmLib EXPORT_PACKAGE_DEPENDENCIES)
