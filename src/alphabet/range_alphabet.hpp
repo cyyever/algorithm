@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <format>
 #include <ranges>
 #include <set>
 #include <string>
@@ -76,7 +77,7 @@ namespace cyy::algorithm {
 
   private:
     std::string _to_string(symbol_type symbol) const override {
-      return std::to_string(static_cast<std::uint64_t>(symbol));
+      return std::format("{}", static_cast<std::uint64_t>(symbol));
     }
   };
 } // namespace cyy::algorithm

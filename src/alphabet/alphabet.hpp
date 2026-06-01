@@ -9,6 +9,7 @@
 
 #include "symbol.hpp"
 
+#include <concepts>
 #include <cstddef>
 #include <format>
 #include <functional>
@@ -119,3 +120,26 @@ namespace cyy::algorithm {
   }
 
 } // namespace cyy::algorithm
+
+template <typename T>
+  requires std::derived_from<T, cyy::algorithm::ALPHABET>
+struct std::formatter<T> {
+  // Parses format specifications (only the empty spec "{}" is accepted).
+  template <class ParseContext> constexpr auto parse(ParseContext &ctx) {
+    auto it = ctx.begin();
+    if (it != ctx.end() && *it != '}') {
+      throw std::format_error("invalid format");
+    }
+    return it;
+  }
+
+  template <class FormatContext>
+  auto format(const cyy::algorithm::ALPHABET &alphabet,
+              FormatContext &ctx) const {
+    std::format_to(ctx.out(), "alphabet {}:", alphabet.get_name());
+    for (auto const symbol : alphabet.get_view()) {
+      std::format_to(ctx.out(), " {}", alphabet.to_string(symbol));
+    }
+    return ctx.out();
+  }
+};
