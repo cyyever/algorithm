@@ -23,6 +23,10 @@
 
 namespace cyy::algorithm {
 
+  // Pairs a symbol with the alphabet that knows how to render it, so a single
+  // symbol can be formatted natively with std::format.
+  struct alphabet_symbol;
+
   class ALPHABET {
 
   public:
@@ -49,18 +53,7 @@ namespace cyy::algorithm {
 
     virtual bool contain(symbol_type s) const noexcept = 0;
     virtual std::size_t size() const noexcept = 0;
-    std::string to_string(symbol_type symbol) const {
-      if (contain(symbol)) {
-        return _to_string(symbol);
-      }
-      if (symbol == endmarker) {
-        return "$";
-      }
-      if (symbol == blank_symbol) {
-        return "blank";
-      }
-      return "(unknown symbol)";
-    }
+    std::string to_string(symbol_type symbol) const;
 
     const std::string &get_name() const noexcept { return name; }
 
@@ -87,6 +80,7 @@ namespace cyy::algorithm {
     void set_name(std::string_view name_);
 
   private:
+    friend struct std::formatter<alphabet_symbol>;
     virtual std::string _to_string(symbol_type symbol) const {
       return std::format("'{}'", static_cast<char>(symbol));
     }
@@ -96,6 +90,11 @@ namespace cyy::algorithm {
 
     std::function<std::string(const ALPHABET &, symbol_type)> MMA_draw_fun_ptr;
     std::string name;
+  };
+
+  struct alphabet_symbol {
+    const ALPHABET &alphabet;
+    symbol_type symbol;
   };
 
   class ALPHABET_ptr : public std::shared_ptr<ALPHABET> {
@@ -143,3 +142,37 @@ struct std::formatter<T> {
     return ctx.out();
   }
 };
+
+template <> struct std::formatter<cyy::algorithm::alphabet_symbol> {
+  template <class ParseContext> constexpr auto parse(ParseContext &ctx) {
+    auto it = ctx.begin();
+    if (it != ctx.end() && *it != '}') {
+      throw std::format_error("invalid format");
+    }
+    return it;
+  }
+
+  template <class FormatContext>
+  auto format(const cyy::algorithm::alphabet_symbol &s,
+              FormatContext &ctx) const {
+    const auto &alphabet = s.alphabet;
+    if (alphabet.contain(s.symbol)) {
+      return std::format_to(ctx.out(), "{}", alphabet._to_string(s.symbol));
+    }
+    if (s.symbol == cyy::algorithm::ALPHABET::endmarker) {
+      return std::format_to(ctx.out(), "$");
+    }
+    if (s.symbol == cyy::algorithm::ALPHABET::blank_symbol) {
+      return std::format_to(ctx.out(), "blank");
+    }
+    return std::format_to(ctx.out(), "(unknown symbol)");
+  }
+};
+
+namespace cyy::algorithm {
+  // Defined here, after std::formatter<alphabet_symbol> is visible, so the
+  // std::format call below picks up the explicit specialization.
+  inline std::string ALPHABET::to_string(symbol_type symbol) const {
+    return std::format("{}", alphabet_symbol{.alphabet = *this, .symbol = symbol});
+  }
+} // namespace cyy::algorithm
