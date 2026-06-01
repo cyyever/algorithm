@@ -35,6 +35,7 @@ namespace cyy::algorithm {
       for (auto &&[symbol, data] : std::forward<T>(symbol_map_)) {
         auto data_id = data_pool.add_data(data);
         symbol_to_data_id.emplace(symbol, data_id);
+        data_id_to_symbol.emplace(data_id, symbol);
       }
     }
     bool contain(symbol_type s) const noexcept override {
