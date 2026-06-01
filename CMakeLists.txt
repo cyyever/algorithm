@@ -20,7 +20,7 @@ file(GLOB_RECURSE headers ${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.hpp
      ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp)
 
 find_package(Boost CONFIG)
-find_package(Eigen3)
+find_package(Eigen3 QUIET)
 find_package(CyyNaiveLib)
 
 option(BUILD_OBJECT_LIB "Build CMake object libraries" OFF)
