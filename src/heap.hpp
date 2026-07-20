@@ -122,8 +122,18 @@ namespace cyy::algorithm {
     referred_item_base(const referred_item_base &rhs) = delete;
     referred_item_base &operator=(const referred_item_base &rhs) = delete;
     ~referred_item_base() = default;
-    auto operator<=>(const referred_item_base &rhs) const noexcept {
-      return data <=> rhs.data;
+    // Comparisons are defined as hidden friends on the concrete parameter type
+    // (found via ADL, not inherited through a using-declaration). A member
+    // operator<=> taking the base type made the C++20 rewritten operator< on
+    // derived items ambiguous (rewritten vs. synthesized-reversed candidate),
+    // which the constrained std::less in newer standard libraries rejects.
+    friend auto operator<=>(const referred_item_base &lhs,
+                            const referred_item_base &rhs) noexcept {
+      return lhs.data <=> rhs.data;
+    }
+    friend bool operator==(const referred_item_base &lhs,
+                           const referred_item_base &rhs) noexcept {
+      return lhs.data == rhs.data;
     }
     referred_item_base(referred_item_base &&rhs) noexcept = default;
     referred_item_base &operator=(referred_item_base &&rhs) = default;
@@ -132,7 +142,6 @@ namespace cyy::algorithm {
   struct referred_item : public referred_item_base<data_type> {
     iterator_type iterator;
     using referred_item_base<data_type>::referred_item_base;
-    using referred_item_base<data_type>::operator<=>;
     referred_item(data_type data_, iterator_type iterator_,
                   std::size_t heap_index_) noexcept
         : iterator(iterator_) {
@@ -158,7 +167,6 @@ namespace cyy::algorithm {
   struct pair_referred_item : public referred_item_base<data_type> {
     iterator_type iterator;
     using referred_item_base<data_type>::referred_item_base;
-    using referred_item_base<data_type>::operator<=>;
     pair_referred_item(data_type data_, iterator_type iterator_,
                        std::size_t heap_index_) noexcept
         : iterator(iterator_) {
