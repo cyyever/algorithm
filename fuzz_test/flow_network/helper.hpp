@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <ranges>
 #include <span>
 
 #include "../helper.hpp"
@@ -20,7 +21,7 @@ generate_flow_network(std::span<const uint8_t> &data) {
   auto g = generate_graph<weight_type>(data);
   uint8_t source = UINT8_MAX;
   uint8_t sink = UINT8_MAX;
-  for (auto v : g.get_vertices()) {
+  for (auto v : g.get_vertices_and_indices() | std::views::keys) {
     if (source == UINT8_MAX) {
       source = v;
     } else if (sink == UINT8_MAX) {
@@ -55,7 +56,7 @@ generate_minimum_cost_flow_network(std::span<const uint8_t> &data) {
       break;
     }
   }
-  for (auto v : g.get_vertices()) {
+  for (auto v : g.get_vertices_and_indices() | std::views::keys) {
     if (!data.empty()) {
       demand.emplace(v, data[0]);
       data = data.subspan(1);
