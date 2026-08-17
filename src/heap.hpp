@@ -242,7 +242,7 @@ namespace cyy::algorithm {
   protected:
     void check_consistency() {
 #ifndef NDEBUG
-      assert(container.size() == this->size());
+      assert(this->container.size() == this->size());
       for (std::size_t i = 0; i < this->size(); i++) {
         auto const &item = item_heap.get_item(i);
         assert(*item.iterator == i);

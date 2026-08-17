@@ -35,10 +35,11 @@ namespace cyy::algorithm {
     return path;
   }
 
-  template <IsGraph G> auto shortest_path_by_edge_number(const G &g, size_t s) {
+  template <IsGraph G>
+  std::vector<size_t> shortest_path_by_edge_number(const G &g, size_t s) {
     assert(g.has_vertex_index(s));
     if (!g.has_vertex_index(s)) {
-      return std::vector<size_t>();
+      return {};
     }
     assert(g.has_continuous_vertices());
     std::vector<size_t> parent(g.get_vertex_number(), SIZE_MAX);
